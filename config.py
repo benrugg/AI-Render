@@ -1,0 +1,1 @@
+API_URL = "https://gjtwzwrl6cw5c5y7usk6ygx2ca0gbgct.lambda-url.us-west-2.on.aws/"
