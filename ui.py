@@ -1,3 +1,4 @@
+from cProfile import label
 import bpy
 from . import operators
 
@@ -109,3 +110,25 @@ class SDR_PT_test(bpy.types.Panel):
         # Test
         row = layout.row()
         row.operator(operators.SDR_OT_test.bl_idname)
+        
+        row = layout.row()
+        row.operator(operators.SDR_OT_ensure_compositor_nodes.bl_idname)
+
+
+class SDR_PT_output(bpy.types.Panel):
+    bl_label = "Output"
+    bl_idname = "SDR_PT_output"
+    bl_parent_id = "SDR_PT_main"
+    bl_space_type = 'PROPERTIES'
+    bl_region_type = 'WINDOW'
+    bl_context = "render"
+
+    def draw(self, context):
+        layout = self.layout
+        scene = context.scene
+        props = scene.sdr_props
+
+        col = self.layout.column()
+
+        if 'previewTexture' in bpy.data.textures:
+            col.template_preview(bpy.data.textures['previewTexture'])

@@ -28,11 +28,13 @@ from .properties import SDRProperties
 classes = [
     SDRProperties,
     operators.SDR_OT_test,
+    operators.SDR_OT_ensure_compositor_nodes,
     ui.SDR_PT_main,
     ui.SDR_PT_setup,
     ui.SDR_PT_prompt,
     ui.SDR_PT_seed,
     ui.SDR_PT_test,
+    ui.SDR_PT_output,
 ]
 
 
