@@ -21,49 +21,6 @@ import bpy
 import re
 
 
-def guard_from_crash():
-    '''
-    Blender tends to crash when trying to run some functions
-     with the addon going through unregistration process.
-     This function is used in these functions (like draw callbacks)
-     so these don't run during unregistration.
-    '''
-    if bpy.context.preferences.addons.get(__package__) is None:
-        return False
-    # TODO: Add this back in if we add addon preferences
-    # if bpy.context.preferences.addons[__package__].preferences is None:
-    #     return False
-    return True
-
-
-def get_largest_area(context = None, area_type='VIEW_3D'):
-    maxsurf = 0
-    maxa = None
-    maxw = None
-    region = None
-    if context is None:
-        windows = bpy.data.window_managers[0].windows
-    else:
-        windows = context.window_manager.windows
-    for w in windows:
-        for a in w.screen.areas:
-            if a.type == area_type:
-                asurf = a.width * a.height
-                if asurf > maxsurf:
-                    maxa = a
-                    maxw = w
-                    maxsurf = asurf
-
-                    region = a.regions[-1]
-                    # for r in a.regions:
-                    #     if r.type == 'WINDOW':
-                    #         region = r
-
-    if maxw is None or maxa is None:
-        return None,None,None
-    return maxw, maxa, region
-
-
 def has_url(text):
     #first remove markdown *
     text = text.replace('*','')
