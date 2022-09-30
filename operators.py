@@ -1,13 +1,11 @@
-if "bpy" in locals():
-    import imp
-    imp.reload(defer_error)
-else:
-    from . import defer_error
-
 import bpy
 from bpy.app.handlers import persistent
 import requests
 import time
+from . import (
+    defer_error,
+    utils,
+)
 from .config import API_URL
 
 
@@ -153,17 +151,19 @@ class SDR_OT_show_error_popup(bpy.types.Operator):
     bl_idname = "sdr.show_error_popup"
     bl_label = "Stable Diffusion Render Error"
 
+    width = 350
+
     error_message: bpy.props.StringProperty(
         name="error_message",
         description="Error Message to display"
     )
 
     def draw(self, context):
-        self.layout.label(text=self.error_message, icon="ERROR")
+        utils.label_multiline(self.layout, text=self.error_message, icon="ERROR", width=self.width)
 
     def invoke(self, context, event):
         context.scene.sdr_props.error_message = self.error_message
-        return context.window_manager.invoke_props_dialog(self)
+        return context.window_manager.invoke_props_dialog(self, width=self.width)
 
     def execute(self, context):
         return {'FINISHED'}
@@ -191,3 +191,20 @@ def render_post_handler(scene):
         send_to_api()
     else:
         print("Rendered image is not ready")
+
+
+classes = [
+    SDR_OT_send_to_api,
+    SDR_OT_ensure_compositor_nodes,
+    SDR_OT_show_error_popup,
+]
+
+
+def register_operators():
+    for cls in classes:
+        bpy.utils.register_class(cls)
+
+
+def unregister_operators():
+    for cls in classes:
+        bpy.utils.unregister_class(cls)

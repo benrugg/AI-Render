@@ -3,7 +3,7 @@ bl_info = {
     "description": "Use the Stable Diffusion AI algorithm to create a new image based on your render and a text prompt",
     "author": "Ben Rugg",
     "version": (0, 0, 1),
-    "blender": (3, 0, 0),
+    "blender": (3, 3, 0),
     "location": "3D View > Sidebar  &  Render Properties > Stable Diffusion Render",
     "warning": "",
     "tracker_url": "",
@@ -13,50 +13,49 @@ bl_info = {
 
 if "bpy" in locals():
     import imp
-    imp.reload(properties)
+    imp.reload(colors)
+    imp.reload(defer_error)
     imp.reload(operators)
+    imp.reload(properties)
+    imp.reload(ui_bgl)
+    imp.reload(ui_messages)
     imp.reload(ui)
+    imp.reload(utils)
 else:
-    from . import properties, operators, ui
+    from . import (
+        colors,
+        defer_error,
+        operators,
+        properties,
+        ui_bgl,
+        ui_messages,
+        ui,
+        utils,
+    )
 
 import bpy
-from . import operators
-from . import ui
-from .properties import SDRProperties
-
-
-classes = [
-    SDRProperties,
-    operators.SDR_OT_send_to_api,
-    operators.SDR_OT_ensure_compositor_nodes,
-    operators.SDR_OT_show_error_popup,
-    ui.SDR_PT_main,
-    ui.SDR_PT_setup,
-    ui.SDR_PT_prompt,
-    ui.SDR_PT_seed,
-    ui.SDR_PT_test,
-    ui.SDR_PT_output,
-]
 
 
 def register():
-    from bpy.utils import register_class
-    
-    for cls in classes:
-        register_class(cls)
-    
-    bpy.types.Scene.sdr_props = bpy.props.PointerProperty(type=SDRProperties)
+    operators.register_operators()
+    properties.register_properties()
+    ui_messages.register_ui_messages()
+    ui.register_ui()
+
+    bpy.types.Scene.sdr_props = bpy.props.PointerProperty(type=properties.SDRProperties)
+
     bpy.app.handlers.render_pre.append(operators.render_pre_handler)
     bpy.app.handlers.render_post.append(operators.render_post_handler)
 
 
 def unregister():
-    from bpy.utils import unregister_class
-    
-    for cls in reversed(classes):
-        unregister_class(cls)
-    
+    operators.unregister_operators()
+    properties.unregister_properties()
+    ui_messages.unregister_ui_messages()
+    ui.unregister_ui()
+
     del bpy.types.Scene.sdr_props
+
     bpy.app.handlers.render_pre.remove(operators.render_pre_handler)
     bpy.app.handlers.render_post.remove(operators.render_post_handler)
 

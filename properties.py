@@ -1,17 +1,17 @@
 import bpy
-from .operators import clear_error
+from . import operators
 
 class SDRProperties(bpy.types.PropertyGroup):
     api_key: bpy.props.StringProperty(
         name="API Key",
         description="Your DreamStudio API KEY",
-        update=clear_error,
+        update=operators.clear_error,
     )
     prompt_text: bpy.props.StringProperty(
         name="Prompt",
         description="Describe anything for Stable Diffusion to create",
         default="knitted knight",
-        update=clear_error,
+        update=operators.clear_error,
     )
     prompt_strength: bpy.props.FloatProperty(
         name="Prompt Strength",
@@ -43,3 +43,18 @@ class SDRProperties(bpy.types.PropertyGroup):
         default="",
         description="An error message that will be shown if present",
     )
+
+
+classes = [
+    SDRProperties
+]
+
+
+def register_properties():
+    for cls in classes:
+        bpy.utils.register_class(cls)
+
+
+def unregister_properties():
+    for cls in classes:
+        bpy.utils.unregister_class(cls)

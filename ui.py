@@ -1,6 +1,8 @@
-from cProfile import label
 import bpy
-from . import operators
+from . import (
+    operators,
+)
+
 
 class SDR_PT_main(bpy.types.Panel):
     bl_label = "Stable Diffusion Render"
@@ -149,4 +151,24 @@ class SDR_PT_output(bpy.types.Panel):
 
             row = self.layout.row()
             row.label(text=props.error_message)
-        
+
+
+classes = [
+    SDR_PT_main,
+    SDR_PT_setup,
+    SDR_PT_prompt,
+    SDR_PT_seed,
+    SDR_PT_test,
+    SDR_PT_output,
+]
+
+
+def register_ui():
+    for cls in classes:
+        bpy.utils.register_class(cls)
+
+
+def unregister_ui():
+    for cls in classes:
+        bpy.utils.unregister_class(cls)
+    
