@@ -14,6 +14,7 @@ bl_info = {
 if "bpy" in locals():
     import imp
     imp.reload(defer_error)
+    imp.reload(handlers)
     imp.reload(operators)
     imp.reload(properties)
     imp.reload(ui)
@@ -21,6 +22,7 @@ if "bpy" in locals():
 else:
     from . import (
         defer_error,
+        handlers,
         operators,
         properties,
         ui,
@@ -31,25 +33,17 @@ import bpy
 
 
 def register():
+    handlers.register_handlers()
     operators.register_operators()
     properties.register_properties()
     ui.register_ui()
 
-    bpy.types.Scene.sdr_props = bpy.props.PointerProperty(type=properties.SDRProperties)
-
-    bpy.app.handlers.render_pre.append(operators.render_pre_handler)
-    bpy.app.handlers.render_post.append(operators.render_post_handler)
-
 
 def unregister():
+    handlers.unregister_handlers()
     operators.unregister_operators()
     properties.unregister_properties()
     ui.unregister_ui()
-
-    del bpy.types.Scene.sdr_props
-
-    bpy.app.handlers.render_pre.remove(operators.render_pre_handler)
-    bpy.app.handlers.render_post.remove(operators.render_post_handler)
 
 
 if __name__ == "__main__":

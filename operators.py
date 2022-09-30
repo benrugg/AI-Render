@@ -1,5 +1,4 @@
 import bpy
-from bpy.app.handlers import persistent
 import requests
 import time
 from . import (
@@ -171,26 +170,6 @@ class SDR_OT_show_error_popup(bpy.types.Operator):
 
 def clear_error(self, context):
     context.scene.sdr_props.error_message = ''
-
-
-@persistent
-def render_pre_handler(scene):
-    # when the render is starting, ensure we have the right compositor nodes
-    ensure_compositor_nodes()
-
-
-@persistent
-def render_post_handler(scene):
-    # when the render is ready:
-
-    # check to see if we have a render result
-    is_img_ready = bpy.data.images['Render Result'].has_data
-
-    # if it's ready, post to the api
-    if is_img_ready:
-        send_to_api()
-    else:
-        print("Rendered image is not ready")
 
 
 classes = [
