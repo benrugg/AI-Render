@@ -1,14 +1,17 @@
 import bpy
+from .operators import clear_error
 
 class SDRProperties(bpy.types.PropertyGroup):
     api_key: bpy.props.StringProperty(
         name="API Key",
         description="Your DreamStudio API KEY",
+        update=clear_error,
     )
     prompt_text: bpy.props.StringProperty(
         name="Prompt",
         description="Describe anything for Stable Diffusion to create",
-        default="asdfdsa",
+        default="knitted knight",
+        update=clear_error,
     )
     prompt_strength: bpy.props.FloatProperty(
         name="Prompt Strength",
@@ -34,4 +37,9 @@ class SDRProperties(bpy.types.PropertyGroup):
         default=0,
         min=0,
         description="The seed for the initial randomization of the algorithm. Use the same seed between images to keep the result more stable",
+    )
+    error_message: bpy.props.StringProperty(
+        name="Error Message",
+        default="",
+        description="An error message that will be shown if present",
     )

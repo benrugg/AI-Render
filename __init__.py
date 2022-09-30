@@ -27,8 +27,9 @@ from .properties import SDRProperties
 
 classes = [
     SDRProperties,
-    operators.SDR_OT_test,
+    operators.SDR_OT_send_to_api,
     operators.SDR_OT_ensure_compositor_nodes,
+    operators.SDR_OT_show_error_popup,
     ui.SDR_PT_main,
     ui.SDR_PT_setup,
     ui.SDR_PT_prompt,
@@ -45,6 +46,8 @@ def register():
         register_class(cls)
     
     bpy.types.Scene.sdr_props = bpy.props.PointerProperty(type=SDRProperties)
+    bpy.app.handlers.render_pre.append(operators.render_pre_handler)
+    bpy.app.handlers.render_post.append(operators.render_post_handler)
 
 
 def unregister():
@@ -54,6 +57,8 @@ def unregister():
         unregister_class(cls)
     
     del bpy.types.Scene.sdr_props
+    bpy.app.handlers.render_pre.remove(operators.render_pre_handler)
+    bpy.app.handlers.render_post.remove(operators.render_post_handler)
 
 
 if __name__ == "__main__":

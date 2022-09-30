@@ -109,8 +109,8 @@ class SDR_PT_test(bpy.types.Panel):
 
         # Test
         row = layout.row()
-        row.operator(operators.SDR_OT_test.bl_idname)
-        
+        row.operator(operators.SDR_OT_send_to_api.bl_idname)
+
         row = layout.row()
         row.operator(operators.SDR_OT_ensure_compositor_nodes.bl_idname)
 
@@ -128,7 +128,25 @@ class SDR_PT_output(bpy.types.Panel):
         scene = context.scene
         props = scene.sdr_props
 
-        col = self.layout.column()
+        if props.error_message == '':
+            col = self.layout.column()
 
-        if 'previewTexture' in bpy.data.textures:
-            col.template_preview(bpy.data.textures['previewTexture'])
+            if 'previewTexture' in bpy.data.textures:
+                col.template_preview(bpy.data.textures['previewTexture'])
+
+        else:
+            row = self.layout.row()
+            col = row.column()
+            col.label(text="", icon="COLORSET_01_VEC")
+            col = row.column()
+            col.label(text="", icon="ERROR")
+            col = row.column()
+            col.label(text="*** Error: ***")
+            col = row.column()
+            col.label(text="", icon="ERROR")
+            col = row.column()
+            col.label(text="", icon="COLORSET_01_VEC")
+
+            row = self.layout.row()
+            row.label(text=props.error_message)
+        
