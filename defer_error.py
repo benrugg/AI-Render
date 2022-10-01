@@ -17,9 +17,14 @@ def execute_queued_functions():
     return 1.0
 
 
-if not bpy.app.timers.is_registered(execute_queued_functions):
+# public method:
+def show_error_when_ready(msg):
+    run_in_main_thread(functools.partial(bpy.ops.sdr.show_error_popup, 'INVOKE_DEFAULT', error_message=msg))
+
+
+def register_defer_error():
     bpy.app.timers.register(execute_queued_functions)
 
 
-def show_error_when_ready(msg):
-    run_in_main_thread(functools.partial(bpy.ops.sdr.show_error_popup, 'INVOKE_DEFAULT', error_message=msg))
+def unregister_defer_error():
+    bpy.app.timers.unregister(execute_queued_functions)

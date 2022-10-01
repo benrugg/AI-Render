@@ -33,6 +33,7 @@ import bpy
 
 
 def register():
+    defer_error.register_defer_error()
     handlers.register_handlers()
     operators.register_operators()
     properties.register_properties()
@@ -40,6 +41,7 @@ def register():
 
 
 def unregister():
+    defer_error.unregister_defer_error()
     handlers.unregister_handlers()
     operators.unregister_operators()
     properties.unregister_properties()
