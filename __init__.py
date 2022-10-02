@@ -13,18 +13,18 @@ bl_info = {
 
 if "bpy" in locals():
     import imp
-    imp.reload(defer_error)
     imp.reload(handlers)
     imp.reload(operators)
     imp.reload(properties)
+    imp.reload(task_queue)
     imp.reload(ui)
     imp.reload(utils)
 else:
     from . import (
-        defer_error,
         handlers,
         operators,
         properties,
+        task_queue,
         ui,
         utils,
     )
@@ -33,7 +33,7 @@ import bpy
 
 
 def register():
-    defer_error.register_defer_error()
+    task_queue.register_task_queue()
     handlers.register_handlers()
     operators.register_operators()
     properties.register_properties()
@@ -41,7 +41,7 @@ def register():
 
 
 def unregister():
-    defer_error.unregister_defer_error()
+    task_queue.unregister_task_queue()
     handlers.unregister_handlers()
     operators.unregister_operators()
     properties.unregister_properties()

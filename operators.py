@@ -1,8 +1,9 @@
 import bpy
 import requests
+import functools
 import time
 from . import (
-    defer_error,
+    task_queue,
     utils,
 )
 from .config import API_URL
@@ -14,7 +15,61 @@ def update_compositor_node_with_image(img):
     image_node.image = img
 
 
+def ensure_compositor_nodes():
+    """Ensure that the compositor nodes are created"""
+    context = bpy.context
+    context.scene.use_nodes = True
+    compositor_nodes = context.scene.node_tree.nodes
+    composite_node = compositor_nodes.get('Composite')
+
+    # if our image node already exists, just quit
+    if 'SDR_image_node' in compositor_nodes:
+        return {'FINISHED'}
+
+    # othewise, create a new image node and mix rgb node
+    image_node = compositor_nodes.new(type='CompositorNodeImage')
+    image_node.name = 'SDR_image_node'
+    image_node.location = (300, 400)
+    image_node.label = 'Stable Diffusion Render'
+
+    mix_node = compositor_nodes.new(type='CompositorNodeMixRGB')
+    mix_node.name = 'SDR_mix_node'
+    mix_node.location = (550, 500)
+    
+    # get a reference to the new link function, for convenience
+    create_link = context.scene.node_tree.links.new
+
+    # link the image node to the mix node
+    create_link(image_node.outputs.get('Image'), mix_node.inputs[2])
+
+    # get the socket that's currently linked to the compositor, or as a 
+    # fallback, get the rendered image output
+    if composite_node.inputs.get('Image').is_linked:
+        original_socket = composite_node.inputs.get('Image').links[0].from_socket
+    else:
+        original_socket = compositor_nodes['Render Layers'].outputs.get('Image')
+    
+    # link the original socket to the input of the mix node
+    create_link(original_socket, mix_node.inputs[1])
+
+    # link the mix node to the compositor node
+    create_link(mix_node.outputs.get('Image'), composite_node.inputs.get('Image'))
+
+    return {'FINISHED'}
+
+
+def handle_error(msg):
+    """Show an error popup, and set the error message to be displayed in the ui"""
+    task_queue.add(functools.partial(bpy.ops.sdr.show_error_popup, 'INVOKE_DEFAULT', error_message=msg))
+
+
+def clear_error(self, context):
+    """Clear the error message in the ui"""
+    context.scene.sdr_props.error_message = ''
+
+
 def send_to_api():
+    """Post to the API and process the resulting image"""
     context = bpy.context
     props = context.scene.sdr_props
 
@@ -62,7 +117,7 @@ def send_to_api():
 
     # handle 404
     elif response.status_code in [403, 404]:
-        defer_error.show_error_when_ready("It looks like the web server this plugin relies on is missing. It's possible this is temporary, and you can try again later.")
+        handle_error("It looks like the web server this plugin relies on is missing. It's possible this is temporary, and you can try again later.")
 
     # handle all other errors
     else:
@@ -76,50 +131,7 @@ def send_to_api():
         else:
             error_message = f"An unknown error occurred in the DreamStudio API. Full server response: {str(response.content)}"
         
-        defer_error.show_error_when_ready(error_message)
-
-    return {'FINISHED'}
-
-
-
-def ensure_compositor_nodes():
-    context = bpy.context
-    context.scene.use_nodes = True
-    compositor_nodes = context.scene.node_tree.nodes
-    composite_node = compositor_nodes.get('Composite')
-
-    # if our image node already exists, just quit
-    if 'SDR_image_node' in compositor_nodes:
-        return {'FINISHED'}
-
-    # othewise, create a new image node and mix rgb node
-    image_node = compositor_nodes.new(type='CompositorNodeImage')
-    image_node.name = 'SDR_image_node'
-    image_node.location = (300, 400)
-    image_node.label = 'Stable Diffusion Render'
-
-    mix_node = compositor_nodes.new(type='CompositorNodeMixRGB')
-    mix_node.name = 'SDR_mix_node'
-    mix_node.location = (550, 500)
-    
-    # get a reference to the new link function, for convenience
-    create_link = context.scene.node_tree.links.new
-
-    # link the image node to the mix node
-    create_link(image_node.outputs.get('Image'), mix_node.inputs[2])
-
-    # get the socket that's currently linked to the compositor, or as a 
-    # fallback, get the rendered image output
-    if composite_node.inputs.get('Image').is_linked:
-        original_socket = composite_node.inputs.get('Image').links[0].from_socket
-    else:
-        original_socket = compositor_nodes['Render Layers'].outputs.get('Image')
-    
-    # link the original socket to the input of the mix node
-    create_link(original_socket, mix_node.inputs[1])
-
-    # link the mix node to the compositor node
-    create_link(mix_node.outputs.get('Image'), composite_node.inputs.get('Image'))
+        handle_error(error_message)
 
     return {'FINISHED'}
 
@@ -167,9 +179,6 @@ class SDR_OT_show_error_popup(bpy.types.Operator):
     def execute(self, context):
         return {'FINISHED'}
 
-
-def clear_error(self, context):
-    context.scene.sdr_props.error_message = ''
 
 
 classes = [
