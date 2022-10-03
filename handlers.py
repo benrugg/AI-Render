@@ -8,8 +8,15 @@ from . import (
 
 @persistent
 def render_pre_handler(scene):
+    # clear any previous errors
+    operators.clear_error()
+
     # when the render is starting, ensure we have the right compositor nodes
     operators.ensure_compositor_nodes()
+
+    # then mute the mix node, so we get the result of the original render
+    operators.mute_compositor_mix_node()
+
 
 
 @persistent

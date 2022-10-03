@@ -13,6 +13,7 @@ bl_info = {
 
 if "bpy" in locals():
     import imp
+    imp.reload(config)
     imp.reload(handlers)
     imp.reload(operators)
     imp.reload(properties)
@@ -21,6 +22,7 @@ if "bpy" in locals():
     imp.reload(utils)
 else:
     from . import (
+        config,
         handlers,
         operators,
         properties,
@@ -33,18 +35,18 @@ import bpy
 
 
 def register():
-    task_queue.register_task_queue()
     handlers.register_handlers()
     operators.register_operators()
     properties.register_properties()
+    task_queue.register_task_queue()
     ui.register_ui()
 
 
 def unregister():
-    task_queue.unregister_task_queue()
     handlers.unregister_handlers()
     operators.unregister_operators()
     properties.unregister_properties()
+    task_queue.unregister_task_queue()
     ui.unregister_ui()
 
 

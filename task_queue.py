@@ -1,10 +1,12 @@
 import bpy
 import queue
+from bpy.app.handlers import persistent
 
 
 # private
 execution_queue = queue.Queue()
 
+@persistent
 def execute_queued_functions():
     while not execution_queue.empty():
         function = execution_queue.get()

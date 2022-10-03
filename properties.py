@@ -22,7 +22,7 @@ class SDRProperties(bpy.types.PropertyGroup):
     )
     image_strength: bpy.props.FloatProperty(
         name="Image Strength",
-        default=0.4,
+        default=0.3,
         min=0,
         max=1,
         description="How much the initial image will influence the final image",

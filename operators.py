@@ -9,6 +9,16 @@ from . import (
 from .config import API_URL
 
 
+def mute_compositor_mix_node():
+    compositor_nodes = bpy.context.scene.node_tree.nodes
+    compositor_nodes.get('SDR_mix_node').mute = True
+
+
+def unmute_compositor_mix_node():
+    compositor_nodes = bpy.context.scene.node_tree.nodes
+    compositor_nodes.get('SDR_mix_node').mute = False
+
+
 def update_compositor_node_with_image(img):
     compositor_nodes = bpy.context.scene.node_tree.nodes
     image_node = compositor_nodes.get('SDR_image_node')
@@ -63,9 +73,36 @@ def handle_error(msg):
     task_queue.add(functools.partial(bpy.ops.sdr.show_error_popup, 'INVOKE_DEFAULT', error_message=msg))
 
 
-def clear_error(self, context):
+def clear_error(self = None, context = bpy.context):
     """Clear the error message in the ui"""
     context.scene.sdr_props.error_message = ''
+
+
+def get_temp_path():
+    tmp_path = bpy.context.preferences.filepaths.temporary_directory.rstrip('/')
+    if tmp_path == '': tmp_path = '/tmp'
+    return tmp_path
+
+
+def get_temp_render_filename():
+    return f"{get_temp_path()}/sdr-temp-render.png"
+
+
+def get_temp_output_filename():
+    return f"{get_temp_path()}/sdr-{int(time.time())}.png"
+
+
+def save_render_to_file():
+    if bpy.data.images['Render Result'].has_data:
+        tmp_filename = get_temp_render_filename()
+
+        orig_render_file_format = bpy.context.scene.render.image_settings.file_format
+        bpy.data.images['Render Result'].save_render(tmp_filename)
+        bpy.context.scene.render.image_settings.file_format = orig_render_file_format
+
+        return tmp_filename
+    
+    return False
 
 
 def send_to_api():
@@ -73,13 +110,10 @@ def send_to_api():
     context = bpy.context
     props = context.scene.sdr_props
 
+    # prepare data for the API request
     api_key = props.api_key
     prompt = props.prompt_text
-
-    tmp_path = context.preferences.filepaths.temporary_directory.rstrip('/')
-    if tmp_path == '': tmp_path = '/tmp'
-
-    tmp_filename = f"{tmp_path}/sdr-{int(time.time())}.png"
+    image_strength = props.image_strength
 
     headers = {
         "User-Agent": "Blender/" + bpy.app.version_string,
@@ -90,23 +124,51 @@ def send_to_api():
 
     params = {
         "prompt": prompt,
+        "image_strength": image_strength,
     }
 
+    # save the rendered image and then read it back in
+    tmp_filename = save_render_to_file()
+    if not tmp_filename:
+        print("Saving rendered image failed")
+        return False
+
+    img_file = open(tmp_filename, 'rb')
+    files = {"file": img_file}
+
     # send an API request
-    response = requests.get(API_URL, params=params, headers=headers)
+    response = requests.post(API_URL, params=params, headers=headers, files=files)
+
+    # close the image file
+    img_file.close()
+
+    # TODO: REMOVE DEBUGGING CODE...
+    # print("request body:")
+    # print(response.request.body)
+    # print("\n")
+    # print("response body:")
+    # print(response.content)
+    # try:
+    #     print(response.json())
+    # except:
+    #     print("body not json")
 
     # handle a successful response
     if response.status_code == 200:
 
         # save the image
+        tmp_filename = get_temp_output_filename()
+
         with open(tmp_filename, 'wb') as file:
             for chunk in response:
                 file.write(chunk)
-            file.close()
         
         # load the image into the compositor
         img = bpy.data.images.load(tmp_filename, check_existing=True)
         update_compositor_node_with_image(img)
+
+        # unmute the mix node
+        unmute_compositor_mix_node()
 
         # create a texture to be used as a preview image
         # TODO: Finish or remove the preview
@@ -118,22 +180,29 @@ def send_to_api():
     # handle 404
     elif response.status_code in [403, 404]:
         handle_error("It looks like the web server this plugin relies on is missing. It's possible this is temporary, and you can try again later.")
+        return False
+
+    # handle 500
+    elif response.status_code == 500:
+        handle_error(f"An unknown error occurred in the DreamStudio API. Full server response: {str(response.content)}")
+        return False
 
     # handle all other errors
     else:
-        if 'application/json' in response.headers.get('Content-Type'):
-            import json
+        import json
+        try:
             response_obj = response.json()
             if response_obj.get('Message', '') in ['Forbidden', None]:
                 error_message = "It looks like the web server this plugin relies on is missing. It's possible this is temporary, and you can try again later."
             else:
                 error_message = response_obj.get('error', f"An unknown error occurred in the DreamStudio API. Full server response: {json.dumps(response_obj)}")
-        else:
+        except:
             error_message = f"An unknown error occurred in the DreamStudio API. Full server response: {str(response.content)}"
-        
-        handle_error(error_message)
 
-    return {'FINISHED'}
+        handle_error(error_message)
+        return False
+
+    return True
 
 
 
