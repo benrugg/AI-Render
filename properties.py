@@ -41,7 +41,7 @@ class SDRProperties(bpy.types.PropertyGroup):
     steps: bpy.props.IntProperty(
         name="Steps",
         default=25,
-        min=0,
+        min=10,
         max=150,
         description="How long to process the image. Values in the range of 25-50 generally work well. Higher values will take longer and won't necessarily improve results",
     )
