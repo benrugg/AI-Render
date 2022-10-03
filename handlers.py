@@ -1,5 +1,6 @@
 import bpy
 from bpy.app.handlers import persistent
+import functools
 from . import (
     operators,
     task_queue,
@@ -9,13 +10,13 @@ from . import (
 @persistent
 def render_pre_handler(scene):
     # clear any previous errors
-    operators.clear_error()
+    # operators.clear_error(scene)
 
     # when the render is starting, ensure we have the right compositor nodes
-    operators.ensure_compositor_nodes()
+    operators.ensure_compositor_nodes(scene)
 
     # then mute the mix node, so we get the result of the original render
-    operators.mute_compositor_mix_node()
+    operators.mute_compositor_mix_node(scene)
 
 
 
@@ -28,7 +29,7 @@ def render_complete_handler(scene):
 
     # if it's ready, post to the api
     if is_img_ready:
-        task_queue.add(operators.send_to_api)
+        task_queue.add(functools.partial(operators.send_to_api, scene))
     else:
         print("Rendered image is not ready")
 

@@ -2,34 +2,34 @@ import bpy
 import requests
 import functools
 import time
+import random
 from . import (
+    config,
     task_queue,
     utils,
 )
-from .config import API_URL
 
 
-def mute_compositor_mix_node():
-    compositor_nodes = bpy.context.scene.node_tree.nodes
+def mute_compositor_mix_node(scene):
+    compositor_nodes = scene.node_tree.nodes
     compositor_nodes.get('SDR_mix_node').mute = True
 
 
-def unmute_compositor_mix_node():
-    compositor_nodes = bpy.context.scene.node_tree.nodes
+def unmute_compositor_mix_node(scene):
+    compositor_nodes = scene.node_tree.nodes
     compositor_nodes.get('SDR_mix_node').mute = False
 
 
-def update_compositor_node_with_image(img):
-    compositor_nodes = bpy.context.scene.node_tree.nodes
+def update_compositor_node_with_image(scene, img):
+    compositor_nodes = scene.node_tree.nodes
     image_node = compositor_nodes.get('SDR_image_node')
     image_node.image = img
 
 
-def ensure_compositor_nodes():
+def ensure_compositor_nodes(scene):
     """Ensure that the compositor nodes are created"""
-    context = bpy.context
-    context.scene.use_nodes = True
-    compositor_nodes = context.scene.node_tree.nodes
+    scene.use_nodes = True
+    compositor_nodes = scene.node_tree.nodes
     composite_node = compositor_nodes.get('Composite')
 
     # if our image node already exists, just quit
@@ -47,7 +47,7 @@ def ensure_compositor_nodes():
     mix_node.location = (550, 500)
     
     # get a reference to the new link function, for convenience
-    create_link = context.scene.node_tree.links.new
+    create_link = scene.node_tree.links.new
 
     # link the image node to the mix node
     create_link(image_node.outputs.get('Image'), mix_node.inputs[2])
@@ -73,9 +73,19 @@ def handle_error(msg):
     task_queue.add(functools.partial(bpy.ops.sdr.show_error_popup, 'INVOKE_DEFAULT', error_message=msg))
 
 
-def clear_error(self = None, context = bpy.context):
+def clear_error(scene):
     """Clear the error message in the ui"""
-    context.scene.sdr_props.error_message = ''
+    scene.sdr_props.error_message = ''
+
+
+def clear_error_handler(self, context):
+    clear_error(context.scene)
+
+
+def generate_new_random_seed(scene):
+    props = scene.sdr_props
+    if (props.use_random_seed):
+        props.seed = random.randint(1000000000, 2147483647)
 
 
 def get_temp_path():
@@ -92,43 +102,45 @@ def get_temp_output_filename():
     return f"{get_temp_path()}/sdr-{int(time.time())}.png"
 
 
-def save_render_to_file():
+def save_render_to_file(scene):
     if bpy.data.images['Render Result'].has_data:
         tmp_filename = get_temp_render_filename()
 
-        orig_render_file_format = bpy.context.scene.render.image_settings.file_format
+        orig_render_file_format = scene.render.image_settings.file_format
         bpy.data.images['Render Result'].save_render(tmp_filename)
-        bpy.context.scene.render.image_settings.file_format = orig_render_file_format
+        scene.render.image_settings.file_format = orig_render_file_format
 
         return tmp_filename
     
     return False
 
 
-def send_to_api():
+def send_to_api(scene):
     """Post to the API and process the resulting image"""
-    context = bpy.context
-    props = context.scene.sdr_props
+    props = scene.sdr_props
+
+    # generate a new seed, if we want a random one
+    generate_new_random_seed(scene)
 
     # prepare data for the API request
-    api_key = props.api_key
-    prompt = props.prompt_text
-    image_strength = props.image_strength
-
     headers = {
         "User-Agent": "Blender/" + bpy.app.version_string,
         "Accept": "*/*",
         "Accept-Encoding": "gzip, deflate, br",
-        "Dream-Studio-Api-Key": api_key,
+        "Dream-Studio-Api-Key": props.api_key,
     }
 
     params = {
-        "prompt": prompt,
-        "image_strength": image_strength,
+        "prompt": props.prompt_text,
+        "image_similarity": props.image_similarity,
+        "seed": props.seed,
+        "cfg_scale": props.cfg_scale,
+        "steps": props.steps,
+        "sampler": props.sampler,
     }
 
     # save the rendered image and then read it back in
-    tmp_filename = save_render_to_file()
+    tmp_filename = save_render_to_file(scene)
     if not tmp_filename:
         print("Saving rendered image failed")
         return False
@@ -137,7 +149,7 @@ def send_to_api():
     files = {"file": img_file}
 
     # send an API request
-    response = requests.post(API_URL, params=params, headers=headers, files=files)
+    response = requests.post(config.API_URL, params=params, headers=headers, files=files)
 
     # close the image file
     img_file.close()
@@ -165,10 +177,10 @@ def send_to_api():
         
         # load the image into the compositor
         img = bpy.data.images.load(tmp_filename, check_existing=True)
-        update_compositor_node_with_image(img)
+        update_compositor_node_with_image(scene, img)
 
         # unmute the mix node
-        unmute_compositor_mix_node()
+        unmute_compositor_mix_node(scene)
 
         # create a texture to be used as a preview image
         # TODO: Finish or remove the preview
@@ -208,22 +220,38 @@ def send_to_api():
 
 # TODO: Remove this or change it to the manual trigger
 class SDR_OT_send_to_api(bpy.types.Operator):
-    "Send our prompt, params and/or image to the API"
+    "Send to the API to generate a new image"
     bl_idname = "sdr.send_to_api"
-    bl_label = "Test AI" 
+    bl_label = "Generate New Image"
 
     def execute(self, context):
-        return send_to_api()
+        send_to_api(context.scene)
+        return {'FINISHED'}
 
 
-# TODO: Remove this
-class SDR_OT_ensure_compositor_nodes(bpy.types.Operator):
-    "Ensure that the Stable Diffusion Render compositor nodes are created and working"
-    bl_idname = "sdr.ensure_compositor_nodes"
-    bl_label = "Ensure Compositor Nodes"
+class SDR_OT_setup_instructions_popup(bpy.types.Operator):
+    "Show the setup instructions in a popup dialog"
+    bl_idname = "sdr.show_setup_instructions_popup"
+    bl_label = "Stable Diffusion Render Setup"
+
+    width = 350
+
+    message: bpy.props.StringProperty(
+        name="message",
+        description="Message to display"
+    )
+
+    def draw(self, context):
+        utils.label_multiline(self.layout, text=self.message, icon="HELP", width=self.width)
+        row = self.layout.row()
+        row.operator("wm.url_open", text="Sign Up For DreamStudio (free)", icon="URL").url = config.DREAM_STUDIO_URL
+
+    def invoke(self, context, event):
+        self.message = "The Stable Diffusion Renderer uses a service called DreamStudio. You will need to create a DreamStudio account, and get your own API KEY from them. You will get free credits, which will be used when you render. After using your free credits, you would need to sign up for a membership. DreamStudio is unaffiliated with this Blender Plugin. It's just a great and easy to use option!"
+        return context.window_manager.invoke_props_dialog(self, width=self.width)
 
     def execute(self, context):
-        return ensure_compositor_nodes()
+        return {'FINISHED'}
 
 
 class SDR_OT_show_error_popup(bpy.types.Operator):
@@ -252,7 +280,7 @@ class SDR_OT_show_error_popup(bpy.types.Operator):
 
 classes = [
     SDR_OT_send_to_api,
-    SDR_OT_ensure_compositor_nodes,
+    SDR_OT_setup_instructions_popup,
     SDR_OT_show_error_popup,
 ]
 

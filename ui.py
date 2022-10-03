@@ -1,5 +1,6 @@
 import bpy
 from . import (
+    config,
     operators,
 )
 
@@ -7,8 +8,8 @@ from . import (
 class SDR_PT_main(bpy.types.Panel):
     bl_label = "Stable Diffusion Render"
     bl_idname = "SDR_PT_main"
-    bl_space_type = 'PROPERTIES'
-    bl_region_type = 'WINDOW'
+    bl_space_type = "PROPERTIES"
+    bl_region_type = "WINDOW"
     bl_context = "render"
     bl_order = 0
 
@@ -23,8 +24,8 @@ class SDR_PT_setup(bpy.types.Panel):
     bl_label = "Setup"
     bl_idname = "SDR_PT_setup"
     bl_parent_id = "SDR_PT_main"
-    bl_space_type = 'PROPERTIES'
-    bl_region_type = 'WINDOW'
+    bl_space_type = "PROPERTIES"
+    bl_region_type = "WINDOW"
     bl_context = "render"
 
     def draw(self, context):
@@ -32,21 +33,25 @@ class SDR_PT_setup(bpy.types.Panel):
         scene = context.scene
         props = scene.sdr_props
 
-        layout.label(text="The Stable Diffusion Renderer uses a service called DreamStudio. You will need to create a DreamStudio account, and get your own API KEY from them. You will get free credits, which will be used when you render. After using your free credits, you would need to sign up for a membership. DreamStudio is unafiliated with this Blender Plugin. It's just a great and easy to use option!")
+        row = layout.row()
+        col = row.column()
+        col.label(text="Setup is easy!")
+        col = row.column()
+        col.operator(operators.SDR_OT_setup_instructions_popup.bl_idname, text="Setup Instructions", icon="HELP")
 
         row = layout.row()
-        row.operator("wm.url_open", text="Sign Up For DreamStudio (free)", icon="URL").url = "https://beta.dreamstudio.ai/"
+        row.operator("wm.url_open", text="Sign Up For DreamStudio (free)", icon="URL").url = config.DREAM_STUDIO_URL
         
         row = layout.row()
         row.prop(props, 'api_key')
 
 
-class SDR_PT_prompt(bpy.types.Panel):
-    bl_label = "Prompt"
-    bl_idname = "SDR_PT_prompt"
+class SDR_PT_core(bpy.types.Panel):
+    bl_label = "Core"
+    bl_idname = "SDR_PT_core"
     bl_parent_id = "SDR_PT_main"
-    bl_space_type = 'PROPERTIES'
-    bl_region_type = 'WINDOW'
+    bl_space_type = "PROPERTIES"
+    bl_region_type = "WINDOW"
     bl_context = "render"
 
     def draw(self, context):
@@ -59,33 +64,6 @@ class SDR_PT_prompt(bpy.types.Panel):
         row.scale_y = 1.8
         row.prop(props, 'prompt_text')
 
-        row = layout.row()
-        sub = row.column()
-        sub.label(text="Prompt Strength")
-        sub = row.column()
-        sub.prop(props, 'prompt_strength', text="", slider=False)
-
-        row = layout.row()
-        sub = row.column()
-        sub.label(text="Image Strength")
-        sub = row.column()
-        sub.prop(props, 'image_strength', text="", slider=False)
-
-
-class SDR_PT_seed(bpy.types.Panel):
-    bl_label = "Seed"
-    bl_idname = "SDR_PT_seed"
-    bl_parent_id = "SDR_PT_main"
-    bl_space_type = 'PROPERTIES'
-    bl_region_type = 'WINDOW'
-    bl_context = "render"
-    bl_options = {'DEFAULT_CLOSED'}
-
-    def draw(self, context):
-        layout = self.layout
-        scene = context.scene
-        props = scene.sdr_props
-
         # Seed
         row = layout.row()
         sub = row.column()
@@ -95,13 +73,56 @@ class SDR_PT_seed(bpy.types.Panel):
         sub.prop(props, 'seed')
         sub.enabled = not props.use_random_seed
 
+        # Image Similarity
+        row = layout.row()
+        sub = row.column()
+        sub.label(text="Image Similarity")
+        sub = row.column()
+        sub.prop(props, 'image_similarity', text="", slider=False)
 
-class SDR_PT_test(bpy.types.Panel):
-    bl_label = "Test"
-    bl_idname = "SDR_PT_test"
+
+class SDR_PT_advanced_options(bpy.types.Panel):
+    bl_label = "Advanced Options"
+    bl_idname = "SDR_PT_advanced_options"
     bl_parent_id = "SDR_PT_main"
-    bl_space_type = 'PROPERTIES'
-    bl_region_type = 'WINDOW'
+    bl_space_type = "PROPERTIES"
+    bl_region_type = "WINDOW"
+    bl_context = "render"
+    bl_options = {'DEFAULT_CLOSED'}
+
+    def draw(self, context):
+        layout = self.layout
+        scene = context.scene
+        props = scene.sdr_props
+
+        # Prompt Strength
+        row = layout.row()
+        sub = row.column()
+        sub.label(text="Prompt Strength")
+        sub = row.column()
+        sub.prop(props, 'cfg_scale', text="", slider=False)
+
+        # Steps
+        row = layout.row()
+        sub = row.column()
+        sub.label(text="Steps")
+        sub = row.column()
+        sub.prop(props, 'steps', text="", slider=False)
+
+        # Sampler
+        row = layout.row()
+        sub = row.column()
+        sub.label(text="Sampler")
+        sub = row.column()
+        sub.prop(props, 'sampler', text="")
+
+
+class SDR_PT_operation(bpy.types.Panel):
+    bl_label = "Operation"
+    bl_idname = "SDR_PT_operation"
+    bl_parent_id = "SDR_PT_main"
+    bl_space_type = "PROPERTIES"
+    bl_region_type = "WINDOW"
     bl_context = "render"
 
     def draw(self, context):
@@ -109,20 +130,20 @@ class SDR_PT_test(bpy.types.Panel):
         scene = context.scene
         props = scene.sdr_props
 
-        # Test
+        # Generate Image
         row = layout.row()
         row.operator(operators.SDR_OT_send_to_api.bl_idname)
 
-        row = layout.row()
-        row.operator(operators.SDR_OT_ensure_compositor_nodes.bl_idname)
+        # Checkboxes for automatically running, and automatically running
+        # TODO...
 
 
 class SDR_PT_output(bpy.types.Panel):
     bl_label = "Output"
     bl_idname = "SDR_PT_output"
     bl_parent_id = "SDR_PT_main"
-    bl_space_type = 'PROPERTIES'
-    bl_region_type = 'WINDOW'
+    bl_space_type = "PROPERTIES"
+    bl_region_type = "WINDOW"
     bl_context = "render"
 
     def draw(self, context):
@@ -156,9 +177,9 @@ class SDR_PT_output(bpy.types.Panel):
 classes = [
     SDR_PT_main,
     SDR_PT_setup,
-    SDR_PT_prompt,
-    SDR_PT_seed,
-    SDR_PT_test,
+    SDR_PT_core,
+    SDR_PT_advanced_options,
+    SDR_PT_operation,
     SDR_PT_output,
 ]
 
