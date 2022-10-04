@@ -1,7 +1,6 @@
 import bpy
 import requests
 import functools
-import time
 import random
 from . import (
     config,
@@ -97,6 +96,7 @@ def activate_sdr_workspace():
 
 def handle_error(msg):
     """Show an error popup, and set the error message to be displayed in the ui"""
+    print("Stable Diffusion Error: ", msg)
     task_queue.add(functools.partial(bpy.ops.sdr.show_error_popup, 'INVOKE_DEFAULT', error_message=msg))
 
 
@@ -115,36 +115,46 @@ def generate_new_random_seed(scene):
         props.seed = random.randint(1000000000, 2147483647)
 
 
-def get_temp_path():
-    tmp_path = bpy.context.preferences.filepaths.temporary_directory.rstrip('/')
-    if tmp_path == '': tmp_path = '/tmp'
-    return tmp_path
-
-
-def get_temp_render_filename():
-    return f"{get_temp_path()}/sdr-temp-render.png"
-
-
-def get_temp_output_filename():
-    return f"{get_temp_path()}/sdr-{int(time.time())}.png"
-
-
 def save_render_to_file(scene):
-    if bpy.data.images['Render Result'].has_data:
-        tmp_filename = get_temp_render_filename()
+    tmp_filename = utils.get_temp_render_filename()
 
-        orig_render_file_format = scene.render.image_settings.file_format
-        bpy.data.images['Render Result'].save_render(tmp_filename)
-        scene.render.image_settings.file_format = orig_render_file_format
+    orig_render_file_format = scene.render.image_settings.file_format
+    bpy.data.images['Render Result'].save_render(tmp_filename)
+    scene.render.image_settings.file_format = orig_render_file_format
 
-        return tmp_filename
-    
-    return False
+    return tmp_filename
+
+
+def do_pre_render_setup(scene, do_mute_mix_node = True):
+    # Lock the user interface when rendering, so that we can change
+    # compositor nodes in the render_pre handler without causing a crash!
+    # See: https://docs.blender.org/api/current/bpy.app.handlers.html#note-on-altering-data
+    scene.render.use_lock_interface = True
+
+    # clear any previous errors
+    clear_error(scene)
+
+    # when the render is starting, ensure we have the right compositor nodes
+    ensure_compositor_nodes(scene)
+
+    # then mute the mix node, so we get the result of the original render,
+    # if that's what we want
+    if do_mute_mix_node:
+        mute_compositor_mix_node(scene)
+
+
+def do_pre_api_setup():
+    # switch the workspace to our sdr compositor, so the new rendered image will actually appear
+    activate_sdr_workspace()
 
 
 def send_to_api(scene):
     """Post to the API and process the resulting image"""
     props = scene.sdr_props
+
+    if not bpy.data.images['Render Result'].has_data:
+        handle_error("In order to generate an image, you'll need to render something first. Even just a blank scene is ok.")
+        return
 
     # generate a new seed, if we want a random one
     generate_new_random_seed(scene)
@@ -168,14 +178,10 @@ def send_to_api(scene):
 
     # save the rendered image and then read it back in
     tmp_filename = save_render_to_file(scene)
-    if not tmp_filename:
-        print("Saving rendered image failed")
-        return False
-
     img_file = open(tmp_filename, 'rb')
     files = {"file": img_file}
 
-    # send an API request
+    # send the API request
     response = requests.post(config.API_URL, params=params, headers=headers, files=files)
 
     # close the image file
@@ -196,7 +202,7 @@ def send_to_api(scene):
     if response.status_code == 200:
 
         # save the image
-        tmp_filename = get_temp_output_filename()
+        tmp_filename = utils.get_temp_output_filename()
 
         with open(tmp_filename, 'wb') as file:
             for chunk in response:
@@ -244,15 +250,33 @@ def send_to_api(scene):
     return True
 
 
-
-# TODO: Remove this or change it to the manual trigger
-class SDR_OT_send_to_api(bpy.types.Operator):
-    "Send to the API to generate a new image"
-    bl_idname = "sdr.send_to_api"
-    bl_label = "Generate New Image"
+class SDR_OT_generate_new_image_from_render(bpy.types.Operator):
+    "Generate a new Stable Diffusion image (from the rendered image)"
+    bl_idname = "sdr.generate_new_image_from_render"
+    bl_label = "Generate New Image From Render"
 
     def execute(self, context):
-        send_to_api(context.scene)
+        do_pre_render_setup(context.scene)
+        do_pre_api_setup()
+
+        # post to the api (on a different thread, outside the operator)
+        task_queue.add(functools.partial(send_to_api, context.scene))
+        
+        return {'FINISHED'}
+
+
+class SDR_OT_generate_new_image_from_current(bpy.types.Operator):
+    "Generate a new Stable Diffusion image (from the current Stable Diffusion image)"
+    bl_idname = "sdr.generate_new_image_from_current"
+    bl_label = "Generate New Image From Current"
+
+    def execute(self, context):
+        do_pre_render_setup(context.scene, False)
+        do_pre_api_setup()
+        
+        # post to the api (on a different thread, outside the operator)
+        task_queue.add(functools.partial(send_to_api, context.scene))
+
         return {'FINISHED'}
 
 
@@ -306,7 +330,8 @@ class SDR_OT_show_error_popup(bpy.types.Operator):
 
 
 classes = [
-    SDR_OT_send_to_api,
+    SDR_OT_generate_new_image_from_render,
+    SDR_OT_generate_new_image_from_current,
     SDR_OT_setup_instructions_popup,
     SDR_OT_show_error_popup,
 ]

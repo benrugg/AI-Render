@@ -133,12 +133,18 @@ class SDR_PT_operation(bpy.types.Panel):
         scene = context.scene
         props = scene.sdr_props
 
+        # Auto Run
+        row = layout.row()
+        row.prop(props, 'auto_run')
+
         # Generate Image
         row = layout.row()
-        row.operator(operators.SDR_OT_send_to_api.bl_idname)
+        row.label(text="Run Manually:")
 
-        # Checkboxes for automatically running, and automatically running
-        # TODO...
+        row = layout.row()
+        row.operator(operators.SDR_OT_generate_new_image_from_render.bl_idname)
+        row = layout.row()
+        row.operator(operators.SDR_OT_generate_new_image_from_current.bl_idname)
 
 
 # TODO: Finish or remove the preview

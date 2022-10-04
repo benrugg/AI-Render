@@ -20,6 +20,21 @@
 import bpy
 import re
 import os
+import time
+
+
+def get_temp_path():
+    tmp_path = bpy.context.preferences.filepaths.temporary_directory.rstrip('/')
+    if tmp_path == '': tmp_path = '/tmp'
+    return tmp_path
+
+
+def get_temp_render_filename():
+    return f"{get_temp_path()}/sdr-temp-render.png"
+
+
+def get_temp_output_filename():
+    return f"{get_temp_path()}/sdr-{int(time.time())}.png"
 
 
 def get_workspace_blend_file_filepath():

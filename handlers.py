@@ -23,24 +23,21 @@ def load_post_handler(context):
 def render_pre_handler(scene):
     """Handle render about to start"""
 
-    # Lock the user interface when rendering, so that we can change
-    # compositor nodes in the render_pre handler without causing a crash!
-    # See: https://docs.blender.org/api/current/bpy.app.handlers.html#note-on-altering-data
-    scene.render.use_lock_interface = True
+    # if we don't want to run automatically, quit here
+    if not scene.sdr_props.auto_run:
+        return
 
-    # clear any previous errors
-    operators.clear_error(scene)
-
-    # when the render is starting, ensure we have the right compositor nodes
-    operators.ensure_compositor_nodes(scene)
-
-    # then mute the mix node, so we get the result of the original render
-    operators.mute_compositor_mix_node(scene)
+    # otherwise, do the pre-render setup
+    operators.do_pre_render_setup(scene)
 
 
 @persistent
 def render_complete_handler(scene):
     """Handle render completed (this is where the api and stable diffusion start)"""
+
+    # if we don't want to run automatically, quit here
+    if not scene.sdr_props.auto_run:
+        return
 
     # check to see if we have a render result
     is_img_ready = bpy.data.images['Render Result'].has_data
@@ -48,13 +45,13 @@ def render_complete_handler(scene):
     # if it's ready, post to the api
     if is_img_ready:
 
-        # switch the workspace to our sdr compositor, so the new rendered image will actually appear
-        operators.activate_sdr_workspace()
+        # do pre-api setup
+        operators.do_pre_api_setup()
 
         # post to the api (on a different thread, outside the handler)
         task_queue.add(functools.partial(operators.send_to_api, scene))
     else:
-        print("Rendered image is not ready")
+        operators.handle_error("Rendered image is not ready. Try generating a new image manually under Stable Diffusion Render > Operation")
 
 
 def register_handlers():
