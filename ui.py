@@ -29,7 +29,7 @@ class SDR_PT_setup(bpy.types.Panel):
 
     @classmethod
     def poll(cls, context):
-        return context.preferences.addons[__package__].preferences.dream_studio_api_key == ''
+        return context.preferences.addons[__package__].preferences.dream_studio_api_key == '' or context.scene.sdr_props.error_key == 'api_key'
 
     def draw(self, context):
         layout = self.layout

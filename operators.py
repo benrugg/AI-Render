@@ -94,15 +94,16 @@ def activate_sdr_workspace():
         handle_error("Couldn't find the Stable Diffusion Render workspace. Please reload this blend file, or deactivate Stable Diffusion Render.")
 
 
-def handle_error(msg):
+def handle_error(msg, error_key = ''):
     """Show an error popup, and set the error message to be displayed in the ui"""
     print("Stable Diffusion Error: ", msg)
-    task_queue.add(functools.partial(bpy.ops.sdr.show_error_popup, 'INVOKE_DEFAULT', error_message=msg))
+    task_queue.add(functools.partial(bpy.ops.sdr.show_error_popup, 'INVOKE_DEFAULT', error_message=msg, error_key=error_key))
 
 
 def clear_error(scene):
     """Clear the error message in the ui"""
     scene.sdr_props.error_message = ''
+    scene.sdr_props.error_key = ''
 
 
 def clear_error_handler(self, context):
@@ -235,16 +236,19 @@ def send_to_api(scene):
     # handle all other errors
     else:
         import json
+        error_key = ''
+
         try:
             response_obj = response.json()
             if response_obj.get('Message', '') in ['Forbidden', None]:
                 error_message = "It looks like the web server this plugin relies on is missing. It's possible this is temporary, and you can try again later."
             else:
                 error_message = response_obj.get('error', f"An unknown error occurred in the DreamStudio API. Full server response: {json.dumps(response_obj)}")
+                error_key = response_obj.get('error_key', '')
         except:
             error_message = f"An unknown error occurred in the DreamStudio API. Full server response: {str(response.content)}"
 
-        handle_error(error_message)
+        handle_error(error_message, error_key)
         return False
 
     return True
@@ -312,6 +316,12 @@ class SDR_OT_show_error_popup(bpy.types.Operator):
 
     width = 350
 
+    error_key: bpy.props.StringProperty(
+        name="error_key",
+        default="",
+        description="Error key code related to specific api param that had an error"
+    )
+
     error_message: bpy.props.StringProperty(
         name="error_message",
         description="Error Message to display"
@@ -321,10 +331,15 @@ class SDR_OT_show_error_popup(bpy.types.Operator):
         utils.label_multiline(self.layout, text=self.error_message, icon="ERROR", width=self.width)
 
     def invoke(self, context, event):
+        # store the error key and message in the main SDR props
+        context.scene.sdr_props.error_key = self.error_key
         context.scene.sdr_props.error_message = self.error_message
+
+        # show a popup
         return context.window_manager.invoke_props_dialog(self, width=self.width)
 
     def execute(self, context):
+        # report the error, for the status bar
         self.report({'ERROR'}, self.error_message)
         return {'FINISHED'}
 

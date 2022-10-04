@@ -58,6 +58,11 @@ class SDRProperties(bpy.types.PropertyGroup):
         default=True,
         description="Generate a new image automatically after each render. When off, you will need to manually generate a new image"
     )
+    error_key: bpy.props.StringProperty(
+        name="Error Key",
+        default="",
+        description="An error key, linking an error to an api param",
+    )
     error_message: bpy.props.StringProperty(
         name="Error Message",
         default="",
