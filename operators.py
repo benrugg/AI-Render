@@ -325,6 +325,7 @@ class SDR_OT_show_error_popup(bpy.types.Operator):
         return context.window_manager.invoke_props_dialog(self, width=self.width)
 
     def execute(self, context):
+        self.report({'ERROR'}, self.error_message)
         return {'FINISHED'}
 
 
