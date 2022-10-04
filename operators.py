@@ -68,6 +68,33 @@ def ensure_compositor_nodes(scene):
     return {'FINISHED'}
 
 
+def ensure_sdr_workspace():
+    """Ensure we have a compositor window and an image viewer"""
+    workspace_id = "Stable Diffusion Render"
+
+    # if the workspace isn't in our file, add it from our own included blend file
+    if workspace_id not in bpy.data.workspaces:
+        
+        original_workspace = utils.get_current_workspace()
+
+        bpy.ops.workspace.append_activate(
+            idname=workspace_id,
+            filepath=utils.get_workspace_blend_file_filepath()
+        )
+
+        utils.activate_workspace(workspace=original_workspace)
+
+
+def activate_sdr_workspace():
+    """Activate the special compositor workspace, and make sure it's viewing the render result"""
+    workspace_id = "Stable Diffusion Render"
+    try:
+        utils.activate_workspace(workspace_id=workspace_id)
+        utils.view_render_result_in_sdr_image_editor()
+    except:
+        handle_error("Couldn't find the Stable Diffusion Render workspace. Please reload this blend file, or deactivate Stable Diffusion Render.")
+
+
 def handle_error(msg):
     """Show an error popup, and set the error message to be displayed in the ui"""
     task_queue.add(functools.partial(bpy.ops.sdr.show_error_popup, 'INVOKE_DEFAULT', error_message=msg))

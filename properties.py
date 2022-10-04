@@ -5,7 +5,7 @@ class SDRProperties(bpy.types.PropertyGroup):
     prompt_text: bpy.props.StringProperty(
         name="Prompt",
         description="Describe anything for Stable Diffusion to create",
-        default="knitted knight",
+        default="",
         update=operators.clear_error_handler,
     )
     image_similarity: bpy.props.FloatProperty(

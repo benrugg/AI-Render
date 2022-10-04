@@ -15,6 +15,9 @@ def load_post_handler(context):
     # when loading a new blender file)
     task_queue.register_task_queue()
 
+    # switch the workspace to compositor, so the new rendered image will actually appear
+    operators.ensure_sdr_workspace()
+
 
 @persistent
 def render_pre_handler(scene):
@@ -44,6 +47,11 @@ def render_complete_handler(scene):
 
     # if it's ready, post to the api
     if is_img_ready:
+
+        # switch the workspace to our sdr compositor, so the new rendered image will actually appear
+        operators.activate_sdr_workspace()
+
+        # post to the api (on a different thread, outside the handler)
         task_queue.add(functools.partial(operators.send_to_api, scene))
     else:
         print("Rendered image is not ready")

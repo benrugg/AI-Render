@@ -19,6 +19,46 @@
 
 import bpy
 import re
+import os
+
+
+def get_workspace_blend_file_filepath():
+    script_path = os.path.dirname(os.path.realpath(__file__))
+    subpath = "blendfiles" + os.sep + "compositor_workspace.blend"
+    return os.path.join(script_path, subpath)
+
+
+def get_current_workspace(context = None):
+    if not context:
+        context = bpy.context
+    
+    if context.window and context.window.workspace:
+        return context.window.workspace
+    else:
+        return None
+
+
+def activate_workspace(context = None, workspace = None, workspace_id = None):
+    if not workspace:
+        workspace = bpy.data.workspaces[workspace_id]
+
+    if context and context.window:
+        context.window.workspace = workspace
+    else:
+        bpy.data.window_managers[0].windows[0].workspace = workspace
+
+
+def view_render_result_in_sdr_image_editor():
+    image_editor_area = None
+    areas = bpy.data.workspaces['Stable Diffusion Render'].screens[0].areas
+
+    for area in areas:
+        if area.type == 'IMAGE_EDITOR':
+            image_editor_area = area
+            break
+    
+    if image_editor_area:
+        image_editor_area.spaces.active.image = bpy.data.images['Render Result']
 
 
 def has_url(text):
