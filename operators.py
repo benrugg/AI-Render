@@ -170,6 +170,8 @@ def send_to_api(scene):
 
     params = {
         "prompt": props.prompt_text,
+        "width": scene.render.resolution_x * scene.render.resolution_percentage / 100,
+        "height": scene.render.resolution_y * scene.render.resolution_percentage / 100,
         "image_similarity": props.image_similarity,
         "seed": props.seed,
         "cfg_scale": props.cfg_scale,
@@ -252,6 +254,18 @@ def send_to_api(scene):
         return False
 
     return True
+
+
+class SDR_OT_set_valid_render_dimensions(bpy.types.Operator):
+    "Set render width and height to 512 x 512"
+    bl_idname = "sdr.set_valid_render_dimensions"
+    bl_label = "Set Image Size to 512x512"
+
+    def execute(self, context):
+        context.scene.render.resolution_x = 512
+        context.scene.render.resolution_y = 512
+        context.scene.render.resolution_percentage = 100
+        return {'FINISHED'}
 
 
 class SDR_OT_generate_new_image_from_render(bpy.types.Operator):
@@ -346,6 +360,7 @@ class SDR_OT_show_error_popup(bpy.types.Operator):
 
 
 classes = [
+    SDR_OT_set_valid_render_dimensions,
     SDR_OT_generate_new_image_from_render,
     SDR_OT_generate_new_image_from_current,
     SDR_OT_setup_instructions_popup,

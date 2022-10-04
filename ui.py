@@ -2,6 +2,7 @@ import bpy
 from . import (
     config,
     operators,
+    utils,
 )
 
 
@@ -28,25 +29,47 @@ class SDR_PT_setup(bpy.types.Panel):
     bl_context = "render"
 
     @classmethod
-    def poll(cls, context):
+    def poll_for_api_key(cls, context):
         return context.preferences.addons[__package__].preferences.dream_studio_api_key == '' or context.scene.sdr_props.error_key == 'api_key'
+
+    @classmethod
+    def poll_for_dimensions(cls, context):
+        return not utils.are_dimensions_valid(context)
+
+    @classmethod
+    def poll(cls, context):
+        return SDR_PT_setup.poll_for_api_key(context) or SDR_PT_setup.poll_for_dimensions(context)
 
     def draw(self, context):
         layout = self.layout
         scene = context.scene
         props = scene.sdr_props
 
-        row = layout.row()
-        col = row.column()
-        col.label(text="Setup is easy!")
-        col = row.column()
-        col.operator(operators.SDR_OT_setup_instructions_popup.bl_idname, text="Setup Instructions", icon="HELP")
+        width_guess = 230
 
-        row = layout.row()
-        row.operator("wm.url_open", text="Sign Up For DreamStudio (free)", icon="URL").url = config.DREAM_STUDIO_URL
+        # if the api key is invalid, show the initial setup instructions
+        if SDR_PT_setup.poll_for_api_key(context):
+
+            utils.label_multiline(layout, text="Setup is quick and easy. No downloads or installation. Just register for a Dream Studio API Key.", icon="INFO", width=width_guess)
+            
+            row = layout.row()
+            col = row.column()
+            # col.label(text="Setup is easy!")
+            # col = row.column()
+            col.operator(operators.SDR_OT_setup_instructions_popup.bl_idname, text="Instructions", icon="HELP")
+
+            row = layout.row()
+            row.operator("wm.url_open", text="Sign Up For DreamStudio (free)", icon="URL").url = config.DREAM_STUDIO_URL
+            
+            row = layout.row()
+            row.prop(context.preferences.addons[__package__].preferences, "dream_studio_api_key")
         
-        row = layout.row()
-        row.prop(context.preferences.addons[__package__].preferences, "dream_studio_api_key")
+        # else, show the image dimension help
+        else:
+            utils.label_multiline(layout, text=f"Adjust Image Size: \nStable Diffusion only works on a few specific image dimensions. You'll need to set your render width and height to one of these values: {str(utils.valid_dimensions)}", icon="INFO", width=width_guess)
+            
+            row = layout.row()
+            row.operator(operators.SDR_OT_set_valid_render_dimensions.bl_idname)
 
 
 class SDR_PT_core(bpy.types.Panel):
@@ -127,6 +150,7 @@ class SDR_PT_operation(bpy.types.Panel):
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
     bl_context = "render"
+    bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):
         layout = self.layout

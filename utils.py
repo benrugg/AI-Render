@@ -23,6 +23,9 @@ import os
 import time
 
 
+valid_dimensions = [384, 448, 512, 576, 640, 704, 768, 832, 896, 960, 1024]
+
+
 def get_temp_path():
     tmp_path = bpy.context.preferences.filepaths.temporary_directory.rstrip('/')
     if tmp_path == '': tmp_path = '/tmp'
@@ -74,6 +77,13 @@ def view_render_result_in_sdr_image_editor():
     
     if image_editor_area:
         image_editor_area.spaces.active.image = bpy.data.images['Render Result']
+
+
+def are_dimensions_valid(context):
+    return (
+        context.scene.render.resolution_x * context.scene.render.resolution_percentage / 100 in valid_dimensions and 
+        context.scene.render.resolution_y * context.scene.render.resolution_percentage / 100 in valid_dimensions
+    )
 
 
 def has_url(text):

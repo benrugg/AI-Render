@@ -54,7 +54,7 @@ class SDRProperties(bpy.types.PropertyGroup):
         description="Which sampler method to use",
     )
     auto_run: bpy.props.BoolProperty(
-        name="Run Automatically On Render",
+        name="Run Automatically on Render",
         default=True,
         description="Generate a new image automatically after each render. When off, you will need to manually generate a new image"
     )
