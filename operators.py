@@ -127,7 +127,7 @@ def send_to_api(scene):
         "User-Agent": "Blender/" + bpy.app.version_string,
         "Accept": "*/*",
         "Accept-Encoding": "gzip, deflate, br",
-        "Dream-Studio-Api-Key": props.api_key,
+        "Dream-Studio-Api-Key": bpy.context.preferences.addons[__package__].preferences.dream_studio_api_key,
     }
 
     params = {
@@ -247,7 +247,7 @@ class SDR_OT_setup_instructions_popup(bpy.types.Operator):
         row.operator("wm.url_open", text="Sign Up For DreamStudio (free)", icon="URL").url = config.DREAM_STUDIO_URL
 
     def invoke(self, context, event):
-        self.message = "The Stable Diffusion Renderer uses a service called DreamStudio. You will need to create a DreamStudio account, and get your own API KEY from them. You will get free credits, which will be used when you render. After using your free credits, you would need to sign up for a membership. DreamStudio is unaffiliated with this Blender Plugin. It's just a great and easy to use option!"
+        self.message = "The Stable Diffusion Renderer uses a service called DreamStudio. You will need to create a DreamStudio account, and get your own API KEY from them. You will get free credits, which will be used when you render. After using your free credits, you will need to sign up for a membership. DreamStudio is unaffiliated with this Blender Plugin. It's just a great and easy to use option!"
         return context.window_manager.invoke_props_dialog(self, width=self.width)
 
     def execute(self, context):

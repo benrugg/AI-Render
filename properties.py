@@ -2,11 +2,6 @@ import bpy
 from . import operators
 
 class SDRProperties(bpy.types.PropertyGroup):
-    api_key: bpy.props.StringProperty(
-        name="API Key",
-        description="Your DreamStudio API KEY",
-        update=operators.clear_error_handler,
-    )
     prompt_text: bpy.props.StringProperty(
         name="Prompt",
         description="Describe anything for Stable Diffusion to create",

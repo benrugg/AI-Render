@@ -16,6 +16,7 @@ if "bpy" in locals():
     imp.reload(config)
     imp.reload(handlers)
     imp.reload(operators)
+    imp.reload(preferences)
     imp.reload(properties)
     imp.reload(task_queue)
     imp.reload(ui)
@@ -25,6 +26,7 @@ else:
         config,
         handlers,
         operators,
+        preferences,
         properties,
         task_queue,
         ui,
@@ -37,14 +39,17 @@ import bpy
 def register():
     handlers.register_handlers()
     operators.register_operators()
+    preferences.register_preferences()
     properties.register_properties()
     task_queue.register_task_queue()
     ui.register_ui()
+    
 
 
 def unregister():
     handlers.unregister_handlers()
     operators.unregister_operators()
+    preferences.unregister_preferences()
     properties.unregister_properties()
     task_queue.unregister_task_queue()
     ui.unregister_ui()

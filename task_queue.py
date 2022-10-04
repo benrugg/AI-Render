@@ -6,7 +6,6 @@ from bpy.app.handlers import persistent
 # private
 execution_queue = queue.Queue()
 
-@persistent
 def execute_queued_functions():
     while not execution_queue.empty():
         function = execution_queue.get()
@@ -21,8 +20,10 @@ def add(function):
 
 
 def register_task_queue():
-    bpy.app.timers.register(execute_queued_functions)
+    if not bpy.app.timers.is_registered(execute_queued_functions):
+        bpy.app.timers.register(execute_queued_functions)
 
 
 def unregister_task_queue():
-    bpy.app.timers.unregister(execute_queued_functions)
+    if bpy.app.timers.is_registered(execute_queued_functions):
+        bpy.app.timers.unregister(execute_queued_functions)

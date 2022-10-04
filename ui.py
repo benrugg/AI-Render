@@ -13,7 +13,6 @@ class SDR_PT_main(bpy.types.Panel):
     bl_context = "render"
     bl_order = 0
 
-
     def draw(self, context):
         layout = self.layout
         scene = context.scene
@@ -27,6 +26,10 @@ class SDR_PT_setup(bpy.types.Panel):
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
     bl_context = "render"
+
+    @classmethod
+    def poll(cls, context):
+        return context.preferences.addons[__package__].preferences.dream_studio_api_key == ''
 
     def draw(self, context):
         layout = self.layout
@@ -43,11 +46,11 @@ class SDR_PT_setup(bpy.types.Panel):
         row.operator("wm.url_open", text="Sign Up For DreamStudio (free)", icon="URL").url = config.DREAM_STUDIO_URL
         
         row = layout.row()
-        row.prop(props, 'api_key')
+        row.prop(context.preferences.addons[__package__].preferences, "dream_studio_api_key")
 
 
 class SDR_PT_core(bpy.types.Panel):
-    bl_label = "Core"
+    bl_label = "Prompt"
     bl_idname = "SDR_PT_core"
     bl_parent_id = "SDR_PT_main"
     bl_space_type = "PROPERTIES"
@@ -138,6 +141,7 @@ class SDR_PT_operation(bpy.types.Panel):
         # TODO...
 
 
+# TODO: Finish or remove the preview
 class SDR_PT_output(bpy.types.Panel):
     bl_label = "Output"
     bl_idname = "SDR_PT_output"
@@ -164,7 +168,7 @@ class SDR_PT_output(bpy.types.Panel):
             col = row.column()
             col.label(text="", icon="ERROR")
             col = row.column()
-            col.label(text="*** Error: ***")
+            col.label(text="Error:")
             col = row.column()
             col.label(text="", icon="ERROR")
             col = row.column()
