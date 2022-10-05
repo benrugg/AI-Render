@@ -294,6 +294,8 @@ class SDR_OT_show_other_dimension_options(bpy.types.Operator):
         layout = self.layout
         utils.label_multiline(layout, text="Choose dimensions that Stable Diffusion can work with. (Anything larger than 512x512 may take a long time)", width=self.panel_width)
         
+        layout.separator()
+
         row = layout.row()
         col = row.column()
         col.label(text="Width:")
@@ -305,6 +307,8 @@ class SDR_OT_show_other_dimension_options(bpy.types.Operator):
         col.label(text="Height:")
         col = row.column()
         col.prop(self, "height", text="")
+
+        layout.separator()
 
     def invoke(self, context, event):
         return context.window_manager.invoke_props_dialog(self, width=self.panel_width)
