@@ -174,50 +174,12 @@ class SDR_PT_operation(bpy.types.Panel):
         row.operator(operators.SDR_OT_generate_new_image_from_current.bl_idname)
 
 
-# TODO: Finish or remove the preview
-class SDR_PT_output(bpy.types.Panel):
-    bl_label = "Output"
-    bl_idname = "SDR_PT_output"
-    bl_parent_id = "SDR_PT_main"
-    bl_space_type = "PROPERTIES"
-    bl_region_type = "WINDOW"
-    bl_context = "render"
-
-    def draw(self, context):
-        layout = self.layout
-        scene = context.scene
-        props = scene.sdr_props
-
-        if props.error_message == '':
-            col = self.layout.column()
-
-            if 'previewTexture' in bpy.data.textures:
-                col.template_preview(bpy.data.textures['previewTexture'])
-
-        else:
-            row = self.layout.row()
-            col = row.column()
-            col.label(text="", icon="COLORSET_01_VEC")
-            col = row.column()
-            col.label(text="", icon="ERROR")
-            col = row.column()
-            col.label(text="Error:")
-            col = row.column()
-            col.label(text="", icon="ERROR")
-            col = row.column()
-            col.label(text="", icon="COLORSET_01_VEC")
-
-            row = self.layout.row()
-            row.label(text=props.error_message)
-
-
 classes = [
     SDR_PT_main,
     SDR_PT_setup,
     SDR_PT_core,
     SDR_PT_advanced_options,
     SDR_PT_operation,
-    SDR_PT_output,
 ]
 
 

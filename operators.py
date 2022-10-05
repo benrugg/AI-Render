@@ -218,13 +218,6 @@ def send_to_api(scene):
         # unmute the mix node
         unmute_compositor_mix_node(scene)
 
-        # create a texture to be used as a preview image
-        # TODO: Finish or remove the preview
-        texture = bpy.data.textures.new(name="previewTexture", type="IMAGE")
-        texture.image = img
-        tex = bpy.data.textures['previewTexture']
-        tex.extension = 'CLIP'
-
     # handle 404
     elif response.status_code in [403, 404]:
         handle_error("It looks like the web server this plugin relies on is missing. It's possible this is temporary, and you can try again later.")
