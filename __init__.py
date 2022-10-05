@@ -20,7 +20,8 @@ if "bpy" in locals():
     imp.reload(preferences)
     imp.reload(properties)
     imp.reload(task_queue)
-    imp.reload(ui)
+    imp.reload(ui_panels)
+    imp.reload(ui_preset_styles)
     imp.reload(utils)
 else:
     from . import (
@@ -31,8 +32,11 @@ else:
         preferences,
         properties,
         task_queue,
-        ui,
         utils,
+    )
+    from .ui import (
+        ui_panels,
+        ui_preset_styles,
     )
 
 import bpy
@@ -44,8 +48,8 @@ def register():
     preferences.register_preferences()
     properties.register_properties()
     task_queue.register_task_queue()
-    ui.register_ui()
-    
+    ui_panels.register_ui_panels()
+    ui_preset_styles.register_ui_preset_styles()
 
 
 def unregister():
@@ -54,7 +58,8 @@ def unregister():
     preferences.unregister_preferences()
     properties.unregister_properties()
     task_queue.unregister_task_queue()
-    ui.unregister_ui()
+    ui_panels.unregister_ui_panels()
+    ui_preset_styles.unregister_ui_preset_styles()
 
 
 if __name__ == "__main__":

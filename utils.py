@@ -40,10 +40,18 @@ def get_temp_output_filename():
     return f"{get_temp_path()}/sdr-{int(time.time())}.png"
 
 
-def get_workspace_blend_file_filepath():
+def get_filepath_in_package(path, filename = ""):
     script_path = os.path.dirname(os.path.realpath(__file__))
-    subpath = "blendfiles" + os.sep + "compositor_workspace.blend"
+    subpath = path + os.sep + filename
     return os.path.join(script_path, subpath)
+
+
+def get_workspace_blend_file_filepath():
+    return get_filepath_in_package("blendfiles", "compositor_workspace.blend")
+
+
+def get_preset_style_thumnails_filepath():
+    return get_filepath_in_package("style_thumbnails")
 
 
 def get_current_workspace(context = None):

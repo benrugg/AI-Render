@@ -4,6 +4,7 @@ from . import (
     constants,
     operators,
 )
+from .ui import ui_preset_styles
 
 class SDRProperties(bpy.types.PropertyGroup):
     prompt_text: bpy.props.StringProperty(
@@ -75,6 +76,10 @@ class SDRProperties(bpy.types.PropertyGroup):
         name="Error Message",
         default="",
         description="An error message that will be shown if present",
+    )
+    preset_style: bpy.props.EnumProperty(
+        name="Preset Style",
+        items=ui_preset_styles.enum_thumbnail_icons
     )
 
 

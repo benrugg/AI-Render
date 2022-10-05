@@ -1,5 +1,5 @@
 import bpy
-from . import (
+from .. import (
     config,
     operators,
     utils,
@@ -115,8 +115,19 @@ class SDR_PT_core(bpy.types.Panel):
 
         # Prompt
         row = layout.row()
+        row.label(text="Prompt:")
+
+        row = layout.row()
         row.scale_y = 1.8
         row.prop(props, 'prompt_text', text="")
+
+        # Preset Styles
+        row = layout.row()
+        row.label(text="Preset Style (optional):")
+
+        row = layout.row()
+        row.template_icon_view(props, "preset_style", show_labels=True, scale_popup=8)
+
 
 
 class SDR_PT_advanced_options(bpy.types.Panel):
@@ -208,12 +219,12 @@ classes = [
 ]
 
 
-def register_ui():
+def register_ui_panels():
     for cls in classes:
         bpy.utils.register_class(cls)
 
 
-def unregister_ui():
+def unregister_ui_panels():
     for cls in classes:
         bpy.utils.unregister_class(cls)
     
