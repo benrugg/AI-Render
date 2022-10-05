@@ -53,9 +53,9 @@ class SDR_PT_setup(bpy.types.Panel):
     def poll_for_dimensions(cls, context):
         return not utils.are_dimensions_valid(context.scene)
 
-    @classmethod
-    def poll(cls, context):
-        return SDR_PT_setup.poll_for_api_key(context) or SDR_PT_setup.poll_for_dimensions(context)
+    # @classmethod
+    # def poll(cls, context):
+    #     return SDR_PT_setup.poll_for_api_key(context) or SDR_PT_setup.poll_for_dimensions(context)
 
     def draw(self, context):
         layout = self.layout
@@ -82,7 +82,7 @@ class SDR_PT_setup(bpy.types.Panel):
             row.prop(context.preferences.addons[__package__].preferences, "dream_studio_api_key")
         
         # else, show the image dimension help
-        else:
+        elif SDR_PT_setup.poll_for_dimensions(context):
             utils.label_multiline(layout, text=f"Adjust Image Size: \nStable Diffusion only works on a few specific image dimensions.", icon="INFO", width=width_guess)
             
             row = layout.row(align=True)
@@ -90,6 +90,11 @@ class SDR_PT_setup(bpy.types.Panel):
             col.operator(operators.SDR_OT_set_valid_render_dimensions.bl_idname)
             col = row.column()
             col.operator(operators.SDR_OT_show_other_dimension_options.bl_idname, text="", icon="QUESTION")
+        
+        else:
+            utils.label_multiline(layout, text="You're ready to start rendering!", width=width_guess)
+            row = layout.row()
+            row.operator("wm.url_open", text="Help Getting Started", icon="URL").url = config.GETTING_STARTED_URL
 
 
 class SDR_PT_core(bpy.types.Panel):
