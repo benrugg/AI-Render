@@ -11,12 +11,12 @@ class SDRProperties(bpy.types.PropertyGroup):
     )
     image_similarity: bpy.props.FloatProperty(
         name="Image Similarity",
-        default=0.3,
+        default=0.15,
         soft_min=0.0,
         soft_max=0.5,
         min=0.0,
         max=1.0,
-        description="How closely the final image will match the initial rendered image. Values around 0.1-0.4 will turn simple renders into new creations. Higher values will adhere more closely to the initial render",
+        description="How closely the final image will match the initial rendered image. Values around 0.1-0.4 will turn simple renders into new creations. Higher values will adhere more closely to the initial render. If your image is blank, set this to 0.0 for best results",
     )
     cfg_scale: bpy.props.FloatProperty(
         name="Prompt Strength",
