@@ -6,6 +6,23 @@ from . import (
 )
 
 
+def show_error_if_it_exists(layout, context):
+    props = context.scene.sdr_props
+    if (props.error_message):
+        
+        box = layout.box()
+        row = box.row()
+
+        col = row.column()
+        col.label(text="", icon="ERROR")
+        col = row.column()
+        col.label(text="Error:")
+        col = row.column()
+        col.label(text="", icon="COLORSET_01_VEC")
+
+        utils.label_multiline(box, text=props.error_message, width=220)
+
+
 class SDR_PT_main(bpy.types.Panel):
     bl_label = "Stable Diffusion Render"
     bl_idname = "SDR_PT_main"
@@ -30,11 +47,11 @@ class SDR_PT_setup(bpy.types.Panel):
 
     @classmethod
     def poll_for_api_key(cls, context):
-        return context.preferences.addons[__package__].preferences.dream_studio_api_key == '' or context.scene.sdr_props.error_key == 'api_key'
+        return utils.get_api_key(context) == '' or context.scene.sdr_props.error_key == 'api_key'
 
     @classmethod
     def poll_for_dimensions(cls, context):
-        return not utils.are_dimensions_valid(context)
+        return not utils.are_dimensions_valid(context.scene)
 
     @classmethod
     def poll(cls, context):
@@ -87,6 +104,9 @@ class SDR_PT_core(bpy.types.Panel):
         layout = self.layout
         scene = context.scene
         props = scene.sdr_props
+
+        # Show the error if we have one
+        show_error_if_it_exists(layout, context)
 
         # Prompt
         row = layout.row()

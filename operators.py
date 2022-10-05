@@ -2,8 +2,10 @@ import bpy
 import requests
 import functools
 import random
+
 from . import (
     config,
+    constants,
     task_queue,
     utils,
 )
@@ -94,10 +96,19 @@ def activate_sdr_workspace():
         handle_error("Couldn't find the Stable Diffusion Render workspace. Please reload this blend file, or deactivate Stable Diffusion Render.")
 
 
+def set_image_dimensions(context, width, height):
+    context.scene.render.resolution_x = 512
+    context.scene.render.resolution_y = 512
+    context.scene.render.resolution_percentage = 100
+
+    clear_error(context.scene)
+
+
 def handle_error(msg, error_key = ''):
     """Show an error popup, and set the error message to be displayed in the ui"""
     print("Stable Diffusion Error: ", msg)
     task_queue.add(functools.partial(bpy.ops.sdr.show_error_popup, 'INVOKE_DEFAULT', error_message=msg, error_key=error_key))
+    return False
 
 
 def clear_error(scene):
@@ -149,13 +160,28 @@ def do_pre_api_setup():
     activate_sdr_workspace()
 
 
+def validate_params(scene):
+    props = scene.sdr_props
+    if utils.get_api_key().strip() == "":
+        return handle_error("You must enter an API Key to render with Stable Diffusion", "api_key")
+    if props.prompt_text.strip() == "" or props.prompt_text == constants.default_prompt_text:
+        return handle_error("Please enter a prompt", "prompt")
+    if not utils.are_dimensions_valid(scene):
+        return handle_error("Please set width and height to valid values", "dimensions")
+    return True
+
+
 def send_to_api(scene):
     """Post to the API and process the resulting image"""
     props = scene.sdr_props
 
+    # validate the parameters we will send
+    if not validate_params(scene):
+        return False
+
+    # ensure that we have a rendered image to use
     if not bpy.data.images['Render Result'].has_data:
-        handle_error("In order to generate an image, you'll need to render something first. Even just a blank scene is ok.")
-        return
+        return handle_error("In order to generate an image, you'll need to render something first. Even just a blank scene is ok.")
 
     # generate a new seed, if we want a random one
     generate_new_random_seed(scene)
@@ -165,13 +191,13 @@ def send_to_api(scene):
         "User-Agent": "Blender/" + bpy.app.version_string,
         "Accept": "*/*",
         "Accept-Encoding": "gzip, deflate, br",
-        "Dream-Studio-Api-Key": bpy.context.preferences.addons[__package__].preferences.dream_studio_api_key,
+        "Dream-Studio-Api-Key": utils.get_api_key(),
     }
 
     params = {
         "prompt": props.prompt_text,
-        "width": round(scene.render.resolution_x * scene.render.resolution_percentage / 100),
-        "height": round(scene.render.resolution_y * scene.render.resolution_percentage / 100),
+        "width": utils.get_output_width(scene),
+        "height": utils.get_output_height(scene),
         "image_similarity": props.image_similarity,
         "seed": props.seed,
         "cfg_scale": props.cfg_scale,
@@ -220,13 +246,11 @@ def send_to_api(scene):
 
     # handle 404
     elif response.status_code in [403, 404]:
-        handle_error("It looks like the web server this plugin relies on is missing. It's possible this is temporary, and you can try again later.")
-        return False
+        return handle_error("It looks like the web server this plugin relies on is missing. It's possible this is temporary, and you can try again later.")
 
     # handle 500
     elif response.status_code == 500:
-        handle_error(f"An unknown error occurred in the DreamStudio API. Full server response: {str(response.content)}")
-        return False
+        return handle_error(f"An unknown error occurred in the DreamStudio API. Full server response: {str(response.content)}")
 
     # handle all other errors
     else:
@@ -243,8 +267,7 @@ def send_to_api(scene):
         except:
             error_message = f"An unknown error occurred in the DreamStudio API. Full server response: {str(response.content)}"
 
-        handle_error(error_message, error_key)
-        return False
+        return handle_error(error_message, error_key)
 
     return True
 
@@ -255,9 +278,7 @@ class SDR_OT_set_valid_render_dimensions(bpy.types.Operator):
     bl_label = "Set Image Size to 512x512"
 
     def execute(self, context):
-        context.scene.render.resolution_x = 512
-        context.scene.render.resolution_y = 512
-        context.scene.render.resolution_percentage = 100
+        set_image_dimensions(context, 512, 512)
         return {'FINISHED'}
 
 
@@ -268,18 +289,17 @@ class SDR_OT_show_other_dimension_options(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     panel_width = 250
-    valid_dimensions = utils.valid_dimensions_tuple_list()
 
     width: bpy.props.EnumProperty(
         name="Image Width",
         default="512",
-        items=valid_dimensions,
+        items=constants.valid_dimensions_tuple_list,
         description="Image Width"
     )
     height: bpy.props.EnumProperty(
         name="Image Height",
         default="512",
-        items=valid_dimensions,
+        items=constants.valid_dimensions_tuple_list,
         description="Image Height"
     )
 
@@ -307,9 +327,7 @@ class SDR_OT_show_other_dimension_options(bpy.types.Operator):
         return context.window_manager.invoke_props_dialog(self, width=self.panel_width)
 
     def execute(self, context):
-        context.scene.render.resolution_x = int(self.width)
-        context.scene.render.resolution_y = int(self.height)
-        context.scene.render.resolution_percentage = 100
+        set_image_dimensions(context, int(self.width), int(self.height))
         return {'FINISHED'}
 
 

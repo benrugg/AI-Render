@@ -79,14 +79,28 @@ def view_render_result_in_sdr_image_editor():
         image_editor_area.spaces.active.image = bpy.data.images['Render Result']
 
 
-def are_dimensions_valid(context):
+def get_api_key(context = None):
+    if not context:
+        context = bpy.context
+    return context.preferences.addons[__package__].preferences.dream_studio_api_key
+
+
+def get_output_width(scene):
+    return round(scene.render.resolution_x * scene.render.resolution_percentage / 100)
+
+
+def get_output_height(scene):
+    return round(scene.render.resolution_y * scene.render.resolution_percentage / 100)
+
+
+def are_dimensions_valid(scene):
     return (
-        context.scene.render.resolution_x * context.scene.render.resolution_percentage / 100 in valid_dimensions and 
-        context.scene.render.resolution_y * context.scene.render.resolution_percentage / 100 in valid_dimensions
+        get_output_width(scene) in valid_dimensions and 
+        get_output_height(scene) in valid_dimensions
     )
 
 
-def valid_dimensions_tuple_list():
+def generate_valid_dimensions_tuple_list():
     return_tuple = lambda num: (str(num), str(num) + " px", str(num))
     return list(map(return_tuple, valid_dimensions))
 
