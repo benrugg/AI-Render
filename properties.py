@@ -1,4 +1,5 @@
 import bpy
+import random
 from . import operators
 
 class SDRProperties(bpy.types.PropertyGroup):
@@ -11,8 +12,10 @@ class SDRProperties(bpy.types.PropertyGroup):
     image_similarity: bpy.props.FloatProperty(
         name="Image Similarity",
         default=0.3,
-        min=0,
-        max=1,
+        soft_min=0.0,
+        soft_max=0.5,
+        min=0.0,
+        max=1.0,
         description="How closely the final image will match the initial rendered image. Values around 0.1-0.4 will turn simple renders into new creations. Higher values will adhere more closely to the initial render",
     )
     cfg_scale: bpy.props.FloatProperty(
@@ -29,13 +32,15 @@ class SDRProperties(bpy.types.PropertyGroup):
     )
     seed: bpy.props.IntProperty(
         name="Seed",
-        default=0,
+        default=random.randint(1000000000, 2147483647),
         min=0,
         description="The seed for the initial randomization of the algorithm. Use the same seed between images to keep the result more stable. Changing the seed by any amount will give a completely different result",
     )
     steps: bpy.props.IntProperty(
         name="Steps",
         default=25,
+        soft_min=10,
+        soft_max=100,
         min=10,
         max=150,
         description="How long to process the image. Values in the range of 25-50 generally work well. Higher values will take longer and won't necessarily improve results",

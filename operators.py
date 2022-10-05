@@ -268,6 +268,54 @@ class SDR_OT_set_valid_render_dimensions(bpy.types.Operator):
         return {'FINISHED'}
 
 
+class SDR_OT_show_other_dimension_options(bpy.types.Operator):
+    "Other options for image size"
+    bl_idname = "sdr.show_other_dimension_options"
+    bl_label = "Image Size Options"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    panel_width = 250
+    valid_dimensions = utils.valid_dimensions_tuple_list()
+
+    width: bpy.props.EnumProperty(
+        name="Image Width",
+        default="512",
+        items=valid_dimensions,
+        description="Image Width"
+    )
+    height: bpy.props.EnumProperty(
+        name="Image Height",
+        default="512",
+        items=valid_dimensions,
+        description="Image Height"
+    )
+
+    def draw(self, context):
+        layout = self.layout
+        utils.label_multiline(layout, text="Choose dimensions that Stable Diffusion can work with. (Anything larger than 512x512 may take a long time)", width=self.panel_width)
+        
+        row = layout.row()
+        col = row.column()
+        col.label(text="Width:")
+        col = row.column()
+        col.prop(self, "width", text="")
+
+        row = layout.row()
+        col = row.column()
+        col.label(text="Height:")
+        col = row.column()
+        col.prop(self, "height", text="")
+
+    def invoke(self, context, event):
+        return context.window_manager.invoke_props_dialog(self, width=self.panel_width)
+
+    def execute(self, context):
+        context.scene.render.resolution_x = int(self.width)
+        context.scene.render.resolution_y = int(self.height)
+        context.scene.render.resolution_percentage = 100
+        return {'FINISHED'}
+
+
 class SDR_OT_generate_new_image_from_render(bpy.types.Operator):
     "Generate a new Stable Diffusion image (from the rendered image)"
     bl_idname = "sdr.generate_new_image_from_render"
@@ -361,6 +409,7 @@ class SDR_OT_show_error_popup(bpy.types.Operator):
 
 classes = [
     SDR_OT_set_valid_render_dimensions,
+    SDR_OT_show_other_dimension_options,
     SDR_OT_generate_new_image_from_render,
     SDR_OT_generate_new_image_from_current,
     SDR_OT_setup_instructions_popup,

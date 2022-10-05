@@ -66,10 +66,13 @@ class SDR_PT_setup(bpy.types.Panel):
         
         # else, show the image dimension help
         else:
-            utils.label_multiline(layout, text=f"Adjust Image Size: \nStable Diffusion only works on a few specific image dimensions. You'll need to set your render width and height to one of these values: {str(utils.valid_dimensions)}", icon="INFO", width=width_guess)
+            utils.label_multiline(layout, text=f"Adjust Image Size: \nStable Diffusion only works on a few specific image dimensions.", icon="INFO", width=width_guess)
             
-            row = layout.row()
-            row.operator(operators.SDR_OT_set_valid_render_dimensions.bl_idname)
+            row = layout.row(align=True)
+            col = row.column()
+            col.operator(operators.SDR_OT_set_valid_render_dimensions.bl_idname)
+            col = row.column()
+            col.operator(operators.SDR_OT_show_other_dimension_options.bl_idname, text="", icon="QUESTION")
 
 
 class SDR_PT_core(bpy.types.Panel):
@@ -96,7 +99,7 @@ class SDR_PT_core(bpy.types.Panel):
         sub.prop(props, 'use_random_seed')
 
         sub = row.column()
-        sub.prop(props, 'seed')
+        sub.prop(props, 'seed', text="", slider=False)
         sub.enabled = not props.use_random_seed
 
         # Image Similarity

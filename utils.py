@@ -86,6 +86,11 @@ def are_dimensions_valid(context):
     )
 
 
+def valid_dimensions_tuple_list():
+    return_tuple = lambda num: (str(num), str(num) + " px", str(num))
+    return list(map(return_tuple, valid_dimensions))
+
+
 def has_url(text):
     #first remove markdown *
     text = text.replace('*','')
