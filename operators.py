@@ -170,8 +170,8 @@ def send_to_api(scene):
 
     params = {
         "prompt": props.prompt_text,
-        "width": scene.render.resolution_x * scene.render.resolution_percentage / 100,
-        "height": scene.render.resolution_y * scene.render.resolution_percentage / 100,
+        "width": round(scene.render.resolution_x * scene.render.resolution_percentage / 100),
+        "height": round(scene.render.resolution_y * scene.render.resolution_percentage / 100),
         "image_similarity": props.image_similarity,
         "seed": props.seed,
         "cfg_scale": props.cfg_scale,
