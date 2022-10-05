@@ -91,7 +91,22 @@ class SDR_PT_core(bpy.types.Panel):
         # Prompt
         row = layout.row()
         row.scale_y = 1.8
-        row.prop(props, 'prompt_text')
+        row.prop(props, 'prompt_text', text="")
+
+
+class SDR_PT_advanced_options(bpy.types.Panel):
+    bl_label = "Advanced Options"
+    bl_idname = "SDR_PT_advanced_options"
+    bl_parent_id = "SDR_PT_main"
+    bl_space_type = "PROPERTIES"
+    bl_region_type = "WINDOW"
+    bl_context = "render"
+    bl_options = {'DEFAULT_CLOSED'}
+
+    def draw(self, context):
+        layout = self.layout
+        scene = context.scene
+        props = scene.sdr_props
 
         # Seed
         row = layout.row()
@@ -109,20 +124,12 @@ class SDR_PT_core(bpy.types.Panel):
         sub = row.column()
         sub.prop(props, 'image_similarity', text="", slider=False)
 
-
-class SDR_PT_advanced_options(bpy.types.Panel):
-    bl_label = "Advanced Options"
-    bl_idname = "SDR_PT_advanced_options"
-    bl_parent_id = "SDR_PT_main"
-    bl_space_type = "PROPERTIES"
-    bl_region_type = "WINDOW"
-    bl_context = "render"
-    bl_options = {'DEFAULT_CLOSED'}
-
-    def draw(self, context):
-        layout = self.layout
-        scene = context.scene
-        props = scene.sdr_props
+        # Steps
+        row = layout.row()
+        sub = row.column()
+        sub.label(text="Steps")
+        sub = row.column()
+        sub.prop(props, 'steps', text="", slider=False)
 
         # Prompt Strength
         row = layout.row()
@@ -130,13 +137,6 @@ class SDR_PT_advanced_options(bpy.types.Panel):
         sub.label(text="Prompt Strength")
         sub = row.column()
         sub.prop(props, 'cfg_scale', text="", slider=False)
-
-        # Steps
-        row = layout.row()
-        sub = row.column()
-        sub.label(text="Steps")
-        sub = row.column()
-        sub.prop(props, 'steps', text="", slider=False)
 
         # Sampler
         row = layout.row()
