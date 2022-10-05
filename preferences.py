@@ -34,12 +34,12 @@ classes = [
 ]
 
 
-def register_preferences():
+def register():
     for cls in classes:
         bpy.utils.register_class(cls)
 
 
-def unregister_preferences():
+def unregister():
     for cls in classes:
         bpy.utils.unregister_class(cls)
     

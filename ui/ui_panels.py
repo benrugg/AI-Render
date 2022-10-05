@@ -219,12 +219,12 @@ classes = [
 ]
 
 
-def register_ui_panels():
+def register():
     for cls in classes:
         bpy.utils.register_class(cls)
 
 
-def unregister_ui_panels():
+def unregister():
     for cls in classes:
         bpy.utils.unregister_class(cls)
     

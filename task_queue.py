@@ -19,11 +19,11 @@ def add(function):
     execution_queue.put(function)
 
 
-def register_task_queue():
+def register():
     if not bpy.app.timers.is_registered(execute_queued_functions):
         bpy.app.timers.register(execute_queued_functions)
 
 
-def unregister_task_queue():
+def unregister():
     if bpy.app.timers.is_registered(execute_queued_functions):
         bpy.app.timers.unregister(execute_queued_functions)

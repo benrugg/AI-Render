@@ -63,7 +63,7 @@ def enum_thumbnail_icons(self, context):
     return preview_collection.preset_styles_thumbnail_icons
 
 
-def register_ui_preset_styles():
+def register():
     import bpy.utils.previews
 
     global preview_collection
@@ -72,7 +72,7 @@ def register_ui_preset_styles():
     preview_collection.preset_styles_thumbnail_icons = []
 
 
-def unregister_ui_preset_styles():
+def unregister():
     global preview_collection
 
     bpy.utils.previews.remove(preview_collection)

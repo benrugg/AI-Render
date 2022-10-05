@@ -43,23 +43,23 @@ import bpy
 
 
 def register():
-    handlers.register_handlers()
-    operators.register_operators()
-    preferences.register_preferences()
-    properties.register_properties()
-    task_queue.register_task_queue()
-    ui_panels.register_ui_panels()
-    ui_preset_styles.register_ui_preset_styles()
+    handlers.register()
+    operators.register()
+    preferences.register()
+    properties.register()
+    task_queue.register()
+    ui_panels.register()
+    ui_preset_styles.register()
 
 
 def unregister():
-    handlers.unregister_handlers()
-    operators.unregister_operators()
-    preferences.unregister_preferences()
-    properties.unregister_properties()
-    task_queue.unregister_task_queue()
-    ui_panels.unregister_ui_panels()
-    ui_preset_styles.unregister_ui_preset_styles()
+    handlers.unregister()
+    operators.unregister()
+    preferences.unregister()
+    properties.unregister()
+    task_queue.unregister()
+    ui_panels.unregister()
+    ui_preset_styles.unregister()
 
 
 if __name__ == "__main__":

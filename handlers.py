@@ -13,7 +13,7 @@ def load_post_handler(context):
 
     # register the task queue (because app timers get stopped
     # when loading a new blender file)
-    task_queue.register_task_queue()
+    task_queue.register()
 
     # switch the workspace to compositor, so the new rendered image will actually appear
     operators.ensure_sdr_workspace()
@@ -54,13 +54,13 @@ def render_complete_handler(scene):
         operators.handle_error("Rendered image is not ready. Try generating a new image manually under Stable Diffusion Render > Operation")
 
 
-def register_handlers():
+def register():
     bpy.app.handlers.load_post.append(load_post_handler)
     bpy.app.handlers.render_pre.append(render_pre_handler)
     bpy.app.handlers.render_complete.append(render_complete_handler)
 
 
-def unregister_handlers():
+def unregister():
     bpy.app.handlers.load_post.remove(load_post_handler)
     bpy.app.handlers.render_pre.remove(render_pre_handler)
     bpy.app.handlers.render_complete.remove(render_complete_handler)

@@ -432,11 +432,11 @@ classes = [
 ]
 
 
-def register_operators():
+def register():
     for cls in classes:
         bpy.utils.register_class(cls)
 
 
-def unregister_operators():
+def unregister():
     for cls in classes:
         bpy.utils.unregister_class(cls)
