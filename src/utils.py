@@ -21,9 +21,14 @@ import bpy
 import re
 import os
 import time
+from . import constants
 
 
 valid_dimensions = [384, 448, 512, 576, 640, 704, 768, 832, 896, 960, 1024]
+
+
+def get_addon_preferences(context):
+    return context.preferences.addons[constants.package_name].preferences
 
 
 def get_temp_path():
@@ -90,7 +95,7 @@ def view_render_result_in_sdr_image_editor():
 def get_api_key(context = None):
     if not context:
         context = bpy.context
-    return context.preferences.addons[__package__].preferences.dream_studio_api_key
+    return get_addon_preferences(context).dream_studio_api_key
 
 
 def get_output_width(scene):

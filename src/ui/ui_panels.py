@@ -79,7 +79,7 @@ class SDR_PT_setup(bpy.types.Panel):
             row.operator("wm.url_open", text="Sign Up For DreamStudio (free)", icon="URL").url = config.DREAM_STUDIO_URL
             
             row = layout.row()
-            row.prop(context.preferences.addons[__package__].preferences, "dream_studio_api_key")
+            row.prop(utils.get_addon_preferences(context), "dream_studio_api_key")
         
         # else, show the image dimension help
         elif SDR_PT_setup.poll_for_dimensions(context):
