@@ -128,7 +128,7 @@ class SDR_PT_core(bpy.types.Panel):
 
         if props.use_preset:
             row = box.row()
-            row.template_icon_view(props, "preset_style", show_labels=True, scale_popup=8)
+            row.template_icon_view(props, "preset_style", show_labels=True, scale_popup=7.7)
 
             row = box.row()
             row.label(text=f"\"{props.preset_style}\"")
