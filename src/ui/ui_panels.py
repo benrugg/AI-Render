@@ -119,22 +119,26 @@ class SDR_PT_core(bpy.types.Panel):
 
         row = layout.row()
         row.scale_y = 1.8
-        row.prop(props, 'prompt_text', text="")
+        row.prop(props, "prompt_text", text="")
 
         # Preset Styles
-        row = layout.row()
-        row.label(text="Preset Style (optional):")
+        box = layout.box()
+        row = box.row()
+        row.prop(props, "use_preset")
 
-        row = layout.row()
-        row.template_icon_view(props, "preset_style", show_labels=True, scale_popup=8)
+        if props.use_preset:
+            row = box.row()
+            row.template_icon_view(props, "preset_style", show_labels=True, scale_popup=8)
+
+            row = box.row()
+            row.label(text=f"\"{props.preset_style}\"")
 
 
 
 class SDR_PT_advanced_options(bpy.types.Panel):
     bl_label = "Advanced Options"
     bl_idname = "SDR_PT_advanced_options"
-    bl_parent_id = "SDR_PT_main"
-    bl_space_type = "PROPERTIES"
+    bl_parent_id = "SDR_PT_main"    bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
     bl_context = "render"
     bl_options = {'DEFAULT_CLOSED'}

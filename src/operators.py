@@ -53,7 +53,7 @@ def ensure_compositor_nodes(scene):
     # link the image node to the mix node
     create_link(image_node.outputs.get('Image'), mix_node.inputs[2])
 
-    # get the socket that's currently linked to the compositor, or as a 
+    # get the socket that's currently linked to the compositor, or as a
     # fallback, get the rendered image output
     if composite_node.inputs.get('Image').is_linked:
         original_socket = composite_node.inputs.get('Image').links[0].from_socket
@@ -171,6 +171,16 @@ def validate_params(scene):
     return True
 
 
+def get_full_prompt(scene):
+    props = scene.sdr_props
+    prompt = props.prompt_text
+    if prompt == constants.default_prompt_text:
+        prompt = ""
+    if props.use_preset:
+        prompt = prompt.strip() + f", {props.preset_style}"
+    return prompt.strip()
+
+
 def send_to_api(scene):
     """Post to the API and process the resulting image"""
     props = scene.sdr_props
@@ -195,7 +205,7 @@ def send_to_api(scene):
     }
 
     params = {
-        "prompt": props.prompt_text,
+        "prompt": get_full_prompt(scene),
         "width": utils.get_output_width(scene),
         "height": utils.get_output_height(scene),
         "image_similarity": props.image_similarity,

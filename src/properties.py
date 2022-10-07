@@ -77,6 +77,11 @@ class SDRProperties(bpy.types.PropertyGroup):
         default="",
         description="An error message that will be shown if present",
     )
+    use_preset: bpy.props.BoolProperty(
+        name="Apply a Preset Style",
+        default=True,
+        description="Optionally use a preset style to apply modifier words to your prompt",
+    )
     preset_style: bpy.props.EnumProperty(
         name="Preset Style",
         items=ui_preset_styles.enum_thumbnail_icons
