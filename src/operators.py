@@ -97,8 +97,8 @@ def activate_sdr_workspace():
 
 
 def set_image_dimensions(context, width, height):
-    context.scene.render.resolution_x = 512
-    context.scene.render.resolution_y = 512
+    context.scene.render.resolution_x = width
+    context.scene.render.resolution_y = height
     context.scene.render.resolution_percentage = 100
 
     clear_error(context.scene)
