@@ -9,7 +9,7 @@ from .. import (
 def show_error_if_it_exists(layout, context):
     props = context.scene.sdr_props
     if (props.error_message):
-        
+
         box = layout.box()
         row = box.row()
 
@@ -68,7 +68,7 @@ class SDR_PT_setup(bpy.types.Panel):
         if SDR_PT_setup.poll_for_api_key(context):
 
             utils.label_multiline(layout, text="Setup is quick and easy. No downloads or installation. Just register for a Dream Studio API Key.", icon="INFO", width=width_guess)
-            
+
             row = layout.row()
             col = row.column()
             # col.label(text="Setup is easy!")
@@ -77,20 +77,20 @@ class SDR_PT_setup(bpy.types.Panel):
 
             row = layout.row()
             row.operator("wm.url_open", text="Sign Up For DreamStudio (free)", icon="URL").url = config.DREAM_STUDIO_URL
-            
+
             row = layout.row()
             row.prop(utils.get_addon_preferences(context), "dream_studio_api_key")
-        
+
         # else, show the image dimension help
         elif SDR_PT_setup.poll_for_dimensions(context):
             utils.label_multiline(layout, text=f"Adjust Image Size: \nStable Diffusion only works on a few specific image dimensions.", icon="INFO", width=width_guess)
-            
+
             row = layout.row(align=True)
             col = row.column()
             col.operator(operators.SDR_OT_set_valid_render_dimensions.bl_idname)
             col = row.column()
             col.operator(operators.SDR_OT_show_other_dimension_options.bl_idname, text="", icon="QUESTION")
-        
+
         else:
             utils.label_multiline(layout, text="You're ready to start rendering!", width=width_guess)
             row = layout.row()
@@ -138,7 +138,8 @@ class SDR_PT_core(bpy.types.Panel):
 class SDR_PT_advanced_options(bpy.types.Panel):
     bl_label = "Advanced Options"
     bl_idname = "SDR_PT_advanced_options"
-    bl_parent_id = "SDR_PT_main"    bl_space_type = "PROPERTIES"
+    bl_parent_id = "SDR_PT_main"
+    bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
     bl_context = "render"
     bl_options = {'DEFAULT_CLOSED'}
@@ -231,4 +232,3 @@ def register():
 def unregister():
     for cls in classes:
         bpy.utils.unregister_class(cls)
-    

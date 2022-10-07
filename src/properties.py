@@ -96,12 +96,12 @@ classes = [
 def register():
     for cls in classes:
         bpy.utils.register_class(cls)
-    
+
     bpy.types.Scene.sdr_props = bpy.props.PointerProperty(type=SDRProperties)
 
 
 def unregister():
     for cls in classes:
         bpy.utils.unregister_class(cls)
-    
+
     del bpy.types.Scene.sdr_props

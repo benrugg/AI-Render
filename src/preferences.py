@@ -15,7 +15,7 @@ class SDRPreferences(bpy.types.AddonPreferences):
 
     def draw(self, context):
         layout = self.layout
-        
+
         row = layout.row()
         col = row.column()
         col.label(text="Setup is easy!")
@@ -24,7 +24,7 @@ class SDRPreferences(bpy.types.AddonPreferences):
 
         row = layout.row()
         row.operator("wm.url_open", text="Sign Up For DreamStudio (free)", icon="URL").url = config.DREAM_STUDIO_URL
-        
+
         row = layout.row()
         row.prop(self, "dream_studio_api_key")
 
@@ -42,4 +42,3 @@ def register():
 def unregister():
     for cls in classes:
         bpy.utils.unregister_class(cls)
-    

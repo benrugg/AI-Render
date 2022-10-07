@@ -46,7 +46,7 @@ def ensure_compositor_nodes(scene):
     mix_node = compositor_nodes.new(type='CompositorNodeMixRGB')
     mix_node.name = 'SDR_mix_node'
     mix_node.location = (550, 500)
-    
+
     # get a reference to the new link function, for convenience
     create_link = scene.node_tree.links.new
 
@@ -59,7 +59,7 @@ def ensure_compositor_nodes(scene):
         original_socket = composite_node.inputs.get('Image').links[0].from_socket
     else:
         original_socket = compositor_nodes['Render Layers'].outputs.get('Image')
-    
+
     # link the original socket to the input of the mix node
     create_link(original_socket, mix_node.inputs[1])
 
@@ -75,7 +75,7 @@ def ensure_sdr_workspace():
 
     # if the workspace isn't in our file, add it from our own included blend file
     if workspace_id not in bpy.data.workspaces:
-        
+
         original_workspace = utils.get_current_workspace()
 
         bpy.ops.workspace.append_activate(
@@ -246,7 +246,7 @@ def send_to_api(scene):
         with open(tmp_filename, 'wb') as file:
             for chunk in response:
                 file.write(chunk)
-        
+
         # load the image into the compositor
         img = bpy.data.images.load(tmp_filename, check_existing=True)
         update_compositor_node_with_image(scene, img)
@@ -316,7 +316,7 @@ class SDR_OT_show_other_dimension_options(bpy.types.Operator):
     def draw(self, context):
         layout = self.layout
         utils.label_multiline(layout, text="Choose dimensions that Stable Diffusion can work with. (Anything larger than 512x512 may take a long time)", width=self.panel_width)
-        
+
         layout.separator()
 
         row = layout.row()
@@ -352,7 +352,7 @@ class SDR_OT_generate_new_image_from_render(bpy.types.Operator):
 
         # post to the api (on a different thread, outside the operator)
         task_queue.add(functools.partial(send_to_api, context.scene))
-        
+
         return {'FINISHED'}
 
 
@@ -364,7 +364,7 @@ class SDR_OT_generate_new_image_from_current(bpy.types.Operator):
     def execute(self, context):
         do_pre_render_setup(context.scene, False)
         do_pre_api_setup()
-        
+
         # post to the api (on a different thread, outside the operator)
         task_queue.add(functools.partial(send_to_api, context.scene))
 

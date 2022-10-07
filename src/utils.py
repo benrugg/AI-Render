@@ -62,7 +62,7 @@ def get_preset_style_thumnails_filepath():
 def get_current_workspace(context = None):
     if not context:
         context = bpy.context
-    
+
     if context.window and context.window.workspace:
         return context.window.workspace
     else:
@@ -87,7 +87,7 @@ def view_render_result_in_sdr_image_editor():
         if area.type == 'IMAGE_EDITOR':
             image_editor_area = area
             break
-    
+
     if image_editor_area:
         image_editor_area.spaces.active.image = bpy.data.images['Render Result']
 
@@ -108,7 +108,7 @@ def get_output_height(scene):
 
 def are_dimensions_valid(scene):
     return (
-        get_output_width(scene) in valid_dimensions and 
+        get_output_width(scene) in valid_dimensions and
         get_output_height(scene) in valid_dimensions
     )
 
@@ -121,16 +121,16 @@ def generate_valid_dimensions_tuple_list():
 def has_url(text):
     #first remove markdown *
     text = text.replace('*','')
-    
+
     # Anything that isn't a square closing bracket
     name_regex = "[^]]+"
-    
+
     # http:// or https:// followed by anything but a closing paren
     url_in_markup_regex = "http[s]?://[^)]+"
-    
+
     # first look for markup urls
     markup_regex = f"\[({name_regex})]\(\s*({url_in_markup_regex})\s*\)"
-    
+
     urls = re.findall(markup_regex, text, re.IGNORECASE)
 
     if len(urls) > 0:
@@ -148,7 +148,7 @@ def has_url(text):
 
         for i, url in enumerate(urls):
             urls[i] = [url, url]
-    
+
     # return what was found (could be just text)
     return urls, text
 
@@ -178,14 +178,14 @@ def label_multiline(layout, text='', icon='NONE', width=-1, max_lines=10, use_ur
         urls, text = has_url(text)
     else:
         urls = []
-    
+
     lines = text.split("\n")
 
     if width > 0:
         char_threshold = int(width / 5.7)
     else:
         char_threshold = 35
-    
+
     line_index = 0
     for line in lines:
 
@@ -201,7 +201,7 @@ def label_multiline(layout, text='', icon='NONE', width=-1, max_lines=10, use_ur
             row = layout.row()
             row.label(text=l1, icon=icon)
             rows.append(row)
-            
+
             # set the icon to none after the first row
             icon = "NONE"
 
@@ -216,10 +216,10 @@ def label_multiline(layout, text='', icon='NONE', width=-1, max_lines=10, use_ur
         row = layout.row()
         row.label(text=line, icon=icon)
         rows.append(row)
-        
+
         # set the icon to none after the first row
         icon = "NONE"
-    
+
     # if we have urls, include them as buttons at the end
     if use_urls:
         for url in urls:
