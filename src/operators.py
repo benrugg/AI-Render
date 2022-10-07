@@ -166,19 +166,22 @@ def validate_params(scene):
         return handle_error("You must enter an API Key to render with Stable Diffusion", "api_key")
     if not utils.are_dimensions_valid(scene):
         return handle_error("Please set width and height to valid values", "dimensions")
-    if props.prompt_text.strip() == "" or props.prompt_text == constants.default_prompt_text:
+    if get_full_prompt(scene) == "":
         return handle_error("Please enter a prompt for Stable Diffusion", "prompt")
     return True
 
 
 def get_full_prompt(scene):
     props = scene.sdr_props
-    prompt = props.prompt_text
+    prompt = props.prompt_text.strip()
     if prompt == constants.default_prompt_text:
         prompt = ""
     if props.use_preset:
-        prompt = prompt.strip() + f", {props.preset_style}"
-    return prompt.strip()
+        if prompt == "":
+            prompt = props.preset_style
+        else:
+            prompt = prompt + f", {props.preset_style}"
+    return prompt
 
 
 def send_to_api(scene):
