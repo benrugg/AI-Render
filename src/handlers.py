@@ -10,6 +10,8 @@ from . import (
 @persistent
 def load_post_handler(context):
     """Handle new blender file load (and new scene load)"""
+    if not context:
+        context = bpy.context
 
     # register the task queue (because app timers get stopped
     # when loading a new blender file)
@@ -17,6 +19,9 @@ def load_post_handler(context):
 
     # switch the workspace to compositor, so the new rendered image will actually appear
     operators.ensure_sdr_workspace()
+
+    # clear any past errors
+    operators.clear_error(context.scene)
 
 
 @persistent
