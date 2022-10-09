@@ -2,6 +2,7 @@ import bpy
 import requests
 import functools
 import random
+import time
 
 from . import (
     config,
@@ -127,12 +128,18 @@ def generate_new_random_seed(scene):
         props.seed = random.randint(1000000000, 2147483647)
 
 
-def save_render_to_file(scene):
-    tmp_filename = utils.get_temp_render_filename()
+def save_render_to_file(scene, timestamp):
+    try:
+        tmp_filename = utils.get_temp_render_filename(timestamp)
+    except:
+        return handle_error("Couldn't create temp directory for images")
 
-    orig_render_file_format = scene.render.image_settings.file_format
-    bpy.data.images['Render Result'].save_render(tmp_filename)
-    scene.render.image_settings.file_format = orig_render_file_format
+    try:
+        orig_render_file_format = scene.render.image_settings.file_format
+        bpy.data.images['Render Result'].save_render(tmp_filename)
+        scene.render.image_settings.file_format = orig_render_file_format
+    except:
+        return handle_error("Couldn't save rendered image. Please render or try again.")
 
     return tmp_filename
 
@@ -199,6 +206,9 @@ def send_to_api(scene):
     # generate a new seed, if we want a random one
     generate_new_random_seed(scene)
 
+    # prepare a timestamp for the filenames
+    timestamp = int(time.time())
+
     # prepare data for the API request
     headers = {
         "User-Agent": "Blender/" + bpy.app.version_string,
@@ -219,7 +229,9 @@ def send_to_api(scene):
     }
 
     # save the rendered image and then read it back in
-    tmp_filename = save_render_to_file(scene)
+    tmp_filename = save_render_to_file(scene, timestamp)
+    if not tmp_filename:
+        return False
     img_file = open(tmp_filename, 'rb')
     files = {"file": img_file}
 
@@ -244,7 +256,7 @@ def send_to_api(scene):
     if response.status_code == 200:
 
         # save the image
-        tmp_filename = utils.get_temp_output_filename()
+        tmp_filename = utils.get_temp_output_filename(timestamp)
 
         with open(tmp_filename, 'wb') as file:
             for chunk in response:

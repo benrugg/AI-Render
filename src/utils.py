@@ -20,7 +20,6 @@
 import bpy
 import re
 import os
-import time
 from . import constants
 
 
@@ -34,15 +33,18 @@ def get_addon_preferences(context):
 def get_temp_path():
     tmp_path = bpy.context.preferences.filepaths.temporary_directory.rstrip('/')
     if tmp_path == '': tmp_path = '/tmp'
+    tmp_path = os.path.join(tmp_path, constants.tmp_path_subfolder)
+    if not os.path.exists(tmp_path):
+        os.makedirs(tmp_path)
     return tmp_path
 
 
-def get_temp_render_filename():
-    return f"{get_temp_path()}/sdr-temp-render.png"
+def get_temp_render_filename(timestamp):
+    return f"{get_temp_path()}/sdr-render-{timestamp}-1-before.png"
 
 
-def get_temp_output_filename():
-    return f"{get_temp_path()}/sdr-{int(time.time())}.png"
+def get_temp_output_filename(timestamp):
+    return f"{get_temp_path()}/sdr-render-{timestamp}-2-after.png"
 
 
 def get_filepath_in_package(path, filename = ""):
