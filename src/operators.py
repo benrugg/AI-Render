@@ -234,7 +234,11 @@ def send_to_api(scene):
     files = {"file": img_file}
 
     # send the API request
-    response = requests.post(config.API_URL, params=params, headers=headers, files=files)
+    try:
+        response = requests.post(config.API_URL, params=params, headers=headers, files=files, timeout=config.request_timeout)
+    except requests.exceptions.ReadTimeout:
+        img_file.close()
+        return handle_error(f"The server timed out. Try again in a moment, or get help. [Get help with timeouts]({config.HELP_WITH_TIMEOUTS_URL})")
 
     # close the image file
     img_file.close()
