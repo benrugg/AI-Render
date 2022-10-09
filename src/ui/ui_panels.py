@@ -206,12 +206,17 @@ class SDR_PT_operation(bpy.types.Panel):
         row.prop(props, 'auto_run')
 
         # Generate Image
+        manual_buttons_enabled = bpy.data.images['Render Result'].has_data
+
         row = layout.row()
         row.label(text="Run Manually:")
 
         row = layout.row()
+        row.enabled = manual_buttons_enabled
         row.operator(operators.SDR_OT_generate_new_image_from_render.bl_idname)
+
         row = layout.row()
+        row.enabled = manual_buttons_enabled
         row.operator(operators.SDR_OT_generate_new_image_from_current.bl_idname)
 
 

@@ -199,10 +199,6 @@ def send_to_api(scene):
     if not validate_params(scene):
         return False
 
-    # ensure that we have a rendered image to use
-    if not bpy.data.images['Render Result'].has_data:
-        return handle_error("In order to generate an image, you'll need to render something first. Even just a blank scene is ok.")
-
     # generate a new seed, if we want a random one
     generate_new_random_seed(scene)
 
