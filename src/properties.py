@@ -1,7 +1,7 @@
 import bpy
 import random
 from . import (
-    constants,
+    config,
     operators,
 )
 from .ui import ui_preset_styles
@@ -10,7 +10,7 @@ class SDRProperties(bpy.types.PropertyGroup):
     prompt_text: bpy.props.StringProperty(
         name="Prompt",
         description="Describe anything for Stable Diffusion to create",
-        default=constants.default_prompt_text,
+        default=config.default_prompt_text,
         update=operators.clear_error_handler,
     )
     image_similarity: bpy.props.FloatProperty(

@@ -6,10 +6,12 @@ import time
 
 from . import (
     config,
-    constants,
     task_queue,
     utils,
 )
+
+
+valid_dimensions_tuple_list = utils.generate_valid_dimensions_tuple_list()
 
 
 def mute_compositor_mix_node(scene):
@@ -181,7 +183,7 @@ def validate_params(scene):
 def get_full_prompt(scene):
     props = scene.sdr_props
     prompt = props.prompt_text.strip()
-    if prompt == constants.default_prompt_text:
+    if prompt == config.default_prompt_text:
         prompt = ""
     if props.use_preset:
         if prompt == "":
@@ -314,13 +316,13 @@ class SDR_OT_show_other_dimension_options(bpy.types.Operator):
     width: bpy.props.EnumProperty(
         name="Image Width",
         default="512",
-        items=constants.valid_dimensions_tuple_list,
+        items=valid_dimensions_tuple_list,
         description="Image Width"
     )
     height: bpy.props.EnumProperty(
         name="Image Height",
         default="512",
-        items=constants.valid_dimensions_tuple_list,
+        items=valid_dimensions_tuple_list,
         description="Image Height"
     )
 

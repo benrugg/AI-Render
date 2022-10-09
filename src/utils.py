@@ -20,20 +20,20 @@
 import bpy
 import re
 import os
-from . import constants
+from . import config
 
 
 valid_dimensions = [384, 448, 512, 576, 640, 704, 768, 832, 896, 960, 1024]
 
 
 def get_addon_preferences(context):
-    return context.preferences.addons[constants.package_name].preferences
+    return context.preferences.addons[config.package_name].preferences
 
 
 def get_temp_path():
     tmp_path = bpy.context.preferences.filepaths.temporary_directory.rstrip('/')
     if tmp_path == '': tmp_path = '/tmp'
-    tmp_path = os.path.join(tmp_path, constants.tmp_path_subfolder)
+    tmp_path = os.path.join(tmp_path, config.tmp_path_subfolder)
     if not os.path.exists(tmp_path):
         os.makedirs(tmp_path)
     return tmp_path

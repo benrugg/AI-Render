@@ -14,7 +14,6 @@ bl_info = {
 if "bpy" in locals():
     import imp
     imp.reload(config)
-    imp.reload(constants)
     imp.reload(handlers)
     imp.reload(operators)
     imp.reload(preferences)
@@ -26,7 +25,6 @@ if "bpy" in locals():
 else:
     from . import (
         config,
-        constants,
         handlers,
         operators,
         preferences,
