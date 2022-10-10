@@ -20,7 +20,7 @@ body:
     attributes:
       label: To reproduce
       description: |
-        Explain how to see the error/issue/bug:
+        Explain step-by-step how to see the issue:
     validations:
       required: true
 
