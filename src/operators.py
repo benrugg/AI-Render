@@ -409,9 +409,9 @@ class SDR_OT_show_other_dimension_options(bpy.types.Operator):
 
 
 class SDR_OT_generate_new_image_from_render(bpy.types.Operator):
-    "Generate a new Stable Diffusion image (from the rendered image)"
+    "Generate a new Stable Diffusion image - without re-rendering - from the last rendered image"
     bl_idname = "sdr.generate_new_image_from_render"
-    bl_label = "Generate New Image From Render"
+    bl_label = "New Image From Last Render"
 
     def execute(self, context):
         do_pre_render_setup(context.scene)
@@ -424,9 +424,9 @@ class SDR_OT_generate_new_image_from_render(bpy.types.Operator):
 
 
 class SDR_OT_generate_new_image_from_current(bpy.types.Operator):
-    "Generate a new Stable Diffusion image (from the current Stable Diffusion image)"
+    "Generate a new Stable Diffusion image - without re-rendering - using the latest Stable Diffusion image as the starting point"
     bl_idname = "sdr.generate_new_image_from_current"
-    bl_label = "Generate New Image From Current"
+    bl_label = "New Image From Last SDR"
 
     def execute(self, context):
         do_pre_render_setup(context.scene, do_mute_node_group=False)
