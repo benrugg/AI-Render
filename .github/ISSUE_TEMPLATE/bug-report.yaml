@@ -10,7 +10,8 @@ body:
     id: description
     attributes:
       label: Describe the bug
-      description: A clear and concise description of the problem:
+      description: |
+        A clear and concise description of the problem:
     validations:
       required: true
 
@@ -18,7 +19,8 @@ body:
     id: to-reproduce
     attributes:
       label: To reproduce
-      description: Explain how to see the error/issue/bug:
+      description: |
+        Explain how to see the error/issue/bug:
     validations:
       required: true
 
@@ -26,7 +28,8 @@ body:
     id: expected-behavior
     attributes:
       label: Expected behavior
-      description: What did you expect to happen?
+      description: |
+        What did you expect to happen?
     validations:
       required: false
 
@@ -68,6 +71,7 @@ body:
     id: additional-info
     attributes:
       label: Additional information
-      description: Anything other helpful information to know?
+      description: |
+        Anything other helpful information to know?
     validations:
       required: false
