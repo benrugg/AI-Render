@@ -342,6 +342,7 @@ class SDR_OT_enable(bpy.types.Operator):
     "Enable Stable Diffusion Render in this scene"
     bl_idname = "sdr.enable"
     bl_label = "Enable Stable Diffusion Render"
+    bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
         enable_sdr(context.scene)
@@ -353,6 +354,7 @@ class SDR_OT_set_valid_render_dimensions(bpy.types.Operator):
     "Set render width and height to 512 x 512"
     bl_idname = "sdr.set_valid_render_dimensions"
     bl_label = "Set Image Size to 512x512"
+    bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
         set_image_dimensions(context, 512, 512)
