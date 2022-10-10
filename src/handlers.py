@@ -23,11 +23,13 @@ def load_post_handler(context):
 def render_pre_handler(scene):
     """Handle render about to start"""
 
-    # if SDR isn't enabled, or we don't want to run automatically, quit here
-    if not scene.sdr_props.is_enabled or not scene.sdr_props.auto_run:
+    # if SDR isn't enabled, quit here
+    if not scene.sdr_props.is_enabled:
         return
 
     # otherwise, do the pre-render setup
+    # NOTE: We want to do this even if auto_run is disabled, because we need to mute
+    # the node group in that case, so that the actual render can be viewed
     operators.do_pre_render_setup(scene)
 
 

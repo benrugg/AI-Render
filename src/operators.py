@@ -199,6 +199,8 @@ def do_pre_render_setup(scene, do_mute_node_group=True):
     # if that's what we want
     if do_mute_node_group:
         mute_compositor_node_group(scene)
+    else:
+        unmute_compositor_node_group(scene)
 
 
 def do_pre_api_setup():
