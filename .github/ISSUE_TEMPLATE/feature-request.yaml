@@ -9,7 +9,8 @@ body:
   - type: textarea
     id: solution
     attributes:
-      label: Describe the feature you'd like
+      label: |
+        Describe the feature you'd like to see:
     validations:
       required: true
 
@@ -17,6 +18,7 @@ body:
     id: additional-info
     attributes:
       label: Additional information
-      description: Add any other information, context or screenshots about the feature request here. Is it connected to specific OS, add-on version, Blender version, etc...
+      description: |
+        Add any other information, context or screenshots about the feature request here. Is it connected to specific OS, add-on version, Blender version, etc...
     validations:
       required: false
