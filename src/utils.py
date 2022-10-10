@@ -120,8 +120,8 @@ def generate_valid_dimensions_tuple_list():
     return list(map(return_tuple, valid_dimensions))
 
 
-def has_url(text):
-    #first remove markdown *
+def has_url(text, strict_match_protocol=False):
+    # remove markdown *
     text = text.replace('*','')
 
     # Anything that isn't a square closing bracket
@@ -145,7 +145,11 @@ def has_url(text):
 
     # if none found, look for url without markup
     else:
-        bare_url_regex = r"(?:[a-z]{3,9}:\/\/?[\-;:&=\+\$,\w]+?[a-z0-9\.\-]+|[\/a-z0-9]+\.|[\-;:&=\+\$,\w]+@)[a-z0-9\.\-]+(?:(?:\/[\+~%\/\.\w\-_]*)?\??[\-\+=&;%@\.\w_]*#?[\.\!\/\\\w]*)?"
+        if strict_match_protocol:
+            bare_url_regex = r"(https{0,1}:\/\/[A-Za-z0-9\-\._~:\/\?#\[\]@!\$&'\(\)\*\+\,;%=]+)"
+        else:
+            bare_url_regex = r"(?:[a-z]{3,9}:\/\/?[\-;:&=\+\$,\w]+?[a-z0-9\.\-]+|[\/a-z0-9]+\.|[\-;:&=\+\$,\w]+@)[a-z0-9\.\-]+(?:(?:\/[\+~%\/\.\w\-_]*)?\??[\-\+=&;%@\.\w_]*#?[\.\!\/\\\w]*)?"
+
         urls = re.findall(bare_url_regex, text, re.IGNORECASE)
 
         for i, url in enumerate(urls):
@@ -155,7 +159,7 @@ def has_url(text):
     return urls, text
 
 
-def label_multiline(layout, text='', icon='NONE', width=-1, max_lines=10, use_urls=True):
+def label_multiline(layout, text='', icon='NONE', width=-1, max_lines=12, use_urls=True):
     '''
      draw a ui label, but try to split it in multiple lines.
 
@@ -177,7 +181,7 @@ def label_multiline(layout, text='', icon='NONE', width=-1, max_lines=10, use_ur
     text = text.replace("\r\n", "\n")
 
     if use_urls:
-        urls, text = has_url(text)
+        urls, text = has_url(text, strict_match_protocol=True)
     else:
         urls = []
 
