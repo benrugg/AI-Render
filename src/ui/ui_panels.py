@@ -36,6 +36,12 @@ class SDR_PT_main(bpy.types.Panel):
         scene = context.scene
         props = scene.sdr_props
 
+        if not props.is_enabled:
+            row = layout.row()
+            row.operator(operators.SDR_OT_enable.bl_idname)
+
+            utils.label_multiline(layout, text="Enable Stable Diffusion Render in this scene to start using it", alignment="CENTER")
+
 
 class SDR_PT_setup(bpy.types.Panel):
     bl_label = "Setup"
@@ -53,9 +59,9 @@ class SDR_PT_setup(bpy.types.Panel):
     def poll_for_dimensions(cls, context):
         return not utils.are_dimensions_valid(context.scene)
 
-    # @classmethod
-    # def poll(cls, context):
-    #     return SDR_PT_setup.poll_for_api_key(context) or SDR_PT_setup.poll_for_dimensions(context)
+    @classmethod
+    def poll(cls, context):
+        return context.scene.sdr_props.is_enabled
 
     def draw(self, context):
         layout = self.layout
@@ -92,7 +98,7 @@ class SDR_PT_setup(bpy.types.Panel):
             col.operator(operators.SDR_OT_show_other_dimension_options.bl_idname, text="", icon="QUESTION")
 
         else:
-            utils.label_multiline(layout, text="You're ready to start rendering!", width=width_guess)
+            utils.label_multiline(layout, text="You're ready to start rendering!", width=width_guess, alignment="CENTER")
             row = layout.row()
             row.operator("wm.url_open", text="Help Getting Started", icon="URL").url = config.GETTING_STARTED_URL
 
@@ -104,6 +110,10 @@ class SDR_PT_core(bpy.types.Panel):
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
     bl_context = "render"
+
+    @classmethod
+    def poll(cls, context):
+        return context.scene.sdr_props.is_enabled
 
     def draw(self, context):
         layout = self.layout
@@ -143,6 +153,10 @@ class SDR_PT_advanced_options(bpy.types.Panel):
     bl_region_type = "WINDOW"
     bl_context = "render"
     bl_options = {'DEFAULT_CLOSED'}
+
+    @classmethod
+    def poll(cls, context):
+        return context.scene.sdr_props.is_enabled
 
     def draw(self, context):
         layout = self.layout
@@ -195,6 +209,10 @@ class SDR_PT_operation(bpy.types.Panel):
     bl_region_type = "WINDOW"
     bl_context = "render"
     bl_options = {'DEFAULT_CLOSED'}
+
+    @classmethod
+    def poll(cls, context):
+        return context.scene.sdr_props.is_enabled
 
     def draw(self, context):
         layout = self.layout

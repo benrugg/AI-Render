@@ -13,23 +13,18 @@ def load_post_handler(context):
     if not context:
         context = bpy.context
 
-    # register the task queue (because app timers get stopped
-    # when loading a new blender file)
-    task_queue.register()
-
-    # switch the workspace to compositor, so the new rendered image will actually appear
-    operators.ensure_sdr_workspace()
-
-    # clear any past errors
-    operators.clear_error(context.scene)
+    # if SDR has been enabled in this file, do the enable steps
+    # right now, to ensure everything is running and in place
+    if context.scene.sdr_props.is_enabled:
+        operators.enable_sdr(context.scene)
 
 
 @persistent
 def render_pre_handler(scene):
     """Handle render about to start"""
 
-    # if we don't want to run automatically, quit here
-    if not scene.sdr_props.auto_run:
+    # if SDR isn't enabled, or we don't want to run automatically, quit here
+    if not scene.sdr_props.is_enabled or not scene.sdr_props.auto_run:
         return
 
     # otherwise, do the pre-render setup
@@ -40,8 +35,8 @@ def render_pre_handler(scene):
 def render_complete_handler(scene):
     """Handle render completed (this is where the api and stable diffusion start)"""
 
-    # if we don't want to run automatically, quit here
-    if not scene.sdr_props.auto_run:
+    # if SDR isn't enabled, or we don't want to run automatically, quit here
+    if not scene.sdr_props.is_enabled or not scene.sdr_props.auto_run:
         return
 
     # check to see if we have a render result

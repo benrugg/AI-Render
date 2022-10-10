@@ -159,7 +159,7 @@ def has_url(text, strict_match_protocol=False):
     return urls, text
 
 
-def label_multiline(layout, text='', icon='NONE', width=-1, max_lines=12, use_urls=True):
+def label_multiline(layout, text='', icon='NONE', width=-1, max_lines=12, use_urls=True, alignment="LEFT"):
     '''
      draw a ui label, but try to split it in multiple lines.
 
@@ -205,6 +205,7 @@ def label_multiline(layout, text='', icon='NONE', width=-1, max_lines=12, use_ur
             l1 = line[:i]
 
             row = layout.row()
+            row.alignment = alignment
             row.label(text=l1, icon=icon)
             rows.append(row)
 
@@ -220,6 +221,7 @@ def label_multiline(layout, text='', icon='NONE', width=-1, max_lines=12, use_ur
             break
 
         row = layout.row()
+        row.alignment = alignment
         row.label(text=line, icon=icon)
         rows.append(row)
 

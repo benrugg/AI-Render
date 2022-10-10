@@ -14,6 +14,21 @@ from . import (
 valid_dimensions_tuple_list = utils.generate_valid_dimensions_tuple_list()
 
 
+def enable_sdr(scene):
+    # register the task queue (this also needs to be done post-load,
+    # because app timers get stopped when loading a new blender file)
+    task_queue.register()
+
+    # ensure that we have our SDR workspace with a compositor and image viewer,
+    # so the new rendered image will actually appear
+    ensure_sdr_workspace()
+
+    # clear any possible past errors in the file (this would happen if sdr
+    # was enabled in a file that we just opened, and it had been saved with
+    # an error from a past render)
+    clear_error(scene)
+
+
 def mute_compositor_mix_node(scene):
     compositor_nodes = scene.node_tree.nodes
     compositor_nodes.get('SDR_mix_node').mute = True
@@ -299,6 +314,17 @@ def send_to_api(scene):
     return True
 
 
+class SDR_OT_enable(bpy.types.Operator):
+    "Enable Stable Diffusion Render in this scene"
+    bl_idname = "sdr.enable"
+    bl_label = "Enable Stable Diffusion Render"
+
+    def execute(self, context):
+        enable_sdr(context.scene)
+        context.scene.sdr_props.is_enabled = True
+        return {'FINISHED'}
+
+
 class SDR_OT_set_valid_render_dimensions(bpy.types.Operator):
     "Set render width and height to 512 x 512"
     bl_idname = "sdr.set_valid_render_dimensions"
@@ -450,6 +476,7 @@ class SDR_OT_show_error_popup(bpy.types.Operator):
 
 
 classes = [
+    SDR_OT_enable,
     SDR_OT_set_valid_render_dimensions,
     SDR_OT_show_other_dimension_options,
     SDR_OT_generate_new_image_from_render,

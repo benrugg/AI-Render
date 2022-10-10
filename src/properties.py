@@ -7,6 +7,11 @@ from . import (
 from .ui import ui_preset_styles
 
 class SDRProperties(bpy.types.PropertyGroup):
+    is_enabled: bpy.props.BoolProperty(
+        name="Enable Stable Diffusion Render",
+        default=False,
+        description="Enable Stable Diffusion Render in this scene. This is not done by default in new blender files, so you can render normally until you want to use this add-on",
+    )
     prompt_text: bpy.props.StringProperty(
         name="Prompt",
         description="Describe anything for Stable Diffusion to create",
@@ -32,7 +37,7 @@ class SDRProperties(bpy.types.PropertyGroup):
     use_random_seed: bpy.props.BoolProperty(
         name="Random Seed",
         default=True,
-        description="Use a random seed to create a new starting point for each rendered image"
+        description="Use a random seed to create a new starting point for each rendered image",
     )
     seed: bpy.props.IntProperty(
         name="Seed",
@@ -84,7 +89,7 @@ class SDRProperties(bpy.types.PropertyGroup):
     )
     preset_style: bpy.props.EnumProperty(
         name="Preset Style",
-        items=ui_preset_styles.enum_thumbnail_icons
+        items=ui_preset_styles.enum_thumbnail_icons,
     )
 
 
