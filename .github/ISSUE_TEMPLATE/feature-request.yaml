@@ -1,0 +1,22 @@
+name: Feature request
+description: Request, idea, suggestion for improvement...
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for your suggesting a new feature!
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Describe the feature you'd like
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional-info
+    attributes:
+      label: Additional information
+      description: Add any other information, context or screenshots about the feature request here. Is it connected to specific OS, add-on version, Blender version, etc...
+    validations:
+      required: false
