@@ -23,53 +23,75 @@ def enable_sdr(scene):
     # so the new rendered image will actually appear
     ensure_sdr_workspace()
 
+    # create the sdr compositor nodes
+    ensure_compositor_node_group(scene)
+
     # clear any possible past errors in the file (this would happen if sdr
     # was enabled in a file that we just opened, and it had been saved with
     # an error from a past render)
     clear_error(scene)
 
 
-def mute_compositor_mix_node(scene):
+def mute_compositor_node_group(scene):
     compositor_nodes = scene.node_tree.nodes
-    compositor_nodes.get('SDR_mix_node').mute = True
+    compositor_nodes.get('SDR').mute = True
 
 
-def unmute_compositor_mix_node(scene):
+def unmute_compositor_node_group(scene):
     compositor_nodes = scene.node_tree.nodes
-    compositor_nodes.get('SDR_mix_node').mute = False
+    compositor_nodes.get('SDR').mute = False
 
 
 def update_compositor_node_with_image(scene, img):
     compositor_nodes = scene.node_tree.nodes
-    image_node = compositor_nodes.get('SDR_image_node')
+    image_node = compositor_nodes.get('SDR').node_tree.nodes.get('SDR_image_node')
     image_node.image = img
 
 
-def ensure_compositor_nodes(scene):
-    """Ensure that the compositor nodes are created"""
+def ensure_compositor_node_group(scene):
+    """Ensure that the compositor node group is created"""
     scene.use_nodes = True
     compositor_nodes = scene.node_tree.nodes
     composite_node = compositor_nodes.get('Composite')
 
     # if our image node already exists, just quit
-    if 'SDR_image_node' in compositor_nodes:
+    if 'SDR' in compositor_nodes:
         return {'FINISHED'}
 
-    # othewise, create a new image node and mix rgb node
-    image_node = compositor_nodes.new(type='CompositorNodeImage')
+    # otherwise, create a new node group
+    node_tree = bpy.data.node_groups.new('SDR_node_group_v1', 'CompositorNodeTree')
+
+    node_group = compositor_nodes.new('CompositorNodeGroup')
+    node_group.node_tree = node_tree
+    node_group.location = (400, 500)
+    node_group.name = 'SDR'
+    node_group.label = 'Stable Diffusion Render'
+
+    group_input = node_tree.nodes.new(type='NodeGroupInput')
+    group_input.location = (0, 30)
+
+    group_output = node_tree.nodes.new(type='NodeGroupOutput')
+    group_output.location = (620, 0)
+
+    # create a new image node and mix rgb node in the group
+    image_node = node_tree.nodes.new(type='CompositorNodeImage')
     image_node.name = 'SDR_image_node'
-    image_node.location = (300, 400)
-    image_node.label = 'Stable Diffusion Render'
+    image_node.location = (60, -100)
+    image_node.label = 'Stable Diffusion Result'
 
-    mix_node = compositor_nodes.new(type='CompositorNodeMixRGB')
+    mix_node = node_tree.nodes.new(type='CompositorNodeMixRGB')
     mix_node.name = 'SDR_mix_node'
-    mix_node.location = (550, 500)
+    mix_node.location = (350, 75)
 
-    # get a reference to the new link function, for convenience
-    create_link = scene.node_tree.links.new
+    # get a reference to the new link functions, for convenience
+    create_link_in_group = node_tree.links.new
+    create_link_in_compositor = scene.node_tree.links.new
 
-    # link the image node to the mix node
-    create_link(image_node.outputs.get('Image'), mix_node.inputs[2])
+    # create all the links within the group (group input node and image node to
+    # the mix node, and mix node to the group output node)
+    create_link_in_group(group_input.outputs[0], mix_node.inputs[1])
+    create_link_in_group(image_node.outputs.get('Image'), mix_node.inputs[2])
+    create_link_in_group(mix_node.outputs.get('Image'), group_output.inputs[0])
 
     # get the socket that's currently linked to the compositor, or as a
     # fallback, get the rendered image output
@@ -78,11 +100,11 @@ def ensure_compositor_nodes(scene):
     else:
         original_socket = compositor_nodes['Render Layers'].outputs.get('Image')
 
-    # link the original socket to the input of the mix node
-    create_link(original_socket, mix_node.inputs[1])
+    # link the original socket to the input of the group
+    create_link_in_compositor(original_socket, node_group.inputs[0])
 
-    # link the mix node to the compositor node
-    create_link(mix_node.outputs.get('Image'), composite_node.inputs.get('Image'))
+    # link the output of the group to the compositor node
+    create_link_in_compositor(node_group.outputs[0], composite_node.inputs.get('Image'))
 
     return {'FINISHED'}
 
@@ -161,7 +183,7 @@ def save_render_to_file(scene, timestamp):
     return tmp_filename
 
 
-def do_pre_render_setup(scene, do_mute_mix_node = True):
+def do_pre_render_setup(scene, do_mute_node_group=True):
     # Lock the user interface when rendering, so that we can change
     # compositor nodes in the render_pre handler without causing a crash!
     # See: https://docs.blender.org/api/current/bpy.app.handlers.html#note-on-altering-data
@@ -171,12 +193,12 @@ def do_pre_render_setup(scene, do_mute_mix_node = True):
     clear_error(scene)
 
     # when the render is starting, ensure we have the right compositor nodes
-    ensure_compositor_nodes(scene)
+    ensure_compositor_node_group(scene)
 
-    # then mute the mix node, so we get the result of the original render,
+    # then mute the compositor node group, so we get the result of the original render,
     # if that's what we want
-    if do_mute_mix_node:
-        mute_compositor_mix_node(scene)
+    if do_mute_node_group:
+        mute_compositor_node_group(scene)
 
 
 def do_pre_api_setup():
@@ -283,8 +305,8 @@ def send_to_api(scene):
         img = bpy.data.images.load(tmp_filename, check_existing=True)
         update_compositor_node_with_image(scene, img)
 
-        # unmute the mix node
-        unmute_compositor_mix_node(scene)
+        # unmute the compositor node group
+        unmute_compositor_node_group(scene)
 
     # handle 404
     elif response.status_code in [403, 404]:
@@ -405,7 +427,7 @@ class SDR_OT_generate_new_image_from_current(bpy.types.Operator):
     bl_label = "Generate New Image From Current"
 
     def execute(self, context):
-        do_pre_render_setup(context.scene, False)
+        do_pre_render_setup(context.scene, do_mute_node_group=False)
         do_pre_api_setup()
 
         # post to the api (on a different thread, outside the operator)
