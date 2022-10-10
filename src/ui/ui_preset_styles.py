@@ -111,4 +111,5 @@ def unregister():
     global preview_collection
 
     bpy.utils.previews.remove(preview_collection)
+    preview_collection.preset_styles_thumbnail_icons.clear()
     preview_collection = None
