@@ -1,0 +1,73 @@
+name: Bug Report
+description: Report bug, crash, issue...
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting a bug!
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe the bug
+      description: A clear and concise description of the problem:
+    validations:
+      required: true
+
+  - type: textarea
+    id: to-reproduce
+    attributes:
+      label: To reproduce
+      description: Explain how to see the error/issue/bug:
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected behavior
+      description: What did you expect to happen?
+    validations:
+      required: false
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots/video
+      description: |
+        If applicable, please provide a screenshot/video of the problem.
+    validations:
+      required: false
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment 
+      description: |
+        Please provide information about your operating system, version of Blender and AI Render, etc.
+        
+        AI Render version: in Blender, click on: `Edit > Preferences > Add-ons`, search for AI Render and expand it. This will show you the version of AI Render.
+        Blender version: in Blender click on: `Blender Icon (upper left corner) > About Blender`. This will show you the version of Blender.
+      value: |
+        - AI Render version: 
+        - Blender version: 
+        - Operating system: (Windows, OS X, etc)
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: |
+        If possible, please provide a system log of the problem.
+        - On Mac or linux, you need to run Blender from a terminal, where you can then see the log. [Get help for Mac](https://docs.blender.org/manual/en/latest/advanced/command_line/launch/macos.html).
+        - On Windows, you need to toggle system console in the top menu (see screenshot below). [Get help for Windows](https://docs.blender.org/manual/en/2.79/advanced/command_line/introduction.html#microsoft-windows).
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional-info
+    attributes:
+      label: Additional information
+      description: Anything other helpful information to know?
+    validations:
+      required: false
