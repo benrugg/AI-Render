@@ -1,6 +1,7 @@
-package_name = 'Stable-Diffusion-Render'
-default_prompt_text = "Describe anything you can imagine"
-tmp_path_subfolder = 'sdr-temp'
+package_name = 'AI-Render'
+default_prompt_text = 'Describe anything you can imagine'
+tmp_path_subfolder = 'ai-render-temp'
+workspace_id = 'AI Render'
 
 request_timeout = 15
 

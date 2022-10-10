@@ -13,18 +13,18 @@ def load_post_handler(context):
     if not context:
         context = bpy.context
 
-    # if SDR has been enabled in this file, do the enable steps
+    # if AI Render has been enabled in this file, do the enable steps
     # right now, to ensure everything is running and in place
-    if context.scene.sdr_props.is_enabled:
-        operators.enable_sdr(context.scene)
+    if context.scene.air_props.is_enabled:
+        operators.enable_air(context.scene)
 
 
 @persistent
 def render_pre_handler(scene):
     """Handle render about to start"""
 
-    # if SDR isn't enabled, quit here
-    if not scene.sdr_props.is_enabled:
+    # if AI Render isn't enabled, quit here
+    if not scene.air_props.is_enabled:
         return
 
     # otherwise, do the pre-render setup
@@ -35,10 +35,10 @@ def render_pre_handler(scene):
 
 @persistent
 def render_complete_handler(scene):
-    """Handle render completed (this is where the api and stable diffusion start)"""
+    """Handle render completed (this is where the API and Stable Diffusion start)"""
 
-    # if SDR isn't enabled, or we don't want to run automatically, quit here
-    if not scene.sdr_props.is_enabled or not scene.sdr_props.auto_run:
+    # if AI Render isn't enabled, or we don't want to run automatically, quit here
+    if not scene.air_props.is_enabled or not scene.air_props.auto_run:
         return
 
     # check to see if we have a render result
@@ -48,12 +48,12 @@ def render_complete_handler(scene):
     if is_img_ready:
 
         # do pre-api setup
-        operators.do_pre_api_setup()
+        operators.do_pre_api_setup(scene)
 
         # post to the api (on a different thread, outside the handler)
         task_queue.add(functools.partial(operators.send_to_api, scene))
     else:
-        operators.handle_error("Rendered image is not ready. Try generating a new image manually under Stable Diffusion Render > Operation")
+        operators.handle_error("Rendered image is not ready. Try generating a new image manually under AI Render > Operation")
 
 
 def register():

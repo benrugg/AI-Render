@@ -40,11 +40,11 @@ def get_temp_path():
 
 
 def get_temp_render_filename(timestamp):
-    return f"{get_temp_path()}/sdr-render-{timestamp}-1-before.png"
+    return f"{get_temp_path()}/ai-render-{timestamp}-1-before.png"
 
 
 def get_temp_output_filename(timestamp):
-    return f"{get_temp_path()}/sdr-render-{timestamp}-2-after.png"
+    return f"{get_temp_path()}/ai-render-{timestamp}-2-after.png"
 
 
 def get_filepath_in_package(path, filename = ""):
@@ -54,7 +54,7 @@ def get_filepath_in_package(path, filename = ""):
 
 
 def get_workspace_blend_file_filepath():
-    return get_filepath_in_package("blendfiles", "compositor_workspace.blend")
+    return get_filepath_in_package("blendfiles", "air_workspace.blend")
 
 
 def get_preset_style_thumnails_filepath():
@@ -81,9 +81,9 @@ def activate_workspace(context = None, workspace = None, workspace_id = None):
         bpy.data.window_managers[0].windows[0].workspace = workspace
 
 
-def view_render_result_in_sdr_image_editor():
+def view_render_result_in_air_image_editor():
     image_editor_area = None
-    areas = bpy.data.workspaces['Stable Diffusion Render'].screens[0].areas
+    areas = bpy.data.workspaces[config.workspace_id].screens[0].areas
 
     for area in areas:
         if area.type == 'IMAGE_EDITOR':

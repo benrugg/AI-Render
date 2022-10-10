@@ -6,11 +6,11 @@ from . import (
 )
 from .ui import ui_preset_styles
 
-class SDRProperties(bpy.types.PropertyGroup):
+class AIRProperties(bpy.types.PropertyGroup):
     is_enabled: bpy.props.BoolProperty(
-        name="Enable Stable Diffusion Render",
+        name="Enable AI Render",
         default=False,
-        description="Enable Stable Diffusion Render in this scene. This is not done by default in new blender files, so you can render normally until you want to use this add-on",
+        description="Enable AI Render in this scene. This is not done by default in new blender files, so you can render normally until you want to use this add-on",
     )
     prompt_text: bpy.props.StringProperty(
         name="Prompt",
@@ -94,7 +94,7 @@ class SDRProperties(bpy.types.PropertyGroup):
 
 
 classes = [
-    SDRProperties
+    AIRProperties
 ]
 
 
@@ -102,11 +102,11 @@ def register():
     for cls in classes:
         bpy.utils.register_class(cls)
 
-    bpy.types.Scene.sdr_props = bpy.props.PointerProperty(type=SDRProperties)
+    bpy.types.Scene.air_props = bpy.props.PointerProperty(type=AIRProperties)
 
 
 def unregister():
     for cls in classes:
         bpy.utils.unregister_class(cls)
 
-    del bpy.types.Scene.sdr_props
+    del bpy.types.Scene.air_props

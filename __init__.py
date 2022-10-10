@@ -1,10 +1,10 @@
 bl_info = {
-    "name": "Stable Diffusion Render",
-    "description": "Use the Stable Diffusion AI algorithm to create a new image based on your render and a text prompt",
+    "name": "AI Render - Stable Diffusion in Blender",
+    "description": "Create amazing images using Stable Diffusion AI",
     "author": "Ben Rugg",
     "version": (0, 2, 0),
     "blender": (3, 3, 0),
-    "location": "3D View > Sidebar  &  Render Properties > Stable Diffusion Render",
+    "location": "Render Properties > AI Render",
     "warning": "",
     "tracker_url": "",
     "category": "Render",

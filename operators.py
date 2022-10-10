@@ -14,19 +14,19 @@ from . import (
 valid_dimensions_tuple_list = utils.generate_valid_dimensions_tuple_list()
 
 
-def enable_sdr(scene):
+def enable_air(scene):
     # register the task queue (this also needs to be done post-load,
     # because app timers get stopped when loading a new blender file)
     task_queue.register()
 
-    # ensure that we have our SDR workspace with a compositor and image viewer,
+    # ensure that we have our AI Render workspace with a compositor and image viewer,
     # so the new rendered image will actually appear
-    ensure_sdr_workspace()
+    ensure_air_workspace()
 
-    # create the sdr compositor nodes
+    # create the ai render compositor nodes
     ensure_compositor_node_group(scene)
 
-    # clear any possible past errors in the file (this would happen if sdr
+    # clear any possible past errors in the file (this would happen if ai render
     # was enabled in a file that we just opened, and it had been saved with
     # an error from a past render)
     clear_error(scene)
@@ -34,17 +34,17 @@ def enable_sdr(scene):
 
 def mute_compositor_node_group(scene):
     compositor_nodes = scene.node_tree.nodes
-    compositor_nodes.get('SDR').mute = True
+    compositor_nodes.get('AIR').mute = True
 
 
 def unmute_compositor_node_group(scene):
     compositor_nodes = scene.node_tree.nodes
-    compositor_nodes.get('SDR').mute = False
+    compositor_nodes.get('AIR').mute = False
 
 
 def update_compositor_node_with_image(scene, img):
     compositor_nodes = scene.node_tree.nodes
-    image_node = compositor_nodes.get('SDR').node_tree.nodes.get('SDR_image_node')
+    image_node = compositor_nodes.get('AIR').node_tree.nodes.get('AIR_image_node')
     image_node.image = img
 
 
@@ -55,17 +55,17 @@ def ensure_compositor_node_group(scene):
     composite_node = compositor_nodes.get('Composite')
 
     # if our image node already exists, just quit
-    if 'SDR' in compositor_nodes:
+    if 'AIR' in compositor_nodes:
         return {'FINISHED'}
 
     # otherwise, create a new node group
-    node_tree = bpy.data.node_groups.new('SDR_node_group_v1', 'CompositorNodeTree')
+    node_tree = bpy.data.node_groups.new('AIR_node_group_v1', 'CompositorNodeTree')
 
     node_group = compositor_nodes.new('CompositorNodeGroup')
     node_group.node_tree = node_tree
     node_group.location = (400, 500)
-    node_group.name = 'SDR'
-    node_group.label = 'Stable Diffusion Render'
+    node_group.name = 'AIR'
+    node_group.label = 'AI Render'
 
     group_input = node_tree.nodes.new(type='NodeGroupInput')
     group_input.location = (0, 30)
@@ -75,12 +75,12 @@ def ensure_compositor_node_group(scene):
 
     # create a new image node and mix rgb node in the group
     image_node = node_tree.nodes.new(type='CompositorNodeImage')
-    image_node.name = 'SDR_image_node'
+    image_node.name = 'AIR_image_node'
     image_node.location = (60, -100)
-    image_node.label = 'Stable Diffusion Result'
+    image_node.label = 'AI Render Result'
 
     mix_node = node_tree.nodes.new(type='CompositorNodeMixRGB')
-    mix_node.name = 'SDR_mix_node'
+    mix_node.name = 'AIR_mix_node'
     mix_node.location = (350, 75)
 
     # get a reference to the new link functions, for convenience
@@ -109,31 +109,30 @@ def ensure_compositor_node_group(scene):
     return {'FINISHED'}
 
 
-def ensure_sdr_workspace():
+def ensure_air_workspace():
     """Ensure we have a compositor window and an image viewer"""
-    workspace_id = "Stable Diffusion Render"
 
     # if the workspace isn't in our file, add it from our own included blend file
-    if workspace_id not in bpy.data.workspaces:
+    if config.workspace_id not in bpy.data.workspaces:
 
         original_workspace = utils.get_current_workspace()
 
         bpy.ops.workspace.append_activate(
-            idname=workspace_id,
+            idname=config.workspace_id,
             filepath=utils.get_workspace_blend_file_filepath()
         )
 
         utils.activate_workspace(workspace=original_workspace)
 
 
-def activate_sdr_workspace():
+def activate_air_workspace(scene):
     """Activate the special compositor workspace, and make sure it's viewing the render result"""
-    workspace_id = "Stable Diffusion Render"
     try:
-        utils.activate_workspace(workspace_id=workspace_id)
-        utils.view_render_result_in_sdr_image_editor()
+        utils.activate_workspace(workspace_id=config.workspace_id)
+        utils.view_render_result_in_air_image_editor()
     except:
-        handle_error("Couldn't find the Stable Diffusion Render workspace. Please reload this blend file, or deactivate Stable Diffusion Render.")
+        scene.air_props.is_enabled = False
+        handle_error("Couldn't find the AI Render workspace. Please re-enable AI Render, or deactivate the AI Render add-on.")
 
 
 def set_image_dimensions(context, width, height):
@@ -146,15 +145,15 @@ def set_image_dimensions(context, width, height):
 
 def handle_error(msg, error_key = ''):
     """Show an error popup, and set the error message to be displayed in the ui"""
-    print("Stable Diffusion Error: ", msg)
-    task_queue.add(functools.partial(bpy.ops.sdr.show_error_popup, 'INVOKE_DEFAULT', error_message=msg, error_key=error_key))
+    print("AI Render Error: ", msg)
+    task_queue.add(functools.partial(bpy.ops.ai_render.show_error_popup, 'INVOKE_DEFAULT', error_message=msg, error_key=error_key))
     return False
 
 
 def clear_error(scene):
     """Clear the error message in the ui"""
-    scene.sdr_props.error_message = ''
-    scene.sdr_props.error_key = ''
+    scene.air_props.error_message = ''
+    scene.air_props.error_key = ''
 
 
 def clear_error_handler(self, context):
@@ -162,7 +161,7 @@ def clear_error_handler(self, context):
 
 
 def generate_new_random_seed(scene):
-    props = scene.sdr_props
+    props = scene.air_props
     if (props.use_random_seed):
         props.seed = random.randint(1000000000, 2147483647)
 
@@ -203,13 +202,13 @@ def do_pre_render_setup(scene, do_mute_node_group=True):
         unmute_compositor_node_group(scene)
 
 
-def do_pre_api_setup():
-    # switch the workspace to our sdr compositor, so the new rendered image will actually appear
-    activate_sdr_workspace()
+def do_pre_api_setup(scene):
+    # switch the workspace to our ai render compositor, so the new rendered image will actually appear
+    activate_air_workspace(scene)
 
 
 def validate_params(scene):
-    props = scene.sdr_props
+    props = scene.air_props
     if utils.get_api_key().strip() == "":
         return handle_error("You must enter an API Key to render with Stable Diffusion", "api_key")
     if not utils.are_dimensions_valid(scene):
@@ -220,7 +219,7 @@ def validate_params(scene):
 
 
 def get_full_prompt(scene):
-    props = scene.sdr_props
+    props = scene.air_props
     prompt = props.prompt_text.strip()
     if prompt == config.default_prompt_text:
         prompt = ""
@@ -234,7 +233,7 @@ def get_full_prompt(scene):
 
 def send_to_api(scene):
     """Post to the API and process the resulting image"""
-    props = scene.sdr_props
+    props = scene.air_props
 
     # validate the parameters we will send
     if not validate_params(scene):
@@ -338,21 +337,21 @@ def send_to_api(scene):
     return True
 
 
-class SDR_OT_enable(bpy.types.Operator):
-    "Enable Stable Diffusion Render in this scene"
-    bl_idname = "sdr.enable"
-    bl_label = "Enable Stable Diffusion Render"
+class AIR_OT_enable(bpy.types.Operator):
+    "Enable AI Render in this scene"
+    bl_idname = "ai_render.enable"
+    bl_label = "Enable AI Render"
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
-        enable_sdr(context.scene)
-        context.scene.sdr_props.is_enabled = True
+        enable_air(context.scene)
+        context.scene.air_props.is_enabled = True
         return {'FINISHED'}
 
 
-class SDR_OT_set_valid_render_dimensions(bpy.types.Operator):
+class AIR_OT_set_valid_render_dimensions(bpy.types.Operator):
     "Set render width and height to 512 x 512"
-    bl_idname = "sdr.set_valid_render_dimensions"
+    bl_idname = "ai_render.set_valid_render_dimensions"
     bl_label = "Set Image Size to 512x512"
     bl_options = {'REGISTER', 'UNDO'}
 
@@ -361,9 +360,9 @@ class SDR_OT_set_valid_render_dimensions(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class SDR_OT_show_other_dimension_options(bpy.types.Operator):
+class AIR_OT_show_other_dimension_options(bpy.types.Operator):
     "Other options for image size"
-    bl_idname = "sdr.show_other_dimension_options"
+    bl_idname = "ai_render.show_other_dimension_options"
     bl_label = "Image Size Options"
     bl_options = {'REGISTER', 'UNDO'}
 
@@ -410,14 +409,14 @@ class SDR_OT_show_other_dimension_options(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class SDR_OT_generate_new_image_from_render(bpy.types.Operator):
+class AIR_OT_generate_new_image_from_render(bpy.types.Operator):
     "Generate a new Stable Diffusion image - without re-rendering - from the last rendered image"
-    bl_idname = "sdr.generate_new_image_from_render"
+    bl_idname = "ai_render.generate_new_image_from_render"
     bl_label = "New Image From Last Render"
 
     def execute(self, context):
         do_pre_render_setup(context.scene)
-        do_pre_api_setup()
+        do_pre_api_setup(context.scene)
 
         # post to the api (on a different thread, outside the operator)
         task_queue.add(functools.partial(send_to_api, context.scene))
@@ -425,14 +424,14 @@ class SDR_OT_generate_new_image_from_render(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class SDR_OT_generate_new_image_from_current(bpy.types.Operator):
+class AIR_OT_generate_new_image_from_current(bpy.types.Operator):
     "Generate a new Stable Diffusion image - without re-rendering - using the latest Stable Diffusion image as the starting point"
-    bl_idname = "sdr.generate_new_image_from_current"
-    bl_label = "New Image From Last SDR"
+    bl_idname = "ai_render.generate_new_image_from_current"
+    bl_label = "New Image From Last AI image"
 
     def execute(self, context):
         do_pre_render_setup(context.scene, do_mute_node_group=False)
-        do_pre_api_setup()
+        do_pre_api_setup(context.scene)
 
         # post to the api (on a different thread, outside the operator)
         task_queue.add(functools.partial(send_to_api, context.scene))
@@ -440,10 +439,10 @@ class SDR_OT_generate_new_image_from_current(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class SDR_OT_setup_instructions_popup(bpy.types.Operator):
+class AIR_OT_setup_instructions_popup(bpy.types.Operator):
     "Show the setup instructions in a popup dialog"
-    bl_idname = "sdr.show_setup_instructions_popup"
-    bl_label = "Stable Diffusion Render Setup"
+    bl_idname = "ai_render.show_setup_instructions_popup"
+    bl_label = "Stable Diffusion Setup"
 
     width = 350
 
@@ -453,22 +452,22 @@ class SDR_OT_setup_instructions_popup(bpy.types.Operator):
     )
 
     def draw(self, context):
-        utils.label_multiline(self.layout, text=self.message, icon="HELP", width=self.width)
+        utils.label_multiline(self.layout, text=self.message, icon="HELP", width=self.width-3, alignment="CENTER")
         row = self.layout.row()
         row.operator("wm.url_open", text="Sign Up For DreamStudio (free)", icon="URL").url = config.DREAM_STUDIO_URL
 
     def invoke(self, context, event):
-        self.message = "The Stable Diffusion Renderer uses a service called DreamStudio. You will need to create a DreamStudio account, and get your own API KEY from them. You will get free credits, which will be used when you render. After using your free credits, you will need to sign up for a membership. DreamStudio is unaffiliated with this Blender Plugin. It's just a great and easy to use option!"
+        self.message = "This add-on uses a service called DreamStudio. You will need to create a DreamStudio account, and get your own API KEY from them. You will get free credits, which will be used when you render. After using your free credits, you will need to sign up for a membership. DreamStudio is unaffiliated with this Blender add-on. It's just a great and easy to use option!"
         return context.window_manager.invoke_props_dialog(self, width=self.width)
 
     def execute(self, context):
         return {'FINISHED'}
 
 
-class SDR_OT_show_error_popup(bpy.types.Operator):
+class AIR_OT_show_error_popup(bpy.types.Operator):
     "Show an error message in a popup dialog"
-    bl_idname = "sdr.show_error_popup"
-    bl_label = "Stable Diffusion Render Error"
+    bl_idname = "ai_render.show_error_popup"
+    bl_label = "AI Render Error"
 
     width = 350
 
@@ -487,9 +486,9 @@ class SDR_OT_show_error_popup(bpy.types.Operator):
         utils.label_multiline(self.layout, text=self.error_message, icon="ERROR", width=self.width)
 
     def invoke(self, context, event):
-        # store the error key and message in the main SDR props
-        context.scene.sdr_props.error_key = self.error_key
-        context.scene.sdr_props.error_message = self.error_message
+        # store the error key and message in the main AIR props
+        context.scene.air_props.error_key = self.error_key
+        context.scene.air_props.error_message = self.error_message
 
         # show a popup
         return context.window_manager.invoke_props_dialog(self, width=self.width)
@@ -502,13 +501,13 @@ class SDR_OT_show_error_popup(bpy.types.Operator):
 
 
 classes = [
-    SDR_OT_enable,
-    SDR_OT_set_valid_render_dimensions,
-    SDR_OT_show_other_dimension_options,
-    SDR_OT_generate_new_image_from_render,
-    SDR_OT_generate_new_image_from_current,
-    SDR_OT_setup_instructions_popup,
-    SDR_OT_show_error_popup,
+    AIR_OT_enable,
+    AIR_OT_set_valid_render_dimensions,
+    AIR_OT_show_other_dimension_options,
+    AIR_OT_generate_new_image_from_render,
+    AIR_OT_generate_new_image_from_current,
+    AIR_OT_setup_instructions_popup,
+    AIR_OT_show_error_popup,
 ]
 
 

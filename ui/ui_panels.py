@@ -7,7 +7,7 @@ from .. import (
 
 
 def show_error_if_it_exists(layout, context):
-    props = context.scene.sdr_props
+    props = context.scene.air_props
     if (props.error_message):
 
         box = layout.box()
@@ -23,9 +23,9 @@ def show_error_if_it_exists(layout, context):
         utils.label_multiline(box, text=props.error_message, width=220)
 
 
-class SDR_PT_main(bpy.types.Panel):
-    bl_label = "Stable Diffusion Render"
-    bl_idname = "SDR_PT_main"
+class AIR_PT_main(bpy.types.Panel):
+    bl_label = "AI Render"
+    bl_idname = "AIR_PT_main"
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
     bl_context = "render"
@@ -34,26 +34,26 @@ class SDR_PT_main(bpy.types.Panel):
     def draw(self, context):
         layout = self.layout
         scene = context.scene
-        props = scene.sdr_props
+        props = scene.air_props
 
         if not props.is_enabled:
             row = layout.row()
-            row.operator(operators.SDR_OT_enable.bl_idname)
+            row.operator(operators.AIR_OT_enable.bl_idname)
 
-            utils.label_multiline(layout, text="Enable Stable Diffusion Render in this scene to start using it", alignment="CENTER")
+            utils.label_multiline(layout, text="Enable AI Render in this scene to start using Stable Diffusion", alignment="CENTER")
 
 
-class SDR_PT_setup(bpy.types.Panel):
+class AIR_PT_setup(bpy.types.Panel):
     bl_label = "Setup"
-    bl_idname = "SDR_PT_setup"
-    bl_parent_id = "SDR_PT_main"
+    bl_idname = "AIR_PT_setup"
+    bl_parent_id = "AIR_PT_main"
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
     bl_context = "render"
 
     @classmethod
     def poll_for_api_key(cls, context):
-        return utils.get_api_key(context) == '' or context.scene.sdr_props.error_key == 'api_key'
+        return utils.get_api_key(context) == '' or context.scene.air_props.error_key == 'api_key'
 
     @classmethod
     def poll_for_dimensions(cls, context):
@@ -61,17 +61,17 @@ class SDR_PT_setup(bpy.types.Panel):
 
     @classmethod
     def poll(cls, context):
-        return context.scene.sdr_props.is_enabled
+        return context.scene.air_props.is_enabled
 
     def draw(self, context):
         layout = self.layout
         scene = context.scene
-        props = scene.sdr_props
+        props = scene.air_props
 
         width_guess = 230
 
         # if the api key is invalid, show the initial setup instructions
-        if SDR_PT_setup.poll_for_api_key(context):
+        if AIR_PT_setup.poll_for_api_key(context):
 
             utils.label_multiline(layout, text="Setup is quick and easy. No downloads or installation. Just register for a Dream Studio API Key.", icon="INFO", width=width_guess)
 
@@ -79,7 +79,7 @@ class SDR_PT_setup(bpy.types.Panel):
             col = row.column()
             # col.label(text="Setup is easy!")
             # col = row.column()
-            col.operator(operators.SDR_OT_setup_instructions_popup.bl_idname, text="Instructions", icon="HELP")
+            col.operator(operators.AIR_OT_setup_instructions_popup.bl_idname, text="Instructions", icon="HELP")
 
             row = layout.row()
             row.operator("wm.url_open", text="Sign Up For DreamStudio (free)", icon="URL").url = config.DREAM_STUDIO_URL
@@ -88,14 +88,14 @@ class SDR_PT_setup(bpy.types.Panel):
             row.prop(utils.get_addon_preferences(context), "dream_studio_api_key")
 
         # else, show the image dimension help
-        elif SDR_PT_setup.poll_for_dimensions(context):
+        elif AIR_PT_setup.poll_for_dimensions(context):
             utils.label_multiline(layout, text=f"Adjust Image Size: \nStable Diffusion only works on a few specific image dimensions.", icon="INFO", width=width_guess)
 
             row = layout.row(align=True)
             col = row.column()
-            col.operator(operators.SDR_OT_set_valid_render_dimensions.bl_idname)
+            col.operator(operators.AIR_OT_set_valid_render_dimensions.bl_idname)
             col = row.column()
-            col.operator(operators.SDR_OT_show_other_dimension_options.bl_idname, text="", icon="QUESTION")
+            col.operator(operators.AIR_OT_show_other_dimension_options.bl_idname, text="", icon="QUESTION")
 
         else:
             utils.label_multiline(layout, text="You're ready to start rendering!", width=width_guess, alignment="CENTER")
@@ -103,22 +103,22 @@ class SDR_PT_setup(bpy.types.Panel):
             row.operator("wm.url_open", text="Help Getting Started", icon="URL").url = config.GETTING_STARTED_URL
 
 
-class SDR_PT_core(bpy.types.Panel):
+class AIR_PT_core(bpy.types.Panel):
     bl_label = "Prompt"
-    bl_idname = "SDR_PT_core"
-    bl_parent_id = "SDR_PT_main"
+    bl_idname = "AIR_PT_core"
+    bl_parent_id = "AIR_PT_main"
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
     bl_context = "render"
 
     @classmethod
     def poll(cls, context):
-        return context.scene.sdr_props.is_enabled
+        return context.scene.air_props.is_enabled
 
     def draw(self, context):
         layout = self.layout
         scene = context.scene
-        props = scene.sdr_props
+        props = scene.air_props
 
         # Show the error if we have one
         show_error_if_it_exists(layout, context)
@@ -145,10 +145,10 @@ class SDR_PT_core(bpy.types.Panel):
 
 
 
-class SDR_PT_advanced_options(bpy.types.Panel):
+class AIR_PT_advanced_options(bpy.types.Panel):
     bl_label = "Advanced Options"
-    bl_idname = "SDR_PT_advanced_options"
-    bl_parent_id = "SDR_PT_main"
+    bl_idname = "AIR_PT_advanced_options"
+    bl_parent_id = "AIR_PT_main"
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
     bl_context = "render"
@@ -156,12 +156,12 @@ class SDR_PT_advanced_options(bpy.types.Panel):
 
     @classmethod
     def poll(cls, context):
-        return context.scene.sdr_props.is_enabled
+        return context.scene.air_props.is_enabled
 
     def draw(self, context):
         layout = self.layout
         scene = context.scene
-        props = scene.sdr_props
+        props = scene.air_props
 
         # Seed
         row = layout.row()
@@ -201,10 +201,10 @@ class SDR_PT_advanced_options(bpy.types.Panel):
         sub.prop(props, 'sampler', text="")
 
 
-class SDR_PT_operation(bpy.types.Panel):
+class AIR_PT_operation(bpy.types.Panel):
     bl_label = "Operation"
-    bl_idname = "SDR_PT_operation"
-    bl_parent_id = "SDR_PT_main"
+    bl_idname = "AIR_PT_operation"
+    bl_parent_id = "AIR_PT_main"
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
     bl_context = "render"
@@ -212,12 +212,12 @@ class SDR_PT_operation(bpy.types.Panel):
 
     @classmethod
     def poll(cls, context):
-        return context.scene.sdr_props.is_enabled
+        return context.scene.air_props.is_enabled
 
     def draw(self, context):
         layout = self.layout
         scene = context.scene
-        props = scene.sdr_props
+        props = scene.air_props
 
         # Auto Run
         row = layout.row()
@@ -231,19 +231,19 @@ class SDR_PT_operation(bpy.types.Panel):
 
         row = layout.row()
         row.enabled = manual_buttons_enabled
-        row.operator(operators.SDR_OT_generate_new_image_from_render.bl_idname)
+        row.operator(operators.AIR_OT_generate_new_image_from_render.bl_idname)
 
         row = layout.row()
         row.enabled = manual_buttons_enabled
-        row.operator(operators.SDR_OT_generate_new_image_from_current.bl_idname)
+        row.operator(operators.AIR_OT_generate_new_image_from_current.bl_idname)
 
 
 classes = [
-    SDR_PT_main,
-    SDR_PT_setup,
-    SDR_PT_core,
-    SDR_PT_advanced_options,
-    SDR_PT_operation,
+    AIR_PT_main,
+    AIR_PT_setup,
+    AIR_PT_core,
+    AIR_PT_advanced_options,
+    AIR_PT_operation,
 ]
 
 

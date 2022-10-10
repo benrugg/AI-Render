@@ -92,7 +92,7 @@ def enum_thumbnail_icons(self, context):
     #         enum_items.append(("val " + name, "label " + name, "", thumb.icon_id, i))
 
     # else:
-    #     print("Error loading preset style thumbnails for Stable Diffusion Render. Directory doesn't exist: ", img_dir)
+    #     print("Error loading preset style thumbnails for AI Render. Directory doesn't exist: ", img_dir)
 
     preview_collection.preset_styles_thumbnail_icons = enum_items
     return preview_collection.preset_styles_thumbnail_icons
