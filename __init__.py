@@ -3,7 +3,7 @@ bl_info = {
     "description": "Create amazing images using Stable Diffusion AI",
     "author": "Ben Rugg",
     "version": (0, 2, 2),
-    "blender": (3, 3, 0),
+    "blender": (3, 0, 0),
     "location": "Render Properties > AI Render",
     "warning": "",
     "tracker_url": "",
