@@ -20,7 +20,7 @@ class AIRProperties(bpy.types.PropertyGroup):
     )
     image_similarity: bpy.props.FloatProperty(
         name="Image Similarity",
-        default=0.15,
+        default=0.30,
         soft_min=0.0,
         soft_max=0.5,
         min=0.0,
