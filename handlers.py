@@ -4,6 +4,7 @@ import functools
 from . import (
     operators,
     task_queue,
+    utils,
 )
 
 
@@ -37,8 +38,9 @@ def render_pre_handler(scene):
 def render_complete_handler(scene):
     """Handle render completed (this is where the API and Stable Diffusion start)"""
 
-    # if AI Render isn't enabled, or we don't want to run automatically, quit here
-    if not scene.air_props.is_enabled or not scene.air_props.auto_run:
+    # if AI Render isn't enabled, we don't want to run automatically,
+    # or we don't have an API Key, quit here
+    if not scene.air_props.is_enabled or not scene.air_props.auto_run or not utils.get_api_key():
         return
 
     # check to see if we have a render result
