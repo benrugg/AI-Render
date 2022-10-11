@@ -493,6 +493,10 @@ class AIR_OT_show_error_popup(bpy.types.Operator):
         # show a popup
         return context.window_manager.invoke_props_dialog(self, width=self.width)
 
+    def cancel(self, context):
+        # report the error, for the status bar
+        self.report({'ERROR'}, self.error_message)
+
     def execute(self, context):
         # report the error, for the status bar
         self.report({'ERROR'}, self.error_message)
