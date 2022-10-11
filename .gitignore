@@ -2,6 +2,7 @@
 
 # blender/python
 __pycache__
+ai-render_updater
 
 # misc
 .DS_Store

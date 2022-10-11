@@ -2,7 +2,7 @@ bl_info = {
     "name": "AI Render - Stable Diffusion in Blender",
     "description": "Create amazing images using Stable Diffusion AI",
     "author": "Ben Rugg",
-    "version": (0, 2, 1),
+    "version": (0, 2, 2),
     "blender": (3, 3, 0),
     "location": "Render Properties > AI Render",
     "warning": "",
@@ -13,6 +13,7 @@ bl_info = {
 
 if "bpy" in locals():
     import imp
+    imp.reload(addon_updater_ops)
     imp.reload(config)
     imp.reload(handlers)
     imp.reload(operators)
@@ -24,6 +25,7 @@ if "bpy" in locals():
     imp.reload(utils)
 else:
     from . import (
+        addon_updater_ops,
         config,
         handlers,
         operators,
@@ -41,6 +43,7 @@ import bpy
 
 
 def register():
+    addon_updater_ops.register(bl_info)
     handlers.register()
     operators.register()
     preferences.register()
@@ -51,6 +54,7 @@ def register():
 
 
 def unregister():
+    addon_updater_ops.unregister()
     handlers.unregister()
     operators.unregister()
     preferences.unregister()

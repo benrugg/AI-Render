@@ -1,5 +1,6 @@
 import bpy
 from .. import (
+    addon_updater_ops,
     config,
     operators,
     utils,
@@ -37,10 +38,15 @@ class AIR_PT_main(bpy.types.Panel):
         props = scene.air_props
 
         if not props.is_enabled:
+
+            # Show enable button and message
             row = layout.row()
             row.operator(operators.AIR_OT_enable.bl_idname)
 
             utils.label_multiline(layout, text="Enable AI Render in this scene to start using Stable Diffusion", alignment="CENTER")
+
+            # Show updater if update is available
+            addon_updater_ops.update_notice_box_ui(self, context)
 
 
 class AIR_PT_setup(bpy.types.Panel):
@@ -103,9 +109,9 @@ class AIR_PT_setup(bpy.types.Panel):
             row.operator("wm.url_open", text="Help Getting Started", icon="URL").url = config.GETTING_STARTED_URL
 
 
-class AIR_PT_core(bpy.types.Panel):
+class AIR_PT_prompt(bpy.types.Panel):
     bl_label = "Prompt"
-    bl_idname = "AIR_PT_core"
+    bl_idname = "AIR_PT_prompt"
     bl_parent_id = "AIR_PT_main"
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
@@ -119,6 +125,9 @@ class AIR_PT_core(bpy.types.Panel):
         layout = self.layout
         scene = context.scene
         props = scene.air_props
+
+        # Show updater if update is available
+        addon_updater_ops.update_notice_box_ui(self, context)
 
         # Show the error if we have one
         show_error_if_it_exists(layout, context)
@@ -142,7 +151,6 @@ class AIR_PT_core(bpy.types.Panel):
 
             row = box.row()
             row.label(text=f"\"{props.preset_style}\"")
-
 
 
 class AIR_PT_advanced_options(bpy.types.Panel):
@@ -241,7 +249,7 @@ class AIR_PT_operation(bpy.types.Panel):
 classes = [
     AIR_PT_main,
     AIR_PT_setup,
-    AIR_PT_core,
+    AIR_PT_prompt,
     AIR_PT_advanced_options,
     AIR_PT_operation,
 ]
