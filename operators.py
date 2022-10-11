@@ -213,6 +213,8 @@ def validate_params(scene):
         return handle_error("You must enter an API Key to render with Stable Diffusion", "api_key")
     if not utils.are_dimensions_valid(scene):
         return handle_error("Please set width and height to valid values", "dimensions")
+    if utils.are_dimensions_too_large(scene):
+        return handle_error("Image dimensions are too large. Please decrease width and/or height", "dimensions")
     if get_full_prompt(scene) == "":
         return handle_error("Please enter a prompt for Stable Diffusion", "prompt")
     return True
@@ -383,7 +385,7 @@ class AIR_OT_show_other_dimension_options(bpy.types.Operator):
 
     def draw(self, context):
         layout = self.layout
-        utils.label_multiline(layout, text="Choose dimensions that Stable Diffusion can work with. (Anything larger than 512x512 may take a long time)", width=self.panel_width)
+        utils.label_multiline(layout, text="Choose dimensions that Stable Diffusion can work with. (Anything larger than 512x512 risks taking too long and timing out without results)", width=self.panel_width)
 
         layout.separator()
 

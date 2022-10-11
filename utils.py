@@ -115,6 +115,10 @@ def are_dimensions_valid(scene):
     )
 
 
+def are_dimensions_too_large(scene):
+    return get_output_width(scene) * get_output_height(scene) > config.max_image_px_area
+
+
 def generate_valid_dimensions_tuple_list():
     return_tuple = lambda num: (str(num), str(num) + " px", str(num))
     return list(map(return_tuple, valid_dimensions))

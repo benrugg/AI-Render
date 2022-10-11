@@ -58,12 +58,16 @@ class AIR_PT_setup(bpy.types.Panel):
     bl_context = "render"
 
     @classmethod
-    def poll_for_api_key(cls, context):
-        return utils.get_api_key(context) == '' or context.scene.air_props.error_key == 'api_key'
+    def is_api_key_valid(cls, context):
+        return utils.get_api_key(context) != '' and context.scene.air_props.error_key != 'api_key'
 
     @classmethod
-    def poll_for_dimensions(cls, context):
-        return not utils.are_dimensions_valid(context.scene)
+    def are_dimensions_valid(cls, context):
+        return utils.are_dimensions_valid(context.scene)
+
+    @classmethod
+    def are_dimensions_small_enough(cls, context):
+        return not utils.are_dimensions_too_large(context.scene)
 
     @classmethod
     def poll(cls, context):
@@ -77,7 +81,7 @@ class AIR_PT_setup(bpy.types.Panel):
         width_guess = 230
 
         # if the api key is invalid, show the initial setup instructions
-        if AIR_PT_setup.poll_for_api_key(context):
+        if not AIR_PT_setup.is_api_key_valid(context):
 
             utils.label_multiline(layout, text="Setup is quick and easy. No downloads or installation. Just register for a Dream Studio API Key.", icon="INFO", width=width_guess)
 
@@ -93,9 +97,12 @@ class AIR_PT_setup(bpy.types.Panel):
             row = layout.row()
             row.prop(utils.get_addon_preferences(context), "dream_studio_api_key")
 
-        # else, show the image dimension help
-        elif AIR_PT_setup.poll_for_dimensions(context):
-            utils.label_multiline(layout, text=f"Adjust Image Size: \nStable Diffusion only works on a few specific image dimensions.", icon="INFO", width=width_guess)
+        # show the image dimension help if the dimensions are invalid or too large
+        elif not AIR_PT_setup.are_dimensions_valid(context) or not AIR_PT_setup.are_dimensions_small_enough(context):
+            if not AIR_PT_setup.are_dimensions_valid(context):
+                utils.label_multiline(layout, text=f"Adjust Image Size: \nStable Diffusion only works on a few specific image dimensions.", icon="INFO", width=width_guess)
+            else:
+                utils.label_multiline(layout, text=f"Adjust Image Size: \nImage dimensions are too large. Please decrease width and/or height.", icon="INFO", width=width_guess)
 
             row = layout.row(align=True)
             col = row.column()
@@ -103,6 +110,7 @@ class AIR_PT_setup(bpy.types.Panel):
             col = row.column()
             col.operator(operators.AIR_OT_show_other_dimension_options.bl_idname, text="", icon="QUESTION")
 
+        # else, show the ready / getting started message
         else:
             utils.label_multiline(layout, text="You're ready to start rendering!", width=width_guess, alignment="CENTER")
             row = layout.row()

@@ -47,12 +47,12 @@ class AIRProperties(bpy.types.PropertyGroup):
     )
     steps: bpy.props.IntProperty(
         name="Steps",
-        default=25,
+        default=40,
         soft_min=10,
-        soft_max=100,
+        soft_max=50,
         min=10,
-        max=150,
-        description="How long to process the image. Values in the range of 25-50 generally work well. Higher values will take longer and won't necessarily improve results",
+        max=100,
+        description="How long to process the image. Values in the range of 25-50 generally work well. Higher values take longer and won't necessarily improve results",
     )
     sampler: bpy.props.EnumProperty(
         name="Sampler",
