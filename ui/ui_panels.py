@@ -15,9 +15,9 @@ def show_error_if_it_exists(layout, context):
         row = box.row()
 
         col = row.column()
-        col.label(text="", icon="ERROR")
-        col = row.column()
-        col.label(text="Error:")
+        col.alert = True
+        col.label(text="Error:", icon="ERROR")
+
         col = row.column()
         col.label(text="", icon="COLORSET_01_VEC")
 
