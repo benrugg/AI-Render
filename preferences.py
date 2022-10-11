@@ -2,7 +2,8 @@ import bpy
 from . import (
     addon_updater_ops,
     config,
-    operators
+    operators,
+    utils,
 )
 
 
@@ -57,9 +58,11 @@ class AIRPreferences(bpy.types.AddonPreferences):
     def draw(self, context):
         layout = self.layout
 
+        width_guess = 460
+
         # Setup
         box = layout.box()
-        box.label(text="Setup")
+        box.label(text="Setup:")
 
         row = box.row()
         col = row.column()
@@ -72,6 +75,12 @@ class AIRPreferences(bpy.types.AddonPreferences):
 
         row = box.row()
         row.prop(self, "dream_studio_api_key")
+
+        # Notes
+        box = layout.box()
+        box.label(text="Note:")
+
+        utils.label_multiline(box, text="AI image generation is an incredible technology, and it's only in its infancy. Please use it responsibly and ethically.", width=width_guess)
 
         # Add-on Updater
         box = layout.box()
