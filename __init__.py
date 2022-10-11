@@ -6,7 +6,7 @@ bl_info = {
     "blender": (3, 0, 0),
     "location": "Render Properties > AI Render",
     "warning": "",
-    "tracker_url": "",
+    "tracker_url": "https://github.com/benrugg/AI-Render/issues",
     "category": "Render",
 }
 
