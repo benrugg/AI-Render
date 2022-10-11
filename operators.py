@@ -283,7 +283,7 @@ def send_to_api(scene):
     # close the image file
     img_file.close()
 
-    # TODO: REMOVE DEBUGGING CODE...
+    # NOTE: For debugging:
     # print("request body:")
     # print(response.request.body)
     # print("\n")
@@ -313,7 +313,7 @@ def send_to_api(scene):
 
     # handle 404
     elif response.status_code in [403, 404]:
-        return handle_error("It looks like the web server this plugin relies on is missing. It's possible this is temporary, and you can try again later.")
+        return handle_error("It looks like the web server this add-on relies on is missing. It's possible this is temporary, and you can try again later.")
 
     # handle 500
     elif response.status_code == 500:
@@ -327,7 +327,7 @@ def send_to_api(scene):
         try:
             response_obj = response.json()
             if response_obj.get('Message', '') in ['Forbidden', None]:
-                error_message = "It looks like the web server this plugin relies on is missing. It's possible this is temporary, and you can try again later."
+                error_message = "It looks like the web server this add-on relies on is missing. It's possible this is temporary, and you can try again later."
             else:
                 error_message = response_obj.get('error', f"An unknown error occurred in the DreamStudio API. Full server response: {json.dumps(response_obj)}")
                 error_key = response_obj.get('error_key', '')
