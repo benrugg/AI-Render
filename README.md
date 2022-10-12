@@ -15,13 +15,12 @@ For the moment, here's how to install:
 - Open Blender, then go to Edit > Preferences > Add-ons > Install and then find the zip file
 
 
-## Demo
+## Tutorial
 
-Coming soon!
+[![Watch the tutorial video](https://user-images.githubusercontent.com/1221274/195464687-8b53e8ab-36dc-431f-a930-b533efb88c1c.png)](https://www.youtube.com/watch?v=tmyln5bwnO8)
 
 
-
-## Getting Started / Prompt Help / FAQ's
+## Prompt Help / FAQ's
 
 All coming soon!
 
