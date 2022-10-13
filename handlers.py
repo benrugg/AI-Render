@@ -24,8 +24,8 @@ def load_post_handler(context):
 def render_pre_handler(scene):
     """Handle render about to start"""
 
-    # if AI Render isn't enabled, quit here
-    if not scene.air_props.is_enabled:
+    # if AI Render wasn't installed correctly or isn't enabled, quit here
+    if not utils.is_installation_valid() or not scene.air_props.is_enabled:
         return
 
     # otherwise, do the pre-render setup
@@ -38,9 +38,9 @@ def render_pre_handler(scene):
 def render_complete_handler(scene):
     """Handle render completed (this is where the API and Stable Diffusion start)"""
 
-    # if AI Render isn't enabled, we don't want to run automatically,
-    # or we don't have an API Key, quit here
-    if not scene.air_props.is_enabled or not scene.air_props.auto_run or not utils.get_api_key():
+    # if AI Render wasn't installed correctly, or it isn't enabled, or we don't want
+    # to run automatically, or we don't have an API Key, quit here
+    if not utils.is_installation_valid() or not scene.air_props.is_enabled or not scene.air_props.auto_run or not utils.get_api_key():
         return
 
     # check to see if we have a render result

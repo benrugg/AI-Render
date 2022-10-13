@@ -37,7 +37,12 @@ class AIR_PT_main(bpy.types.Panel):
         scene = context.scene
         props = scene.air_props
 
-        if not props.is_enabled:
+        width_guess = 230
+
+        if not utils.is_installation_valid():
+            utils.show_invalid_installation_message(layout, width_guess)
+
+        elif not props.is_enabled:
 
             # Show enable button and message
             row = layout.row()
@@ -71,7 +76,7 @@ class AIR_PT_setup(bpy.types.Panel):
 
     @classmethod
     def poll(cls, context):
-        return context.scene.air_props.is_enabled
+        return utils.is_installation_valid() and context.scene.air_props.is_enabled
 
     def draw(self, context):
         layout = self.layout
@@ -87,8 +92,6 @@ class AIR_PT_setup(bpy.types.Panel):
 
             row = layout.row()
             col = row.column()
-            # col.label(text="Setup is easy!")
-            # col = row.column()
             col.operator(operators.AIR_OT_setup_instructions_popup.bl_idname, text="Instructions", icon="HELP")
 
             row = layout.row()
@@ -127,7 +130,7 @@ class AIR_PT_prompt(bpy.types.Panel):
 
     @classmethod
     def poll(cls, context):
-        return context.scene.air_props.is_enabled
+        return utils.is_installation_valid() and context.scene.air_props.is_enabled
 
     def draw(self, context):
         layout = self.layout
@@ -172,7 +175,7 @@ class AIR_PT_advanced_options(bpy.types.Panel):
 
     @classmethod
     def poll(cls, context):
-        return context.scene.air_props.is_enabled
+        return utils.is_installation_valid() and context.scene.air_props.is_enabled
 
     def draw(self, context):
         layout = self.layout
@@ -228,7 +231,7 @@ class AIR_PT_operation(bpy.types.Panel):
 
     @classmethod
     def poll(cls, context):
-        return context.scene.air_props.is_enabled
+        return utils.is_installation_valid() and context.scene.air_props.is_enabled
 
     def draw(self, context):
         layout = self.layout

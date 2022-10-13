@@ -27,7 +27,7 @@ valid_dimensions = [384, 448, 512, 576, 640, 704, 768, 832, 896, 960, 1024]
 
 
 def get_addon_preferences(context):
-    return context.preferences.addons[config.package_name].preferences
+    return context.preferences.addons[__package__].preferences
 
 
 def get_temp_path():
@@ -163,7 +163,7 @@ def has_url(text, strict_match_protocol=False):
     return urls, text
 
 
-def label_multiline(layout, text='', icon='NONE', width=-1, max_lines=12, use_urls=True, alignment="LEFT"):
+def label_multiline(layout, text='', icon='NONE', width=-1, max_lines=12, use_urls=True, alignment="LEFT", alert=False):
     '''
      draw a ui label, but try to split it in multiple lines.
 
@@ -182,6 +182,7 @@ def label_multiline(layout, text='', icon='NONE', width=-1, max_lines=12, use_ur
     rows = []
     if text.strip() == '':
         return [layout.row()]
+
     text = text.replace("\r\n", "\n")
 
     if use_urls:
@@ -209,6 +210,7 @@ def label_multiline(layout, text='', icon='NONE', width=-1, max_lines=12, use_ur
             l1 = line[:i]
 
             row = layout.row()
+            if alert: row.alert = True
             row.alignment = alignment
             row.label(text=l1, icon=icon)
             rows.append(row)
@@ -225,6 +227,7 @@ def label_multiline(layout, text='', icon='NONE', width=-1, max_lines=12, use_ur
             break
 
         row = layout.row()
+        if alert: row.alert = True
         row.alignment = alignment
         row.label(text=line, icon=icon)
         rows.append(row)
@@ -240,3 +243,14 @@ def label_multiline(layout, text='', icon='NONE', width=-1, max_lines=12, use_ur
 
     # return the resulting rows
     return rows
+
+
+def is_installation_valid():
+    return __package__ == config.package_name
+
+
+def show_invalid_installation_message(layout, width):
+    box = layout.box()
+    box.label(text="Installation Error:")
+
+    label_multiline(box, text=f"It looks like this add-on wasn't installed correctly. Please remove it and get a new copy. [Get AI Render]({config.ADDON_DOWNLOAD_URL})", icon="ERROR", alert=True, width=width)

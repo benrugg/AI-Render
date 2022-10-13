@@ -16,6 +16,12 @@ class AIRPreferences(bpy.types.AddonPreferences):
         description="Your DreamStudio API KEY",
     )
 
+    is_valid_installation: bpy.props.BoolProperty(
+        name="Add-on installed correctly",
+        description="If this is False, the add-on hasn't been installed correctly",
+        default=True
+    )
+
     # Add-on Updater Preferences
     updater_expanded_in_preferences_panel: bpy.props.BoolProperty(
         name="Show the updater preferences",
@@ -60,31 +66,37 @@ class AIRPreferences(bpy.types.AddonPreferences):
 
         width_guess = 460
 
-        # Setup
-        box = layout.box()
-        box.label(text="Setup:")
+        # Invalid Installation Warning
+        if not utils.is_installation_valid():
+            utils.show_invalid_installation_message(layout, width_guess)
 
-        row = box.row()
-        col = row.column()
-        col.label(text="Setup is quick and easy!")
-        col = row.column()
-        col.operator(operators.AIR_OT_setup_instructions_popup.bl_idname, text="Setup Instructions", icon="HELP")
+        else:
 
-        row = box.row()
-        row.operator("wm.url_open", text="Sign Up For DreamStudio (free)", icon="URL").url = config.DREAM_STUDIO_URL
+            # Setup
+            box = layout.box()
+            box.label(text="Setup:")
 
-        row = box.row()
-        row.prop(self, "dream_studio_api_key")
+            row = box.row()
+            col = row.column()
+            col.label(text="Setup is quick and easy!")
+            col = row.column()
+            col.operator(operators.AIR_OT_setup_instructions_popup.bl_idname, text="Setup Instructions", icon="HELP")
 
-        # Notes
-        box = layout.box()
-        box.label(text="Note:")
+            row = box.row()
+            row.operator("wm.url_open", text="Sign Up For DreamStudio (free)", icon="URL").url = config.DREAM_STUDIO_URL
 
-        utils.label_multiline(box, text="AI image generation is an incredible technology, and it's only in its infancy. Please use it responsibly and ethically.", width=width_guess)
+            row = box.row()
+            row.prop(self, "dream_studio_api_key")
 
-        # Add-on Updater
-        box = layout.box()
-        addon_updater_ops.update_settings_ui_condensed(self, context, box)
+            # Notes
+            box = layout.box()
+            box.label(text="Note:")
+
+            utils.label_multiline(box, text="AI image generation is an incredible technology, and it's only in its infancy. Please use it responsibly and ethically.", width=width_guess)
+
+            # Add-on Updater
+            box = layout.box()
+            addon_updater_ops.update_settings_ui_condensed(self, context, box)
 
 
 classes = [
