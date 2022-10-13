@@ -81,6 +81,8 @@ class AIRPreferences(bpy.types.AddonPreferences):
             col.label(text="Setup is quick and easy!")
             col = row.column()
             col.operator(operators.AIR_OT_setup_instructions_popup.bl_idname, text="Setup Instructions", icon="HELP")
+            col = row.column()
+            col.operator("wm.url_open", text="Watch Tutorial", icon="HELP").url = config.VIDEO_TUTORIAL_URL
 
             row = box.row()
             row.operator("wm.url_open", text="Sign Up For DreamStudio (free)", icon="URL").url = config.DREAM_STUDIO_URL

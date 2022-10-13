@@ -95,6 +95,9 @@ class AIR_PT_setup(bpy.types.Panel):
             col.operator(operators.AIR_OT_setup_instructions_popup.bl_idname, text="Instructions", icon="HELP")
 
             row = layout.row()
+            row.operator("wm.url_open", text="Watch Full Tutorial", icon="URL").url = config.VIDEO_TUTORIAL_URL
+
+            row = layout.row()
             row.operator("wm.url_open", text="Sign Up For DreamStudio (free)", icon="URL").url = config.DREAM_STUDIO_URL
 
             row = layout.row()
@@ -117,7 +120,7 @@ class AIR_PT_setup(bpy.types.Panel):
         else:
             utils.label_multiline(layout, text="You're ready to start rendering!", width=width_guess, alignment="CENTER")
             row = layout.row()
-            row.operator("wm.url_open", text="Help Getting Started", icon="URL").url = config.GETTING_STARTED_URL
+            row.operator("wm.url_open", text="Help Getting Started", icon="URL").url = config.VIDEO_TUTORIAL_URL
 
 
 class AIR_PT_prompt(bpy.types.Panel):
