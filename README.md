@@ -7,7 +7,7 @@ Create incredible AI generated images with Stable Diffusion easily, without runn
 
 ## Installation
 
-Beta testing is about to start. There will be a gumroad or blender market link soon!
+Beta testing has started. There will be a gumroad or blender market link soon!
 
 For the moment, here's how to install:
 
