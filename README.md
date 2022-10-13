@@ -11,7 +11,7 @@ Beta testing is about to start. There will be a gumroad or blender market link s
 
 For the moment, here's how to install:
 
-- [Download a zip](https://github.com/benrugg/AI-Render/releases/download/v0.2.3/AI-Render-v0-2-3.zip) of the latest release
+- [Download a zip](https://github.com/benrugg/AI-Render/releases/download/v0.2.5/AI-Render-v0-2-5.zip) of the latest release
 - Open Blender, then go to Edit > Preferences > Add-ons > Install and then find the zip file
 
 
