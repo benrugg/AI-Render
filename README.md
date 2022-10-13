@@ -34,6 +34,11 @@ Help make the add-on better by reporting any bugs (big or small) or requesting n
 - [Request a Feature](https://github.com/benrugg/AI-Render/issues/new?assignees=&labels=&template=feature-request.yaml)
 
 
+## Known Limitations
+
+- AI Render currently only does still frames (not animations). Animations are planned for a future release!
+
+
 ## Share images and feedback!
 
 Please share images you make! Tweet them at [@ai_render](https://twitter.com/AI_render) or tag [@airenderblender](https://www.instagram.com/airenderblender/) on Instagram. On both platforms, use hashtags #airender #aiart #stableDiffusion.
