@@ -32,3 +32,10 @@ Help make the add-on better by reporting any bugs (big or small) or requesting n
 
 - [Report a Bug](https://github.com/benrugg/AI-Render/issues/new?assignees=&labels=&template=bug-report.yaml)
 - [Request a Feature](https://github.com/benrugg/AI-Render/issues/new?assignees=&labels=&template=feature-request.yaml)
+
+
+## Share images and feedback!
+
+Please share images you make! Tweet them at [@ai_render](https://twitter.com/AI_render) or tag [@airenderblender](https://www.instagram.com/airenderblender/) on Instagram. On both platforms, use hashtags #airender #aiart #stableDiffusion.
+
+If you have ideas for prompts that could become preset styles, or if you have any other feedback, email airenderblender@gmail.com. Thank you for being part of the community!
