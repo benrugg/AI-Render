@@ -27,6 +27,8 @@ import traceback
 import bpy
 from bpy.app.handlers import persistent
 
+from . import config
+
 # Safely import the updater.
 # Prevents popups for users with invalid python installs e.g. missing libraries
 # and will replace with a fake class instead if it fails (so UI draws work).
@@ -924,8 +926,8 @@ def update_notice_box_ui(self, context):
         col.operator("wm.url_open", text="Open website").url = updater.website
         # ops = col.operator("wm.url_open",text="Direct download")
         # ops.url=updater.update_link
-        col.operator(AddonUpdaterInstallManually.bl_idname,
-                     text="Install manually")
+        # col.operator(AddonUpdaterInstallManually.bl_idname,
+        #              text="Install manually")
     else:
         # ops = col.operator("wm.url_open", text="Direct download")
         # ops.url=updater.update_link
@@ -1360,7 +1362,7 @@ def register(bl_info):
     # updater.addon = # define at top of module, MUST be done first
 
     # Website for manual addon download, optional but recommended to set.
-    updater.website = "https://github.com/benrugg/AI-Render"
+    updater.website = config.ADDON_DOWNLOAD_URL
 
     # Addon subfolder path.
     # "sample/path/to/addon"
