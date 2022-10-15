@@ -13,6 +13,11 @@ Create incredible AI generated images with Stable Diffusion easily, without runn
 (You can also download for free on the [releases page](https://github.com/benrugg/AI-Render/releases))
 
 
+## Demo
+
+[![Watch the demo video](https://user-images.githubusercontent.com/1221274/195991904-358302b0-efa3-4185-b37e-5fa960c80c69.jpg)](https://www.youtube.com/watch?v=PXBXix2WzX4)
+
+
 ## Tutorial
 
 [![Watch the tutorial video](https://user-images.githubusercontent.com/1221274/195464687-8b53e8ab-36dc-431f-a930-b533efb88c1c.png)](https://www.youtube.com/watch?v=tmyln5bwnO8)
