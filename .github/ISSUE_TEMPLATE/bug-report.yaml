@@ -61,7 +61,7 @@ body:
     attributes:
       label: Logs
       description: |
-        If possible, please provide a system log of the problem.
+        If possible, please provide a system log of the problem. **Please try to include this! Without logs, it's much more difficult to track down bugs.**
         - On Mac or linux, you need to run Blender from a terminal, where you can then see the log. [Get help for Mac](https://docs.blender.org/manual/en/latest/advanced/command_line/launch/macos.html).
         - On Windows, you need to toggle system console in the top menu (see screenshot below). [Get help for Windows](https://docs.blender.org/manual/en/2.79/advanced/command_line/introduction.html#microsoft-windows).
     validations:
