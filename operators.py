@@ -429,7 +429,7 @@ class AIR_OT_generate_new_image_from_render(bpy.types.Operator):
 class AIR_OT_generate_new_image_from_current(bpy.types.Operator):
     "Generate a new Stable Diffusion image - without re-rendering - using the latest Stable Diffusion image as the starting point"
     bl_idname = "ai_render.generate_new_image_from_current"
-    bl_label = "New Image From Last AI image"
+    bl_label = "New Image From Last AI Image"
 
     def execute(self, context):
         do_pre_render_setup(context.scene, do_mute_node_group=False)
