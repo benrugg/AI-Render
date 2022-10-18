@@ -1,0 +1,53 @@
+name: Preset style suggestion
+description: Ideas for new preset styles (prompt text)
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for your suggesting new preset styles!
+
+  - type: input
+    id: title
+    attributes:
+      label: Preset Title
+      description: |
+        Short name for the style
+    validations:
+      required: true
+      
+  - type: textarea
+    id: prompt-text
+    attributes:
+      label: Prompt Text
+      description: |
+        Prompt text for the style (this will get added to the user's existing prompt)
+    validations:
+      required: true
+      
+  - type: textarea
+    id: image-examples
+    attributes:
+      label: Image Examples
+      description: |
+        Provide an example (or a few) of what this prompt produces
+    validations:
+      required: true
+    
+  - type: textarea
+    id: additional-info
+    attributes:
+      label: Additional Info
+      description: |
+        Any other info you want to share?
+    validations:
+      required: false
+    
+  - type: checkboxes
+    id: is-free-to-use
+    attributes:
+      label: Royalty Free
+      description: |
+        Please only submit text that is your original idea or is already licensed to be freely usable
+      options:
+        - label: I give permission for this prompt text to be used as a preset style under the MIT open source license
+          required: true
