@@ -20,6 +20,7 @@
 import bpy
 import re
 import os
+import tempfile
 from . import config
 
 
@@ -30,21 +31,8 @@ def get_addon_preferences(context):
     return context.preferences.addons[__package__].preferences
 
 
-def get_temp_path():
-    tmp_path = bpy.context.preferences.filepaths.temporary_directory.rstrip('/')
-    if tmp_path == '': tmp_path = '/tmp'
-    tmp_path = os.path.join(tmp_path, config.tmp_path_subfolder)
-    if not os.path.exists(tmp_path):
-        os.makedirs(tmp_path)
-    return tmp_path
-
-
-def get_temp_render_filename(timestamp):
-    return f"{get_temp_path()}/ai-render-{timestamp}-1-before.png"
-
-
-def get_temp_output_filename(timestamp):
-    return f"{get_temp_path()}/ai-render-{timestamp}-2-after.png"
+def create_temp_file(prefix, suffix=".png"):
+    return tempfile.NamedTemporaryFile(prefix=prefix, suffix=suffix).name
 
 
 def get_filepath_in_package(path, filename = ""):

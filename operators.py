@@ -168,18 +168,28 @@ def generate_new_random_seed(scene):
 
 def save_render_to_file(scene, timestamp):
     try:
-        tmp_filename = utils.get_temp_render_filename(timestamp)
+        temp_file = utils.create_temp_file(f"ai-render-{timestamp}-1-before-")
     except:
-        return handle_error("Couldn't create temp directory for images")
+        return handle_error("Couldn't create temp file for image")
 
     try:
         orig_render_file_format = scene.render.image_settings.file_format
-        bpy.data.images['Render Result'].save_render(tmp_filename)
-        scene.render.image_settings.file_format = orig_render_file_format
-    except:
-        return handle_error("Couldn't save rendered image. Please render or try again.")
+        orig_render_color_mode = scene.render.image_settings.color_mode
+        orig_render_color_depth = scene.render.image_settings.color_depth
 
-    return tmp_filename
+        scene.render.image_settings.file_format = 'PNG'
+        scene.render.image_settings.color_mode = 'RGBA'
+        scene.render.image_settings.color_depth = '8'
+
+        bpy.data.images['Render Result'].save_render(temp_file)
+
+        scene.render.image_settings.file_format = orig_render_file_format
+        scene.render.image_settings.color_mode = orig_render_color_mode
+        scene.render.image_settings.color_depth = orig_render_color_depth
+    except:
+        return handle_error("Couldn't save rendered image")
+
+    return temp_file
 
 
 def do_pre_render_setup(scene, do_mute_node_group=True):
@@ -267,21 +277,17 @@ def send_to_api(scene):
     }
 
     # save the rendered image and then read it back in
-    tmp_filename = save_render_to_file(scene, timestamp)
-    if not tmp_filename:
+    temp_input_file = save_render_to_file(scene, timestamp)
+    if not temp_input_file:
         return False
-    img_file = open(tmp_filename, 'rb')
+    img_file = open(temp_input_file, 'rb')
     files = {"file": img_file}
 
     # send the API request
     try:
         response = requests.post(config.API_URL, params=params, headers=headers, files=files, timeout=config.request_timeout)
     except requests.exceptions.ReadTimeout:
-        img_file.close()
         return handle_error(f"The server timed out. Try again in a moment, or get help. [Get help with timeouts]({config.HELP_WITH_TIMEOUTS_URL})")
-
-    # close the image file
-    img_file.close()
 
     # NOTE: For debugging:
     # print("request body:")
@@ -298,14 +304,20 @@ def send_to_api(scene):
     if response.status_code == 200:
 
         # save the image
-        tmp_filename = utils.get_temp_output_filename(timestamp)
-
-        with open(tmp_filename, 'wb') as file:
-            for chunk in response:
-                file.write(chunk)
+        try:
+            temp_output_file = utils.create_temp_file(f"ai-render-{timestamp}-2-after-")
+            with open(temp_output_file, 'wb') as file:
+                for chunk in response:
+                    file.write(chunk)
+        except:
+            return handle_error(f"Couldn't create a temp file to save image")
 
         # load the image into the compositor
-        img = bpy.data.images.load(tmp_filename, check_existing=True)
+        try:
+            img = bpy.data.images.load(temp_output_file, check_existing=True)
+        except:
+            return handle_error(f"Couldn't load the image from Stable Diffusion")
+
         update_compositor_node_with_image(scene, img)
 
         # unmute the compositor node group
@@ -329,7 +341,7 @@ def send_to_api(scene):
             if response_obj.get('Message', '') in ['Forbidden', None]:
                 error_message = "It looks like the web server this add-on relies on is missing. It's possible this is temporary, and you can try again later."
             else:
-                error_message = response_obj.get('error', f"An unknown error occurred in the DreamStudio API. Full server response: {json.dumps(response_obj)}")
+                error_message = "(Server Error) " + response_obj.get('error', f"An unknown error occurred in the DreamStudio API. Full server response: {json.dumps(response_obj)}")
                 error_key = response_obj.get('error_key', '')
         except:
             error_message = f"An unknown error occurred in the DreamStudio API. Full server response: {str(response.content)}"
