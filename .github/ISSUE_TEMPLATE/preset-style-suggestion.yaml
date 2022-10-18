@@ -45,7 +45,7 @@ body:
   - type: checkboxes
     id: is-free-to-use
     attributes:
-      label: Royalty Free
+      label: Open Source
       description: |
         Please only submit text that is your original idea or is already licensed to be freely usable
       options:
