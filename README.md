@@ -7,7 +7,7 @@ Create incredible AI generated images with Stable Diffusion easily, without runn
 
 ## Installation
 
-- [Get AI Render on Gumroad](https://airender.gumroad.com/l/ai-render)
+- Get AI Render on [Blender Market](https://blendermarket.com/products/ai-render) or [Gumroad](https://airender.gumroad.com/l/ai-render)
 - Open Blender, then go to Edit > Preferences > Add-ons > Install and then find the zip file
 
 (You can also download for free on the [releases page](https://github.com/benrugg/AI-Render/releases))
