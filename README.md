@@ -44,6 +44,7 @@ Help make the add-on better by reporting any bugs (big or small) or requesting n
 ## Known Limitations
 
 - AI Render currently only does still frames (not animations). Animations are planned for a future release!
+- Local installations of Stable Diffusion aren't supported (yet). This is in active development.
 
 
 ## Share images and feedback!
