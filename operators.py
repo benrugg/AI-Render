@@ -48,11 +48,34 @@ def update_compositor_node_with_image(scene, img):
     image_node.image = img
 
 
+def get_or_create_composite_node(compositor_nodes):
+    """Get the existing Composite node, or create one"""
+    if compositor_nodes.get('Composite'):
+        return compositor_nodes.get('Composite')
+
+    for node in compositor_nodes:
+        if node.type == 'COMPOSITE':
+            return node
+
+    return compositor_nodes.new('CompositorNodeComposite')
+
+
+def get_or_create_render_layers_node(compositor_nodes):
+    """Get the existing Render Layers node, or create one"""
+    if compositor_nodes.get('Render Layers'):
+        return compositor_nodes.get('Render Layers')
+
+    for node in compositor_nodes:
+        if node.type == 'R_LAYERS':
+            return node
+
+    return compositor_nodes.new('CompositorNodeRLayers')
+
+
 def ensure_compositor_node_group(scene):
     """Ensure that the compositor node group is created"""
     scene.use_nodes = True
     compositor_nodes = scene.node_tree.nodes
-    composite_node = compositor_nodes.get('Composite')
 
     # if our image node already exists, just quit
     if 'AIR' in compositor_nodes:
@@ -95,10 +118,13 @@ def ensure_compositor_node_group(scene):
 
     # get the socket that's currently linked to the compositor, or as a
     # fallback, get the rendered image output
+    composite_node = get_or_create_composite_node(compositor_nodes)
+    render_layers_node = get_or_create_render_layers_node(compositor_nodes)
+
     if composite_node.inputs.get('Image').is_linked:
         original_socket = composite_node.inputs.get('Image').links[0].from_socket
     else:
-        original_socket = compositor_nodes['Render Layers'].outputs.get('Image')
+        original_socket = render_layers_node.outputs.get('Image')
 
     # link the original socket to the input of the group
     create_link_in_compositor(original_socket, node_group.inputs[0])
