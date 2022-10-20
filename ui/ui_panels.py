@@ -7,7 +7,7 @@ from .. import (
 )
 
 
-def show_error_if_it_exists(layout, context):
+def show_error_if_it_exists(layout, context, width_guess):
     props = context.scene.air_props
     if (props.error_message):
 
@@ -21,7 +21,7 @@ def show_error_if_it_exists(layout, context):
         col = row.column()
         col.label(text="", icon="COLORSET_01_VEC")
 
-        utils.label_multiline(box, text=props.error_message, width=220)
+        utils.label_multiline(box, text=props.error_message, width=width_guess)
 
 
 class AIR_PT_main(bpy.types.Panel):
@@ -37,7 +37,7 @@ class AIR_PT_main(bpy.types.Panel):
         scene = context.scene
         props = scene.air_props
 
-        width_guess = 230
+        width_guess = 220
 
         if not utils.is_installation_valid():
             utils.show_invalid_installation_message(layout, width_guess)
@@ -83,7 +83,7 @@ class AIR_PT_setup(bpy.types.Panel):
         scene = context.scene
         props = scene.air_props
 
-        width_guess = 230
+        width_guess = 220
 
         # if the api key is invalid, show the initial setup instructions
         if not AIR_PT_setup.is_api_key_valid(context):
@@ -140,11 +140,13 @@ class AIR_PT_prompt(bpy.types.Panel):
         scene = context.scene
         props = scene.air_props
 
+        width_guess = 220
+
         # Show updater if update is available
         addon_updater_ops.update_notice_box_ui(self, context)
 
         # Show the error if we have one
-        show_error_if_it_exists(layout, context)
+        show_error_if_it_exists(layout, context, width_guess)
 
         # Prompt
         row = layout.row()
@@ -241,12 +243,16 @@ class AIR_PT_operation(bpy.types.Panel):
         scene = context.scene
         props = scene.air_props
 
+        width_guess = 220
+
         # Auto Run
         row = layout.row()
         row.prop(props, 'auto_run')
 
         # Generate Image
         manual_buttons_enabled = bpy.data.images['Render Result'].has_data
+
+        layout.separator()
 
         row = layout.row()
         row.label(text="Run Manually:")
@@ -258,6 +264,23 @@ class AIR_PT_operation(bpy.types.Panel):
         row = layout.row()
         row.enabled = manual_buttons_enabled
         row.operator(operators.AIR_OT_generate_new_image_from_current.bl_idname)
+
+        layout.separator()
+
+        row = layout.row()
+        row.label(text="Automatically Save Images:")
+
+        row = layout.row()
+        row.prop(props, "do_autosave_before_images")
+
+        row = layout.row()
+        row.prop(props, "do_autosave_after_images")
+
+        row = layout.row()
+        row.prop(props, "autosave_image_path", text="Path")
+
+        if (props.do_autosave_before_images or props.do_autosave_after_images) and not props.autosave_image_path:
+            utils.label_multiline(layout, text="Please specify a path", icon="ERROR", width=width_guess)
 
 
 classes = [

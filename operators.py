@@ -218,6 +218,28 @@ def save_render_to_file(scene, timestamp):
     return temp_file
 
 
+def save_before_image(scene, timestamp):
+    ext = utils.get_extension_from_file_format(scene.render.image_settings.file_format)
+    if ext:
+        ext = f".{ext}"
+    filename = f"ai-render-{timestamp}-1-before{ext}"
+    full_path_and_filename = utils.join_path(scene.air_props.autosave_image_path, filename)
+    try:
+        bpy.data.images['Render Result'].save_render(bpy.path.abspath(full_path_and_filename))
+    except:
+        return handle_error(f"Couldn't save 'before' image to {bpy.path.abspath(full_path_and_filename)}")
+
+
+def save_after_image(scene, timestamp, img_file):
+    filename = f"ai-render-{timestamp}-2-after.png"
+    full_path_and_filename = utils.join_path(scene.air_props.autosave_image_path, filename)
+    try:
+        utils.copy_file(img_file, full_path_and_filename)
+        return full_path_and_filename
+    except:
+        return handle_error(f"Couldn't save 'after' image to {bpy.path.abspath(full_path_and_filename)}")
+
+
 def do_pre_render_setup(scene, do_mute_node_group=True):
     # Lock the user interface when rendering, so that we can change
     # compositor nodes in the render_pre handler without causing a crash!
@@ -309,6 +331,10 @@ def send_to_api(scene):
     img_file = open(temp_input_file, 'rb')
     files = {"file": img_file}
 
+    # autosave the before image, if we want that
+    if props.do_autosave_before_images and props.autosave_image_path:
+        save_before_image(scene, timestamp)
+
     # send the API request
     try:
         response = requests.post(config.API_URL, params=params, headers=headers, files=files, timeout=config.request_timeout)
@@ -331,19 +357,27 @@ def send_to_api(scene):
 
         # save the image
         try:
-            temp_output_file = utils.create_temp_file(f"ai-render-{timestamp}-2-after-")
-            with open(temp_output_file, 'wb') as file:
+            output_file = utils.create_temp_file(f"ai-render-{timestamp}-2-after-")
+            with open(output_file, 'wb') as file:
                 for chunk in response:
                     file.write(chunk)
+
+            # autosave the after image, if we want that
+            if props.do_autosave_after_images and props.autosave_image_path:
+                new_output_file = save_after_image(scene, timestamp, output_file)
+                if new_output_file:
+                    output_file = new_output_file
+
         except:
             return handle_error(f"Couldn't create a temp file to save image")
 
-        # load the image into the compositor
+        # load the image into our scene
         try:
-            img = bpy.data.images.load(temp_output_file, check_existing=True)
+            img = bpy.data.images.load(output_file, check_existing=True)
         except:
             return handle_error(f"Couldn't load the image from Stable Diffusion")
 
+        # load the image into the compositor
         update_compositor_node_with_image(scene, img)
 
         # unmute the compositor node group

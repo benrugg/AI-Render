@@ -20,11 +20,13 @@
 import bpy
 import re
 import os
+import shutil
 import tempfile
 from . import config
 
 
 valid_dimensions = [384, 448, 512, 576, 640, 704, 768, 832, 896, 960, 1024]
+file_formats = {"JPEG": "jpg", "BMP": "bmp", "IRIS": "rgb", "PNG": "png", "JPEG2000": "jp2", "TARGA": "tga", "TARGA_RAW": "tga", "CINEON": "cin", "DPX": "dpx", "OPEN_EXR_MULTILAYER": "exr", "OPEN_EXR": "exr", "HDR": "hdr", "TIFF": "tif", "WEBP": "webp"}
 
 
 def get_addon_preferences(context):
@@ -35,10 +37,18 @@ def create_temp_file(prefix, suffix=".png"):
     return tempfile.NamedTemporaryFile(prefix=prefix, suffix=suffix).name
 
 
+def join_path(path, subpath):
+    return os.path.join(path, subpath)
+
+
 def get_filepath_in_package(path, filename = ""):
     script_path = os.path.dirname(os.path.realpath(__file__))
     subpath = path + os.sep + filename
     return os.path.join(script_path, subpath)
+
+
+def copy_file(src, dest):
+    shutil.copy2(src, dest)
 
 
 def get_workspace_blend_file_filepath():
@@ -47,6 +57,13 @@ def get_workspace_blend_file_filepath():
 
 def get_preset_style_thumnails_filepath():
     return get_filepath_in_package("style_thumbnails")
+
+
+def get_extension_from_file_format(file_format):
+    if file_format in file_formats:
+        return file_formats[file_format]
+    else:
+        return ""
 
 
 def get_current_workspace(context = None):

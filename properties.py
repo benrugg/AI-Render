@@ -91,6 +91,22 @@ class AIRProperties(bpy.types.PropertyGroup):
         name="Preset Style",
         items=ui_preset_styles.enum_thumbnail_icons,
     )
+    do_autosave_before_images: bpy.props.BoolProperty(
+        name="Save 'Before' Images",
+        default=False,
+        description="When true, will save each rendered image (before processing it with AI). File format will be your scene's output settings"
+    )
+    do_autosave_after_images: bpy.props.BoolProperty(
+        name="Save 'After' Images",
+        default=False,
+        description="When true, will save each rendered image (after processing it with AI). File will always be a PNG"
+    )
+    autosave_image_path: bpy.props.StringProperty(
+        name="Autosave Image Output Path",
+        default="",
+        description="The path to save before/after images, if autosave is enabled (above)",
+        subtype="DIR_PATH"
+    )
 
 
 classes = [
