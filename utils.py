@@ -41,9 +41,9 @@ def join_path(path, subpath):
     return os.path.join(path, subpath)
 
 
-def get_filepath_in_package(path, filename = ""):
-    script_path = os.path.dirname(os.path.realpath(__file__))
-    subpath = path + os.sep + filename
+def get_filepath_in_package(path, filename = "", starting_dir = __file__):
+    script_path = os.path.dirname(os.path.realpath(starting_dir))
+    subpath = path + os.sep + filename if path else filename
     return os.path.join(script_path, subpath)
 
 

@@ -24,6 +24,7 @@ if "bpy" in locals():
     imp.reload(ui_panels)
     imp.reload(ui_preset_styles)
     imp.reload(utils)
+    imp.reload(automatic1111_api)
 else:
     from . import (
         addon_updater_ops,
@@ -39,6 +40,7 @@ else:
         ui_panels,
         ui_preset_styles,
     )
+    from .local_backends.automatic1111 import automatic1111_api
 
 import bpy
 

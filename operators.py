@@ -10,6 +10,8 @@ from . import (
     utils,
 )
 
+from .local_backends.automatic1111 import automatic1111_api
+
 
 valid_dimensions_tuple_list = utils.generate_valid_dimensions_tuple_list()
 
@@ -329,16 +331,45 @@ def send_to_api(scene):
     if not temp_input_file:
         return False
     img_file = open(temp_input_file, 'rb')
-    files = {"file": img_file}
 
     # autosave the before image, if we want that
     if props.do_autosave_before_images and props.autosave_image_path:
         save_before_image(scene, timestamp)
 
+
+    # TODO: FINISH THIS
+    output_filename = automatic1111_api.send_to_api(params, img_file)
+    if output_filename:
+        # TODO: modularize this
+        # load the image into our scene
+        try:
+            img = bpy.data.images.load(output_filename, check_existing=True)
+        except:
+            return handle_error(f"Couldn't load the image from Stable Diffusion")
+
+        # load the image into the compositor
+        update_compositor_node_with_image(scene, img)
+
+        # unmute the compositor node group
+        unmute_compositor_node_group(scene)
+
+        # TODO: autosave
+
+        return True
+    else:
+        return False
+
+    # TODO: Modify the rest of the code to make the api request modular
+    # also probably put the headers here, too
+
     # send the API request
+    files = {"file": img_file}
+
     try:
         response = requests.post(config.API_URL, params=params, headers=headers, files=files, timeout=config.request_timeout)
+        img_file.close()
     except requests.exceptions.ReadTimeout:
+        img_file.close()
         return handle_error(f"The server timed out. Try again in a moment, or get help. [Get help with timeouts]({config.HELP_WITH_TIMEOUTS_URL})")
 
     # NOTE: For debugging:
