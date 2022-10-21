@@ -36,9 +36,10 @@ class AIRPreferences(bpy.types.AddonPreferences):
 
     local_sd_backend: bpy.props.EnumProperty(
         name="Local Stable Diffusion Backend",
-        default="automatic1111",
+        default="automatic1111-v2022-10-21",
         items=[
-            ('automatic1111', 'Automatic1111', ''),
+            ('automatic1111-v2022-10-21', 'Automatic1111 (Oct 21, 2022 or newer)', ''),
+            ('automatic1111-v2022-10-20', 'Automatic1111 (installed before Oct 21, 2022)', ''),
         ],
         description="Which local Stable Diffusion installation you have",
     )
@@ -135,7 +136,10 @@ class AIRPreferences(bpy.types.AddonPreferences):
             box = layout.box()
             row = box.row()
             row.alignment = "LEFT"
-            row.prop(self, "local_option_extended_in_preferences_panel", text="Advanced: Local Installation", icon="TRIA_DOWN" if self.local_option_extended_in_preferences_panel else "TRIA_RIGHT", emboss=False)
+            label = "Advanced: Local Installation"
+            if self.is_local_sd_enabled:
+                label = label + " (Enabled)"
+            row.prop(self, "local_option_extended_in_preferences_panel", text=label, icon="TRIA_DOWN" if self.local_option_extended_in_preferences_panel else "TRIA_RIGHT", emboss=False)
 
             if self.local_option_extended_in_preferences_panel:
 
