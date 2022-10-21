@@ -225,7 +225,7 @@ def save_before_image(scene, filename_prefix):
     if ext:
         ext = f".{ext}"
     filename = f"{filename_prefix}{ext}"
-    full_path_and_filename = utils.join_path(scene.air_props.autosave_image_path, filename)
+    full_path_and_filename = utils.get_absolute_path_for_output_file(scene.air_props.autosave_image_path, filename)
     try:
         bpy.data.images['Render Result'].save_render(bpy.path.abspath(full_path_and_filename))
     except:
@@ -234,7 +234,7 @@ def save_before_image(scene, filename_prefix):
 
 def save_after_image(scene, filename_prefix, img_file):
     filename = f"{filename_prefix}.png"
-    full_path_and_filename = utils.join_path(scene.air_props.autosave_image_path, filename)
+    full_path_and_filename = utils.get_absolute_path_for_output_file(scene.air_props.autosave_image_path, filename)
     try:
         utils.copy_file(img_file, full_path_and_filename)
         return full_path_and_filename

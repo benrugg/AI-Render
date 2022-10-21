@@ -29,7 +29,7 @@ valid_dimensions = [384, 448, 512, 576, 640, 704, 768, 832, 896, 960, 1024]
 file_formats = {"JPEG": "jpg", "BMP": "bmp", "IRIS": "rgb", "PNG": "png", "JPEG2000": "jp2", "TARGA": "tga", "TARGA_RAW": "tga", "CINEON": "cin", "DPX": "dpx", "OPEN_EXR_MULTILAYER": "exr", "OPEN_EXR": "exr", "HDR": "hdr", "TIFF": "tif", "WEBP": "webp"}
 
 
-def get_addon_preferences(context = None):
+def get_addon_preferences(context=None):
     if not context:
         context = bpy.context
     return context.preferences.addons[__package__].preferences
@@ -39,14 +39,16 @@ def create_temp_file(prefix, suffix=".png"):
     return tempfile.NamedTemporaryFile(prefix=prefix, suffix=suffix).name
 
 
-def join_path(path, subpath):
-    return os.path.join(path, subpath)
-
-
-def get_filepath_in_package(path, filename = "", starting_dir = __file__):
+def get_filepath_in_package(path, filename="", starting_dir=__file__):
+    """Convert a relative path in the add-on package to an absolute path"""
     script_path = os.path.dirname(os.path.realpath(starting_dir))
     subpath = path + os.sep + filename if path else filename
     return os.path.join(script_path, subpath)
+
+
+def get_absolute_path_for_output_file(path, filename):
+    """Convert a relative path in the blend file to an absolute path"""
+    return os.path.join(os.path.abspath(bpy.path.abspath(path)), filename)
 
 
 def copy_file(src, dest):
@@ -68,7 +70,7 @@ def get_extension_from_file_format(file_format):
         return ""
 
 
-def get_current_workspace(context = None):
+def get_current_workspace(context=None):
     if not context:
         context = bpy.context
 
@@ -78,7 +80,7 @@ def get_current_workspace(context = None):
         return None
 
 
-def activate_workspace(context = None, workspace = None, workspace_id = None):
+def activate_workspace(context=None, workspace=None, workspace_id=None):
     if not workspace:
         workspace = bpy.data.workspaces[workspace_id]
 
@@ -101,23 +103,23 @@ def view_render_result_in_air_image_editor():
         image_editor_area.spaces.active.image = bpy.data.images['Render Result']
 
 
-def get_api_key(context = None):
+def get_api_key(context=None):
     return get_addon_preferences(context).dream_studio_api_key
 
 
-def do_use_local_sd(context = None):
+def do_use_local_sd(context=None):
     return get_addon_preferences(context).is_local_sd_enabled
 
 
-def local_sd_backend(context = None):
+def local_sd_backend(context=None):
     return get_addon_preferences(context).local_sd_backend
 
 
-def local_sd_url(context = None):
+def local_sd_url(context=None):
     return get_addon_preferences(context).local_sd_url
 
 
-def local_sd_timeout(context = None):
+def local_sd_timeout(context=None):
     return get_addon_preferences(context).local_sd_timeout
 
 
