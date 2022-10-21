@@ -25,22 +25,22 @@ body:
       required: true
 
   - type: textarea
-    id: expected-behavior
+    id: error-log
     attributes:
-      label: Expected behavior
+      label: Error Log
       description: |
-        What did you expect to happen?
+        Find the error log from Blender, so we can track down the issue! **(This is the most important part of the bug report)**
+        - On Mac or Linux:
+          1. Close Blender and then open the Terminal app
+          2. Run `cd /Applications/Blender.app/Contents/MacOS && ./Blender`
+          3. Do whatever causes the bug
+          4. Copy and paste the error you see in the Terminal
+        - On Windows:
+          1. In Blender, go to Window > Toggle System Console
+          2. Copy and paste the error you see in the console window
+        - [Get help for Mac](https://docs.blender.org/manual/en/latest/advanced/command_line/launch/macos.html) or [Get help for Windows](https://docs.blender.org/manual/en/2.79/advanced/command_line/introduction.html#microsoft-windows)
     validations:
-      required: false
-
-  - type: textarea
-    id: screenshots
-    attributes:
-      label: Screenshots/video
-      description: |
-        If applicable, please provide a screenshot/video of the problem.
-    validations:
-      required: false
+      required: true
 
   - type: textarea
     id: environment
@@ -57,16 +57,14 @@ body:
         - Operating system: (Windows, OS X, etc)
 
   - type: textarea
-    id: logs
+    id: screenshots
     attributes:
-      label: Logs
+      label: Screenshots/video
       description: |
-        If possible, please provide a system log of the problem. **Please try to include this! Without logs, it's much more difficult to track down bugs.**
-        - On Mac or linux, you need to run Blender from a terminal, where you can then see the log. [Get help for Mac](https://docs.blender.org/manual/en/latest/advanced/command_line/launch/macos.html).
-        - On Windows, you need to toggle system console in the top menu (see screenshot below). [Get help for Windows](https://docs.blender.org/manual/en/2.79/advanced/command_line/introduction.html#microsoft-windows).
+        If applicable, please provide a screenshot/video of the problem.
     validations:
       required: false
-
+      
   - type: textarea
     id: additional-info
     attributes:
