@@ -39,8 +39,9 @@ def render_complete_handler(scene):
     """Handle render completed (this is where the API and Stable Diffusion start)"""
 
     # if AI Render wasn't installed correctly, or it isn't enabled, or we don't want
-    # to run automatically, or we don't have an API Key, quit here
-    if not utils.is_installation_valid() or not scene.air_props.is_enabled or not scene.air_props.auto_run or not utils.get_api_key():
+    # to run automatically, or we don't have an API Key (and we're not running locally),
+    # quit here
+    if not utils.is_installation_valid() or not scene.air_props.is_enabled or not scene.air_props.auto_run or (not utils.get_api_key() and not utils.do_use_local_sd()):
         return
 
     # check to see if we have a render result

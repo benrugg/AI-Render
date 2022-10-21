@@ -4,12 +4,16 @@ import base64
 import re
 import requests
 from ... import (
+    config,
     operators,
     utils,
 )
 
 
-def send_to_api(params, img_file):
+# CORE FUNCTIONS:
+
+def send_to_api(params, img_file, filename_prefix):
+
     # load the initial params object
     automatic1111_params = load_params_obj()
 
@@ -33,28 +37,47 @@ def send_to_api(params, img_file):
         "Accept-Encoding": "gzip, deflate, br",
     }
 
-    # send the API request
-    response = requests.post("http://127.0.0.1:7860/api/predict", json=body, headers=headers, timeout=20)
-
-    if response.status_code == 200:
-        return handle_success(response)
+    # prepare the server url
+    server_url = utils.local_sd_url().rstrip("/").strip()
+    if not server_url:
+        return operators.handle_error(f"You need to specify a location for the local Stable Diffusion server in the add-on preferences. [Get help]({config.HELP_WITH_LOCAL_INSTALLATION_URL})")
     else:
-        return handle_error(response)
+        server_url = server_url + "/api/predict"
+
+    # send the API request
+    try:
+        response = requests.post(server_url, json=body, headers=headers, timeout=utils.local_sd_timeout())
+    except requests.exceptions.ConnectionError:
+        return operators.handle_error(f"The local Stable Diffusion server couldn't be found. It's either not running, or it's running at a different location than what you specified in the add-on preferences. [Get help]({config.HELP_WITH_LOCAL_INSTALLATION_URL})")
+    except requests.exceptions.MissingSchema:
+        return operators.handle_error(f"The url for your local Stable Diffusion server is invalid. Please set it correctly in the add-on preferences. [Get help]({config.HELP_WITH_LOCAL_INSTALLATION_URL})")
+    except requests.exceptions.ReadTimeout:
+        return operators.handle_error("The local Stable Diffusion server timed out. Set a longer timeout in AI Render preferences, or use a smaller image size.")
+
+    # handle the response
+    if response.status_code == 200:
+        return handle_api_success(response, filename_prefix)
+    else:
+        return handle_api_error(response)
 
 
-def handle_success(response):
-    # parse the response for the filename
+def handle_api_success(response, filename_prefix):
+    # parse the response for the filename (if the file wasn't already on the machine,
+    # this could/should use the filename_prefix)
     try:
         return get_image_filename_from_response(response)
     except:
         print("Automatic1111 response content: ")
         print(response.content)
-        return handle_error("Received an unexpected response from the Automatic1111 Stable Diffusion server.")
+        return operators.handle_error("Received an unexpected response from the Automatic1111 Stable Diffusion server.")
 
 
-def handle_error(response):
+def handle_api_error(response):
     return operators.handle_error("An error occurred in the Automatic1111 Stable Diffusion server. Check the server logs for more info.")
 
+
+
+# SUPPORT FUNCTIONS:
 
 def load_params_obj():
     params_filename = utils.get_filepath_in_package("", "params.json", __file__)
