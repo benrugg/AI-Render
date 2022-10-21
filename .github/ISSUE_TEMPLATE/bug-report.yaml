@@ -52,8 +52,8 @@ body:
         AI Render version: in Blender, click on: `Edit > Preferences > Add-ons`, search for AI Render and expand it. This will show you the version of AI Render.
         Blender version: in Blender click on: `Blender Icon (upper left corner) > About Blender`. This will show you the version of Blender.
       value: |
-        - AI Render version: 
-        - Blender version: 
+        - Blender version (upper right corner of splash screen): 
+        - AI Render version (find in Preferences > Add-ons): 
         - Operating system: (Windows, OS X, etc)
 
   - type: textarea
