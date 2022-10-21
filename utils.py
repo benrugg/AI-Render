@@ -29,7 +29,9 @@ valid_dimensions = [384, 448, 512, 576, 640, 704, 768, 832, 896, 960, 1024]
 file_formats = {"JPEG": "jpg", "BMP": "bmp", "IRIS": "rgb", "PNG": "png", "JPEG2000": "jp2", "TARGA": "tga", "TARGA_RAW": "tga", "CINEON": "cin", "DPX": "dpx", "OPEN_EXR_MULTILAYER": "exr", "OPEN_EXR": "exr", "HDR": "hdr", "TIFF": "tif", "WEBP": "webp"}
 
 
-def get_addon_preferences(context):
+def get_addon_preferences(context = None):
+    if not context:
+        context = bpy.context
     return context.preferences.addons[__package__].preferences
 
 
@@ -41,9 +43,9 @@ def join_path(path, subpath):
     return os.path.join(path, subpath)
 
 
-def get_filepath_in_package(path, filename = ""):
-    script_path = os.path.dirname(os.path.realpath(__file__))
-    subpath = path + os.sep + filename
+def get_filepath_in_package(path, filename = "", starting_dir = __file__):
+    script_path = os.path.dirname(os.path.realpath(starting_dir))
+    subpath = path + os.sep + filename if path else filename
     return os.path.join(script_path, subpath)
 
 
@@ -100,9 +102,23 @@ def view_render_result_in_air_image_editor():
 
 
 def get_api_key(context = None):
-    if not context:
-        context = bpy.context
     return get_addon_preferences(context).dream_studio_api_key
+
+
+def do_use_local_sd(context = None):
+    return get_addon_preferences(context).is_local_sd_enabled
+
+
+def local_sd_backend(context = None):
+    return get_addon_preferences(context).local_sd_backend
+
+
+def local_sd_url(context = None):
+    return get_addon_preferences(context).local_sd_url
+
+
+def local_sd_timeout(context = None):
+    return get_addon_preferences(context).local_sd_timeout
 
 
 def get_output_width(scene):
@@ -121,7 +137,10 @@ def are_dimensions_valid(scene):
 
 
 def are_dimensions_too_large(scene):
-    return get_output_width(scene) * get_output_height(scene) > config.max_image_px_area
+    if do_use_local_sd():
+        return False
+    else:
+        return get_output_width(scene) * get_output_height(scene) > config.max_image_px_area
 
 
 def generate_valid_dimensions_tuple_list():

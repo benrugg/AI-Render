@@ -1,5 +1,4 @@
 import bpy
-import requests
 import functools
 import random
 import time
@@ -9,6 +8,9 @@ from . import (
     task_queue,
     utils,
 )
+
+from .sd_backends.dreamstudio import dreamstudio_api
+from .sd_backends.automatic1111 import automatic1111_api
 
 
 valid_dimensions_tuple_list = utils.generate_valid_dimensions_tuple_list()
@@ -192,9 +194,9 @@ def generate_new_random_seed(scene):
         props.seed = random.randint(1000000000, 2147483647)
 
 
-def save_render_to_file(scene, timestamp):
+def save_render_to_file(scene, filename_prefix):
     try:
-        temp_file = utils.create_temp_file(f"ai-render-{timestamp}-1-before-")
+        temp_file = utils.create_temp_file(filename_prefix + "-")
     except:
         return handle_error("Couldn't create temp file for image")
 
@@ -218,11 +220,11 @@ def save_render_to_file(scene, timestamp):
     return temp_file
 
 
-def save_before_image(scene, timestamp):
+def save_before_image(scene, filename_prefix):
     ext = utils.get_extension_from_file_format(scene.render.image_settings.file_format)
     if ext:
         ext = f".{ext}"
-    filename = f"ai-render-{timestamp}-1-before{ext}"
+    filename = f"{filename_prefix}{ext}"
     full_path_and_filename = utils.join_path(scene.air_props.autosave_image_path, filename)
     try:
         bpy.data.images['Render Result'].save_render(bpy.path.abspath(full_path_and_filename))
@@ -230,8 +232,8 @@ def save_before_image(scene, timestamp):
         return handle_error(f"Couldn't save 'before' image to {bpy.path.abspath(full_path_and_filename)}")
 
 
-def save_after_image(scene, timestamp, img_file):
-    filename = f"ai-render-{timestamp}-2-after.png"
+def save_after_image(scene, filename_prefix, img_file):
+    filename = f"{filename_prefix}.png"
     full_path_and_filename = utils.join_path(scene.air_props.autosave_image_path, filename)
     try:
         utils.copy_file(img_file, full_path_and_filename)
@@ -267,7 +269,7 @@ def do_pre_api_setup(scene):
 
 def validate_params(scene):
     props = scene.air_props
-    if utils.get_api_key().strip() == "":
+    if utils.get_api_key().strip() == "" and not utils.do_use_local_sd():
         return handle_error("You must enter an API Key to render with Stable Diffusion", "api_key")
     if not utils.are_dimensions_valid(scene):
         return handle_error("Please set width and height to valid values", "dimensions")
@@ -302,17 +304,22 @@ def send_to_api(scene):
     # generate a new seed, if we want a random one
     generate_new_random_seed(scene)
 
-    # prepare a timestamp for the filenames
+    # prepare the output filenames
     timestamp = int(time.time())
+    before_output_filename_prefix = f"ai-render-{timestamp}-1-before"
+    after_output_filename_prefix = f"ai-render-{timestamp}-2-after"
+
+    # save the rendered image and then read it back in
+    temp_input_file = save_render_to_file(scene, before_output_filename_prefix)
+    if not temp_input_file:
+        return False
+    img_file = open(temp_input_file, 'rb')
+
+    # autosave the before image, if we want that
+    if props.do_autosave_before_images and props.autosave_image_path:
+        save_before_image(scene, before_output_filename_prefix)
 
     # prepare data for the API request
-    headers = {
-        "User-Agent": "Blender/" + bpy.app.version_string,
-        "Accept": "*/*",
-        "Accept-Encoding": "gzip, deflate, br",
-        "Dream-Studio-Api-Key": utils.get_api_key(),
-    }
-
     params = {
         "prompt": get_full_prompt(scene),
         "width": utils.get_output_width(scene),
@@ -324,91 +331,50 @@ def send_to_api(scene):
         "sampler": props.sampler,
     }
 
-    # save the rendered image and then read it back in
-    temp_input_file = save_render_to_file(scene, timestamp)
-    if not temp_input_file:
-        return False
-    img_file = open(temp_input_file, 'rb')
-    files = {"file": img_file}
+    # send to whichever API we're using
+    if utils.do_use_local_sd():
+        if utils.local_sd_backend() == "automatic1111":
+            output_file = automatic1111_api.send_to_api(params, img_file, after_output_filename_prefix)
+        else:
+            return handle_error(f"You are trying to use a local Stable Diffusion installation that isn't supported")
+    else:
+        output_file = dreamstudio_api.send_to_api(params, img_file, after_output_filename_prefix)
 
-    # autosave the before image, if we want that
-    if props.do_autosave_before_images and props.autosave_image_path:
-        save_before_image(scene, timestamp)
+    # if we got a successful image created, handle it
+    if output_file:
 
-    # send the API request
-    try:
-        response = requests.post(config.API_URL, params=params, headers=headers, files=files, timeout=config.request_timeout)
-    except requests.exceptions.ReadTimeout:
-        return handle_error(f"The server timed out. Try again in a moment, or get help. [Get help with timeouts]({config.HELP_WITH_TIMEOUTS_URL})")
-
-    # NOTE: For debugging:
-    # print("request body:")
-    # print(response.request.body)
-    # print("\n")
-    # print("response body:")
-    # print(response.content)
-    # try:
-    #     print(response.json())
-    # except:
-    #     print("body not json")
-
-    # handle a successful response
-    if response.status_code == 200:
-
-        # save the image
-        try:
-            output_file = utils.create_temp_file(f"ai-render-{timestamp}-2-after-")
-            with open(output_file, 'wb') as file:
-                for chunk in response:
-                    file.write(chunk)
-
-            # autosave the after image, if we want that
-            if props.do_autosave_after_images and props.autosave_image_path:
-                new_output_file = save_after_image(scene, timestamp, output_file)
-                if new_output_file:
-                    output_file = new_output_file
-
-        except:
-            return handle_error(f"Couldn't create a temp file to save image")
+        # autosave the after image, if we want that
+        if props.do_autosave_after_images and props.autosave_image_path:
+            new_output_file = save_after_image(scene, after_output_filename_prefix, output_file)
+            if new_output_file:
+                output_file = new_output_file
 
         # load the image into our scene
         try:
             img = bpy.data.images.load(output_file, check_existing=True)
         except:
-            return handle_error(f"Couldn't load the image from Stable Diffusion")
+            return handle_error("Couldn't load the image from Stable Diffusion")
 
         # load the image into the compositor
-        update_compositor_node_with_image(scene, img)
+        try:
+            update_compositor_node_with_image(scene, img)
+        except:
+            return handle_error("Couldn't load the image into the compositor")
 
         # unmute the compositor node group
-        unmute_compositor_node_group(scene)
-
-    # handle 404
-    elif response.status_code in [403, 404]:
-        return handle_error("It looks like the web server this add-on relies on is missing. It's possible this is temporary, and you can try again later.")
-
-    # handle 500
-    elif response.status_code == 500:
-        return handle_error(f"An unknown error occurred in the DreamStudio API. Full server response: {str(response.content)}")
-
-    # handle all other errors
-    else:
-        import json
-        error_key = ''
-
         try:
-            response_obj = response.json()
-            if response_obj.get('Message', '') in ['Forbidden', None]:
-                error_message = "It looks like the web server this add-on relies on is missing. It's possible this is temporary, and you can try again later."
-            else:
-                error_message = "(Server Error) " + response_obj.get('error', f"An unknown error occurred in the DreamStudio API. Full server response: {json.dumps(response_obj)}")
-                error_key = response_obj.get('error_key', '')
+            unmute_compositor_node_group(scene)
         except:
-            error_message = f"An unknown error occurred in the DreamStudio API. Full server response: {str(response.content)}"
+            return handle_error("Couldn't unmute the compositor node")
 
-        return handle_error(error_message, error_key)
+        # return success status
+        return True
 
-    return True
+    # else, an error should have been created by the api function
+    else:
+
+        # return error status
+        return False
 
 
 class AIR_OT_enable(bpy.types.Operator):

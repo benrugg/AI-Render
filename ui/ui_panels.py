@@ -86,7 +86,7 @@ class AIR_PT_setup(bpy.types.Panel):
         width_guess = 220
 
         # if the api key is invalid, show the initial setup instructions
-        if not AIR_PT_setup.is_api_key_valid(context):
+        if not AIR_PT_setup.is_api_key_valid(context) and not utils.get_addon_preferences(context).is_local_sd_enabled:
 
             utils.label_multiline(layout, text="Setup is quick and easy. No downloads or installation. Just register for a Dream Studio API Key.", icon="INFO", width=width_guess)
 

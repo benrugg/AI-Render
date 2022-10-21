@@ -2,7 +2,7 @@ bl_info = {
     "name": "AI Render - Stable Diffusion in Blender",
     "description": "Create amazing images using Stable Diffusion AI",
     "author": "Ben Rugg",
-    "version": (0, 2, 9),
+    "version": (0, 3, 0),
     "blender": (3, 0, 0),
     "location": "Render Properties > AI Render",
     "warning": "",
@@ -24,6 +24,7 @@ if "bpy" in locals():
     imp.reload(ui_panels)
     imp.reload(ui_preset_styles)
     imp.reload(utils)
+    imp.reload(automatic1111_api)
 else:
     from . import (
         addon_updater_ops,
@@ -39,6 +40,7 @@ else:
         ui_panels,
         ui_preset_styles,
     )
+    from .sd_backends.automatic1111 import automatic1111_api
 
 import bpy
 
