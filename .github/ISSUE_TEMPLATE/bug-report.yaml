@@ -54,7 +54,7 @@ body:
       value: |
         - Blender version (upper right corner of splash screen): 
         - AI Render version (find in Preferences > Add-ons): 
-        - Operating system: (Windows, OS X, etc)
+        - Operating system (Windows/Mac/Linux): 
 
   - type: textarea
     id: screenshots
