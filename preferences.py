@@ -53,7 +53,7 @@ class AIRPreferences(bpy.types.AddonPreferences):
     local_sd_timeout: bpy.props.IntProperty(
         name="Timeout (in seconds)",
         description="How long to wait for your local Stable Diffusion installation to run (in seconds, per image)",
-        default=120,
+        default=360,
         min=10,
         max=3600,
     )

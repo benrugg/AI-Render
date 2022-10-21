@@ -112,6 +112,13 @@ def get_image_filename_from_response(response):
     if isinstance(content, (bytes, bytearray)):
         content = content.decode()
 
-    regex = r"[a-z0-9_\-\.\/]+\.png"
+    regex = r"[a-z0-9_\-\.\/\\]+\.png"
     match = re.search(regex, content, re.MULTILINE | re.IGNORECASE)
-    return match.group(0) if match else None
+    if match:
+        # format for Windows if necessary
+        filename = match.group(0)
+        if filename[0] == "\\":
+            filename = "C:" + filename
+        return filename
+    else:
+        return None
