@@ -121,4 +121,4 @@ def get_image_filename_from_response(response):
             filename = "C:" + filename
         return filename
     else:
-        return None
+        raise Exception("No image file found")
