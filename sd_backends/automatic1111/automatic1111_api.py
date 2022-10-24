@@ -67,21 +67,24 @@ def handle_api_success(response, filename_prefix):
     try:
         output_file = utils.create_temp_file(filename_prefix + "-")
     except:
-        return operators.handle_error(f"Couldn't create a temp file to save image")
+        return operators.handle_error("Couldn't create a temp file to save image")
 
     # decode base64 image and save it to the temp file
     try:
         with open(output_file, 'wb') as file:
             file.write(base64.b64decode(base64_img))
     except:
-        return operators.handle_error(f"Couldn't decode base64 image, or couldn't write to temp file")
+        return operators.handle_error("Couldn't decode base64 image, or couldn't write to temp file")
 
     # return the temp file
     return output_file
 
 
 def handle_api_error(response):
-    return operators.handle_error("An error occurred in the Automatic1111 Stable Diffusion server. Check the server logs for more info.")
+    if response.status_code == 404:
+        return operators.handle_error(f"It looks like the Automatic1111 server is running, but it's not in API mode. [Get help]({config.HELP_WITH_AUTOMATIC1111_NOT_IN_API_MODE_URL})")
+    else:
+        return operators.handle_error("An error occurred in the Automatic1111 Stable Diffusion server. Check the server logs for more info.")
 
 
 
