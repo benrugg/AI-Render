@@ -12,5 +12,5 @@ DREAM_STUDIO_URL = "https://beta.dreamstudio.ai/membership?tab=apiKeys"
 VIDEO_TUTORIAL_URL = "https://www.youtube.com/watch?v=tmyln5bwnO8"
 HELP_WITH_TIMEOUTS_URL = "https://github.com/benrugg/AI-Render/wiki/FAQ#%EF%B8%8F-ai-render-keeps-timing-out"
 HELP_WITH_LOCAL_INSTALLATION_URL = "https://github.com/benrugg/AI-Render/wiki/Local-Installation"
-HELP_WITH_AUTOMATIC1111_NOT_IN_API_MODE_URL = "https://github.com/benrugg/AI-Render/wiki/Local-Installation#Automatic1111-API-Mode" # TODO: MAKE THIS
+HELP_WITH_AUTOMATIC1111_NOT_IN_API_MODE_URL = "https://github.com/benrugg/AI-Render/wiki/Local-Installation#troubleshooting"
 CONTRIBUTING_URL = "https://github.com/benrugg/AI-Render/blob/main/CONTRIBUTING.md"
