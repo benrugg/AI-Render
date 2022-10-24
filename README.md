@@ -33,6 +33,11 @@ AI Render works on Windows, Mac and Linux. Blender 3.0.0+ is supported.
 See the wiki for [help with prompt engineering and ideas](https://github.com/benrugg/AI-Render/wiki/Prompt-Engineering), and for [Frequently Asked Questions](https://github.com/benrugg/AI-Render/wiki/FAQ).
 
 
+## Local Installation of Stable Diffusion
+
+There is a beta release that supports local installation with the `Automatic1111 Stable Diffusion Web UI`: [Local installation instructions](https://github.com/benrugg/AI-Render/wiki/Local-Installation).
+
+
 ## Bug Reporting and Feature Requests
 
 Help make the add-on better by reporting any bugs (big or small) or requesting new features:
@@ -44,7 +49,6 @@ Help make the add-on better by reporting any bugs (big or small) or requesting n
 ## Known Limitations
 
 - AI Render currently only does still frames (not animations). Animations are planned for a future release!
-- Local installations of Stable Diffusion aren't supported (yet). This is in active development.
 
 
 ## Share images and feedback!
