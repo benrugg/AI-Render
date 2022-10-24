@@ -36,10 +36,9 @@ class AIRPreferences(bpy.types.AddonPreferences):
 
     local_sd_backend: bpy.props.EnumProperty(
         name="Local Stable Diffusion Backend",
-        default="automatic1111-v2022-10-21",
+        default="automatic1111",
         items=[
-            ('automatic1111-v2022-10-21', 'Automatic1111 (Oct 21, 2022 or newer)', ''),
-            ('automatic1111-v2022-10-20', 'Automatic1111 (installed before Oct 21, 2022)', ''),
+            ('automatic1111', 'Automatic1111', ''),
         ],
         description="Which local Stable Diffusion installation you have",
     )
