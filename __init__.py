@@ -2,7 +2,7 @@ bl_info = {
     "name": "AI Render - Stable Diffusion in Blender",
     "description": "Create amazing images using Stable Diffusion AI",
     "author": "Ben Rugg",
-    "version": (0, 3, 4),
+    "version": (0, 4, 0),
     "blender": (3, 0, 0),
     "location": "Render Properties > AI Render",
     "warning": "",

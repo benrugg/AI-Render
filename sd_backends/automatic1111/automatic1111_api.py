@@ -14,18 +14,12 @@ from ... import (
 
 def send_to_api(params, img_file, filename_prefix):
 
-    # load the initial params object
-    automatic1111_params = load_params_obj()
-
-    # update our actual params in the properties we're touching
-    map_params(automatic1111_params, params)
+    # map the generic params to the specific ones for the Automatic1111 API
+    map_params(params)
 
     # add a base 64 encoded image to the params
-    automatic1111_params["data"]["image_0"] = "data:image/png;base64," + base64.b64encode(img_file.read()).decode()
+    params["init_images"] = ["data:image/png;base64," + base64.b64encode(img_file.read()).decode()]
     img_file.close()
-
-    # format the params for the gradio api
-    automatic1111_params["data"] = list(automatic1111_params["data"].values())
 
     # create the headers
     headers = {
@@ -39,11 +33,11 @@ def send_to_api(params, img_file, filename_prefix):
     if not server_url:
         return operators.handle_error(f"You need to specify a location for the local Stable Diffusion server in the add-on preferences. [Get help]({config.HELP_WITH_LOCAL_INSTALLATION_URL})")
     else:
-        server_url = server_url + "/api/predict"
+        server_url = server_url + "/sdapi/v1/img2img"
 
     # send the API request
     try:
-        response = requests.post(server_url, json=automatic1111_params, headers=headers, timeout=utils.local_sd_timeout())
+        response = requests.post(server_url, json=params, headers=headers, timeout=utils.local_sd_timeout())
     except requests.exceptions.ConnectionError:
         return operators.handle_error(f"The local Stable Diffusion server couldn't be found. It's either not running, or it's running at a different location than what you specified in the add-on preferences. [Get help]({config.HELP_WITH_LOCAL_INSTALLATION_URL})")
     except requests.exceptions.MissingSchema:
@@ -59,14 +53,31 @@ def send_to_api(params, img_file, filename_prefix):
 
 
 def handle_api_success(response, filename_prefix):
-    # parse the response for the filename (if the file wasn't already on the machine,
-    # this could/should use the filename_prefix)
+
+    # ensure we have the type of response we are expecting
     try:
-        return get_image_filename_from_response(response)
+        response_obj = response.json()
+        base64_img = response_obj["images"][0]
     except:
         print("Automatic1111 response content: ")
         print(response.content)
         return operators.handle_error("Received an unexpected response from the Automatic1111 Stable Diffusion server.")
+
+    # create a temp file
+    try:
+        output_file = utils.create_temp_file(filename_prefix + "-")
+    except:
+        return operators.handle_error(f"Couldn't create a temp file to save image")
+
+    # decode base64 image and save it to the temp file
+    try:
+        with open(output_file, 'wb') as file:
+            file.write(base64.b64decode(base64_img))
+    except:
+        return operators.handle_error(f"Couldn't decode base64 image, or couldn't write to temp file")
+
+    # return the temp file
+    return output_file
 
 
 def handle_api_error(response):
@@ -76,23 +87,9 @@ def handle_api_error(response):
 
 # SUPPORT FUNCTIONS:
 
-def load_params_obj():
-    params_version = "params-v2022-10-21.json" if utils.local_sd_backend() == "automatic1111-v2022-10-21" else "params-v2022-10-20.json"
-    params_filename = utils.get_filepath_in_package("", params_version, __file__)
-    with open(params_filename) as file:
-        params_obj = json.load(file)
-    return params_obj
-
-
-def map_params(automatic1111_params, params):
-    automatic1111_params["data"]["prompt"] = params["prompt"]
-    automatic1111_params["data"]["width"] = params["width"]
-    automatic1111_params["data"]["height"] = params["height"]
-    automatic1111_params["data"]["strength"] = 1 - params["image_similarity"]
-    automatic1111_params["data"]["seed"] = params["seed"]
-    automatic1111_params["data"]["guidance_scale"] = params["cfg_scale"]
-    automatic1111_params["data"]["nb_steps"] = params["steps"]
-    automatic1111_params["data"]["sampling_method"] = map_sampler(params["sampler"])
+def map_params(params):
+    params["denoising_strength"] = round(1 - params["image_similarity"], 2)
+    params["sampler_index"] = map_sampler(params["sampler"])
 
 
 def map_sampler(sampler):
@@ -105,20 +102,3 @@ def map_sampler(sampler):
         "k_lms": "LMS",
     }
     return samplers[sampler]
-
-
-def get_image_filename_from_response(response):
-    content = response.content
-    if isinstance(content, (bytes, bytearray)):
-        content = content.decode()
-
-    regex = r"[a-z0-9_\-\.\/\\]+\.png"
-    match = re.search(regex, content, re.MULTILINE | re.IGNORECASE)
-    if match:
-        # format for Windows if necessary
-        filename = match.group(0)
-        if filename[0] == "\\":
-            filename = "C:" + filename
-        return filename
-    else:
-        raise Exception("No image file found")
