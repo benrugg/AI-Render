@@ -25,7 +25,7 @@ class AIRProperties(bpy.types.PropertyGroup):
         soft_max=0.5,
         min=0.0,
         max=1.0,
-        description="How closely the final image will match the initial rendered image. Values around 0.1-0.4 will turn simple renders into new creations. Higher values will adhere more closely to the initial render. If your image is blank, set this to 0.0 for best results",
+        description="How closely the final image will match the initial rendered image. Values around 0.1-0.4 will turn simple renders into new creations. Around 0.5 will keep a lot of the composition, and transform into something like the prompt. 0.6-0.7 keeps things more stable between renders. Higher values may require more steps for best results. You can set this to 0.0 to use only the prompt",
     )
     cfg_scale: bpy.props.FloatProperty(
         name="Prompt Strength",
