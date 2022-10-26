@@ -62,10 +62,9 @@ If you have ideas for prompts that could become preset styles, or if you have an
 
 Here the highest priority new features and enhancements that are in the works:
 
-- Support for local installation of Stable Diffusion
-- Animation rendering
+- Animation support
 - Upscaling
-- Options for auto-saving images
+- Batch rendering
 - Viewing/copying history of images and prompts
 - A panel with prompt modifiers and keyword ideas
 - Ability to generate textures with Stable Diffusion
