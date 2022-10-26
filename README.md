@@ -35,7 +35,7 @@ See the wiki for [help with prompt engineering and ideas](https://github.com/ben
 
 ## Local Installation of Stable Diffusion
 
-AI Render supports local installation with the `Automatic1111 Stable Diffusion Web UI`: [Local installation instructions](https://github.com/benrugg/AI-Render/wiki/Local-Installation).
+AI Render supports running Stable Diffusion locally with the `Automatic1111 Stable Diffusion Web UI`. See the [local installation instructions](https://github.com/benrugg/AI-Render/wiki/Local-Installation).
 
 
 ## Bug Reporting and Feature Requests
