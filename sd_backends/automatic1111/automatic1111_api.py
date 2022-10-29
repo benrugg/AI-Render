@@ -67,14 +67,21 @@ def handle_api_success(response, filename_prefix):
     try:
         output_file = utils.create_temp_file(filename_prefix + "-")
     except:
-        return operators.handle_error("Couldn't create a temp file to save image")
+        return operators.handle_error("Couldn't create a temp file to save image.")
 
-    # decode base64 image and save it to the temp file
+    # decode base64 image
+    try:
+        img_binary = base64.b64decode(base64_img.replace("data:image/png;base64,", ""))
+    except:
+        return operators.handle_error("Couldn't decode base64 image from the Automatic1111 Stable Diffusion server.")
+
+    # save the image to the temp file
     try:
         with open(output_file, 'wb') as file:
-            file.write(base64.b64decode(base64_img))
+            file.write(img_binary)
     except:
-        return operators.handle_error("Couldn't decode base64 image, or couldn't write to temp file")
+        return operators.handle_error("Couldn't write to temp file.")
+
 
     # return the temp file
     return output_file
