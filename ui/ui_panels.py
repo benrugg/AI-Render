@@ -283,12 +283,40 @@ class AIR_PT_operation(bpy.types.Panel):
             utils.label_multiline(layout, text="Please specify a path", icon="ERROR", width=width_guess)
 
 
+class AIR_PT_animation(bpy.types.Panel):
+    bl_label = "Animation"
+    bl_idname = "AIR_PT_animation"
+    bl_parent_id = "AIR_PT_main"
+    bl_space_type = "PROPERTIES"
+    bl_region_type = "WINDOW"
+    bl_context = "render"
+    bl_options = {'DEFAULT_CLOSED'}
+
+    @classmethod
+    def poll(cls, context):
+        return utils.is_installation_valid() and context.scene.air_props.is_enabled
+
+    def draw(self, context):
+        layout = self.layout
+        scene = context.scene
+        props = scene.air_props
+
+        # Render Animation
+        row = layout.row()
+        row.operator(operators.AIR_OT_render_animation.bl_idname, icon="RENDER_ANIMATION")
+        row.enabled = props.animation_output_path != ""
+
+        row = layout.row()
+        row.prop(props, "animation_output_path", text="Path")
+
+
 classes = [
     AIR_PT_main,
     AIR_PT_setup,
     AIR_PT_prompt,
     AIR_PT_advanced_options,
     AIR_PT_operation,
+    AIR_PT_animation,
 ]
 
 

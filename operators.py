@@ -194,6 +194,18 @@ def generate_new_random_seed(scene):
         props.seed = random.randint(1000000000, 2147483647)
 
 
+def render_frame(context, current_frame):
+    """Render the current frame as part of an animation"""
+    # set the frame
+    context.scene.frame_set(current_frame)
+
+    # render the frame
+    bpy.ops.render.render()
+
+    # post to the api
+    send_to_api(context.scene)
+
+
 def save_render_to_file(scene, filename_prefix):
     try:
         temp_file = utils.create_temp_file(filename_prefix + "-")
@@ -242,6 +254,16 @@ def save_after_image(scene, filename_prefix, img_file):
         return handle_error(f"Couldn't save 'after' image to {bpy.path.abspath(full_path_and_filename)}")
 
 
+def save_animation_image(scene, filename_prefix, img_file):
+    filename = f"{filename_prefix}{str(scene.frame_current).zfill(4)}.png"
+    full_path_and_filename = utils.get_absolute_path_for_output_file(scene.air_props.animation_output_path, filename)
+    try:
+        utils.copy_file(img_file, full_path_and_filename)
+        return full_path_and_filename
+    except:
+        return handle_error(f"Couldn't save animation image to {bpy.path.abspath(full_path_and_filename)}")
+
+
 def do_pre_render_setup(scene, do_mute_node_group=True):
     # Lock the user interface when rendering, so that we can change
     # compositor nodes in the render_pre handler without causing a crash!
@@ -268,7 +290,6 @@ def do_pre_api_setup(scene):
 
 
 def validate_params(scene):
-    props = scene.air_props
     if utils.get_api_key().strip() == "" and not utils.do_use_local_sd():
         return handle_error("You must enter an API Key to render with Stable Diffusion", "api_key")
     if not utils.are_dimensions_valid(scene):
@@ -278,6 +299,14 @@ def validate_params(scene):
     if get_full_prompt(scene) == "":
         return handle_error("Please enter a prompt for Stable Diffusion", "prompt")
     return True
+
+
+def validate_animation_output_path(scene):
+    props = scene.air_props
+    if not utils.does_path_exist(props.animation_output_path):
+        return handle_error("Animation output path does not exist")
+    else:
+        return True
 
 
 def get_full_prompt(scene):
@@ -308,6 +337,7 @@ def send_to_api(scene):
     timestamp = int(time.time())
     before_output_filename_prefix = f"ai-render-{timestamp}-1-before"
     after_output_filename_prefix = f"ai-render-{timestamp}-2-after"
+    animation_output_filename_prefix = "ai-render-"
 
     # save the rendered image and then read it back in
     temp_input_file = save_render_to_file(scene, before_output_filename_prefix)
@@ -315,8 +345,13 @@ def send_to_api(scene):
         return False
     img_file = open(temp_input_file, 'rb')
 
-    # autosave the before image, if we want that
-    if props.do_autosave_before_images and props.autosave_image_path:
+    # autosave the before image, if we want that, and we're not rendering an animation
+    if (
+        props.do_autosave_before_images
+        and props.autosave_image_path
+        and not props.is_rendering_animation
+        and not props.is_rendering_animation_manually
+    ):
         save_before_image(scene, before_output_filename_prefix)
 
     # prepare data for the API request
@@ -336,18 +371,29 @@ def send_to_api(scene):
         if utils.local_sd_backend() == "automatic1111":
             output_file = automatic1111_api.send_to_api(params, img_file, after_output_filename_prefix)
         else:
-            return handle_error(f"You are trying to use a local Stable Diffusion installation that isn't supported")
+            return handle_error("You are trying to use a local Stable Diffusion installation that isn't supported")
     else:
         output_file = dreamstudio_api.send_to_api(params, img_file, after_output_filename_prefix)
 
     # if we got a successful image created, handle it
     if output_file:
 
-        # autosave the after image, if we want that
-        if props.do_autosave_after_images and props.autosave_image_path:
+        # autosave the after image, if we want that, and we're not rendering an animation
+        if (
+            props.do_autosave_after_images
+            and props.autosave_image_path
+            and not props.is_rendering_animation
+            and not props.is_rendering_animation_manually
+        ):
             new_output_file = save_after_image(scene, after_output_filename_prefix, output_file)
-            if new_output_file:
-                output_file = new_output_file
+
+        # if we're rendering an animation manually, save the image to the animation output path
+        if props.is_rendering_animation_manually:
+            new_output_file = save_animation_image(scene, animation_output_filename_prefix, output_file)
+
+        # if we saved a new output image, use it
+        if new_output_file:
+            output_file = new_output_file
 
         # load the image into our scene
         try:
@@ -479,6 +525,79 @@ class AIR_OT_generate_new_image_from_current(bpy.types.Operator):
         return {'FINISHED'}
 
 
+class AIR_OT_render_animation(bpy.types.Operator):
+    "Render an animation using Stable Diffusion"
+    bl_idname = "ai_render.render_animation"
+    bl_label = "Render Animation"
+
+    _timer = None
+    _finished = True
+    _current_frame = 0
+    _orig_current_frame = 0
+
+    def _start_render(self, context):
+        self._finished = False
+
+        self._orig_current_frame = context.scene.frame_current
+        self._current_frame = context.scene.frame_start
+        context.scene.air_props.is_rendering_animation_manually = True
+
+        self._timer = context.window_manager.event_timer_add(0.1, window=context.window)
+        context.window_manager.modal_handler_add(self)
+
+    def _end_render(self, context):
+        self._finished = True
+
+        context.scene.frame_current = self._orig_current_frame
+        context.scene.air_props.is_rendering_animation_manually = False
+
+        context.window_manager.event_timer_remove(self._timer)
+
+    def _advance_frame(self, context):
+        if self._current_frame < context.scene.frame_end:
+            self._current_frame += 1
+        else:
+            self._end_render(context)
+
+    def modal(self, context, event):
+        if event.type == 'ESC':
+            print("AI Render animation canceled")
+            self.report({'INFO'}, "AI Render animation canceled")
+            self._end_render(context)
+            return {'CANCELLED'}
+
+        elif event.type == 'TIMER' and not self._finished:
+            render_frame(context, self._current_frame)
+            self._advance_frame(context)
+
+            if context.scene.air_props.error_message:
+                print("AI Render animation ended with error")
+                self.report({'INFO'}, "AI Render animation ended with error")
+                self._end_render(context)
+                return {'CANCELLED'}
+            else:
+                return {'PASS_THROUGH'}
+
+        elif self._finished:
+            print("AI Render animation finished")
+            self.report({'INFO'}, "AI Render animation finished")
+            self._end_render(context)
+            return {'FINISHED'}
+
+        return {'RUNNING_MODAL'}
+
+    def execute(self, context):
+        scene = context.scene
+
+        if validate_params(scene) and validate_animation_output_path(scene):
+            do_pre_render_setup(scene)
+            do_pre_api_setup(scene)
+            self._start_render(context)
+            return {'RUNNING_MODAL'}
+        else:
+            return {'CANCELLED'}
+
+
 class AIR_OT_setup_instructions_popup(bpy.types.Operator):
     "Show the setup instructions in a popup dialog"
     bl_idname = "ai_render.show_setup_instructions_popup"
@@ -550,6 +669,7 @@ classes = [
     AIR_OT_show_other_dimension_options,
     AIR_OT_generate_new_image_from_render,
     AIR_OT_generate_new_image_from_current,
+    AIR_OT_render_animation,
     AIR_OT_setup_instructions_popup,
     AIR_OT_show_error_popup,
 ]

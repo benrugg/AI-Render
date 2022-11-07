@@ -70,7 +70,7 @@ class AIRProperties(bpy.types.PropertyGroup):
     auto_run: bpy.props.BoolProperty(
         name="Run Automatically on Render",
         default=True,
-        description="Generate a new image automatically after each render. When off, you will need to manually generate a new image"
+        description="Generate a new image automatically after each render. When off, you will need to manually generate a new image",
     )
     error_key: bpy.props.StringProperty(
         name="Error Key",
@@ -94,18 +94,44 @@ class AIRProperties(bpy.types.PropertyGroup):
     do_autosave_before_images: bpy.props.BoolProperty(
         name="Save 'Before' Images",
         default=False,
-        description="When true, will save each rendered image (before processing it with AI). File format will be your scene's output settings"
+        description="When true, will save each rendered image (before processing it with AI). File format will be your scene's output settings",
     )
     do_autosave_after_images: bpy.props.BoolProperty(
         name="Save 'After' Images",
         default=False,
-        description="When true, will save each rendered image (after processing it with AI). File will always be a PNG"
+        description="When true, will save each rendered image (after processing it with AI). File will always be a PNG",
     )
     autosave_image_path: bpy.props.StringProperty(
         name="Autosave Image Output Path",
         default="",
         description="The path to save before/after images, if autosave is enabled (above)",
-        subtype="DIR_PATH"
+        subtype="DIR_PATH",
+    )
+    animation_output_path: bpy.props.StringProperty(
+        name="Animation Output Path",
+        default="",
+        description="The path to save the animation",
+        subtype="DIR_PATH",
+    )
+    animation_init_frame: bpy.props.IntProperty(
+        name="Initial Animtion Frame",
+        default=1,
+        description="Internal property to track the frame the animation started on. This is used to determine if we are rendering an animation",
+    )
+    is_rendering: bpy.props.BoolProperty(
+        name="Is Rendering",
+        default=False,
+        description="Internal property to track if we are currently rendering",
+    )
+    is_rendering_animation: bpy.props.BoolProperty(
+        name="Is Rendering Animation",
+        default=False,
+        description="Internal property to track if we are rendering an animation",
+    )
+    is_rendering_animation_manually: bpy.props.BoolProperty(
+        name="Is Rendering Manual Animation",
+        default=False,
+        description="Internal property to track if we are rendering an animation manually",
     )
 
 

@@ -51,6 +51,10 @@ def get_absolute_path_for_output_file(path, filename):
     return os.path.join(os.path.abspath(bpy.path.abspath(path)), filename)
 
 
+def does_path_exist(path):
+    return os.path.exists(os.path.abspath(bpy.path.abspath(path)))
+
+
 def copy_file(src, dest):
     shutil.copy2(src, dest)
 
