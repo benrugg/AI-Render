@@ -178,6 +178,13 @@ def handle_error(msg, error_key = ''):
     return False
 
 
+def set_silent_error(scene, msg, error_key = ''):
+    """Set the error message to be displayed in the ui, but don't show a popup"""
+    print("AI Render Error: ", msg)
+    scene.air_props.error_message = msg
+    scene.air_props.error_key = error_key
+
+
 def clear_error(scene):
     """Clear the error message in the ui"""
     scene.air_props.error_message = ''
@@ -266,7 +273,7 @@ def save_animation_image(scene, filename_prefix, img_file):
 
 def do_pre_render_setup(scene, do_mute_node_group=True):
     # Lock the user interface when rendering, so that we can change
-    # compositor nodes in the render_pre handler without causing a crash!
+    # compositor nodes in the render_init handler without causing a crash!
     # See: https://docs.blender.org/api/current/bpy.app.handlers.html#note-on-altering-data
     scene.render.use_lock_interface = True
 

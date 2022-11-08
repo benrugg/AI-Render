@@ -24,30 +24,15 @@ def load_post_handler(context):
 def render_init_handler(scene):
     """Handle an entire render process about to start"""
 
-    # if AI Render wasn't installed correctly, quit here
-    if not utils.is_installation_valid():
+    # if AI Render wasn't installed correctly or isn't enabled, quit here
+    if not utils.is_installation_valid() or not scene.air_props.is_enabled:
         return
 
-    # otherwise, simply track that a render is in progress
+    # track that a render is in progress
     scene.air_props.is_rendering = True
     scene.air_props.animation_init_frame = scene.frame_current
 
-
-@persistent
-def render_pre_handler(scene):
-    """Handle a frame render about to start"""
-
-    # if AI Render wasn't installed correctly or isn't enabled, quit here. (Also quit
-    # here if we're rendering an animation, because we'll handle that separately).
-    if (
-        not utils.is_installation_valid()
-        or not scene.air_props.is_enabled
-        or scene.air_props.is_rendering_animation
-        or scene.air_props.is_rendering_animation_manually
-    ):
-        return
-
-    # otherwise, do the pre-render setup
+    # do the pre-render setup
     # NOTE: We want to do this even if auto_run is disabled, because we need to mute
     # the node group in that case, so that the actual render can be viewed
     operators.do_pre_render_setup(scene)
@@ -72,21 +57,28 @@ def render_complete_handler(scene):
 
     # if AI Render wasn't installed correctly, or it isn't enabled, or we don't want
     # to run automatically, or we don't have an API Key (and we're not running locally),
-    # quit here. (Also quit here if we're rendering an animation, because we'll handle that
-    # separately).
+    # quit here
     if (
         not utils.is_installation_valid()
         or not scene.air_props.is_enabled
         or not scene.air_props.auto_run
-        or scene.air_props.is_rendering_animation
-        or scene.air_props.is_rendering_animation_manually
         or (not utils.get_api_key() and not utils.do_use_local_sd())
     ):
+        return
+
+    # if we are rendering an animation...
+    if  scene.air_props.is_rendering_animation or scene.air_props.is_rendering_animation_manually:
+
+        # if we are rendering an animation, but not manually, set a silent error message,
+        # just to warn users that this won't work with AI Render
+        if scene.air_props.is_rendering_animation and not scene.air_props.is_rendering_animation_manually:
+            operators.set_silent_error(scene, "To render an animation with AI Render, use the \"Render Animation\" button in the Animation panel below")
+
         # track that we're not rendering
         scene.air_props.is_rendering = False
         scene.air_props.is_rendering_animation = False
 
-        # then quit
+        # then quit here
         return
 
     # check to see if we have a render result
@@ -111,7 +103,6 @@ def render_complete_handler(scene):
 def register():
     bpy.app.handlers.load_post.append(load_post_handler)
     bpy.app.handlers.render_init.append(render_init_handler)
-    bpy.app.handlers.render_pre.append(render_pre_handler)
     bpy.app.handlers.frame_change_pre.append(frame_change_pre_handler)
     bpy.app.handlers.render_complete.append(render_complete_handler)
 
@@ -119,6 +110,5 @@ def register():
 def unregister():
     bpy.app.handlers.load_post.remove(load_post_handler)
     bpy.app.handlers.render_init.remove(render_init_handler)
-    bpy.app.handlers.render_pre.remove(render_pre_handler)
     bpy.app.handlers.frame_change_pre.remove(frame_change_pre_handler)
     bpy.app.handlers.render_complete.remove(render_complete_handler)
