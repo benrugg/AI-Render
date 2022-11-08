@@ -408,7 +408,7 @@ def send_to_api(scene):
 
         # load the image into our scene
         try:
-            img = bpy.data.images.load(output_file, check_existing=True)
+            img = bpy.data.images.load(output_file, check_existing=False)
         except:
             return handle_error("Couldn't load the image from Stable Diffusion")
 
