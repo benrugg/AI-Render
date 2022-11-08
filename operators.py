@@ -385,6 +385,9 @@ def send_to_api(scene):
     # if we got a successful image created, handle it
     if output_file:
 
+        # init var
+        new_output_file = None
+
         # autosave the after image, if we want that, and we're not rendering an animation
         if (
             props.do_autosave_after_images
