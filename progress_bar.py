@@ -1,5 +1,10 @@
 #  Original code by Michel Anders (@varkenvarken). Modified by Ben Rugg (@benrugg).
 #
+#  See:
+#  https://blog.michelanders.nl/2017/04/how-to-add-progress-indicator-to-the-info-header-in-blender.html
+#  and
+#  https://raw.githubusercontent.com/varkenvarken/blenderaddons/master/reportpanel.py
+#
 #  (c) 2017,2021 Michel Anders
 #
 #  This program is free software; you can redistribute it and/or modify
