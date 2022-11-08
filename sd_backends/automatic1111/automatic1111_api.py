@@ -110,5 +110,11 @@ def map_sampler(sampler):
         "k_dpm_2": "DPM2",
         "k_dpm_2_ancestral": "DPM2 a",
         "k_lms": "LMS",
+        "k_dpm_fast": "DPM fast",
+        "k_dpm_ad": "DPM adaptive",
+        "k_dpmpp_2s_a_ka": "DPM++ 2S a Karras",
+        "k_dpmpp_2m_ka":"DPM++ 2M Karras",
+        "k_dpmpp_2s_a":"DPM++ 2S a",
+        "k_dpmpp_2m":"DPM++ 2M",
     }
     return samplers[sampler]

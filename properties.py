@@ -64,6 +64,12 @@ class AIRProperties(bpy.types.PropertyGroup):
             ('k_dpm_2', 'k_dpm_2', ''),
             ('k_dpm_2_ancestral', 'k_dpm_2_ancestral', ''),
             ('k_lms', 'k_lms', ''),
+            ('k_dpm_fast', 'k_dpm_fast', ''),
+            ('k_dpm_ad', 'k_dpm_ad', ''),
+            ('k_dpmpp_2s_a_ka', 'k_dpmpp_2s_a_ka', ''),
+            ('k_dpmpp_2s_a_ka', 'k_dpmpp_2m_ka', ''),
+            ('k_dpmpp_2s_a', 'k_dpmpp_2s_a', ''),
+            ('k_dpmpp_2m', 'k_dpmpp_2m', ''),
         ],
         description="Which sampler method to use",
     )
