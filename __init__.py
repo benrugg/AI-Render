@@ -19,12 +19,14 @@ if "bpy" in locals():
     imp.reload(handlers)
     imp.reload(operators)
     imp.reload(preferences)
+    imp.reload(progress_bar)
     imp.reload(properties)
     imp.reload(task_queue)
     imp.reload(ui_panels)
     imp.reload(ui_preset_styles)
     imp.reload(utils)
     imp.reload(automatic1111_api)
+    imp.reload(dreamstudio_api)
 else:
     from . import (
         addon_updater_ops,
@@ -32,6 +34,7 @@ else:
         handlers,
         operators,
         preferences,
+        progress_bar,
         properties,
         task_queue,
         utils,
@@ -41,6 +44,7 @@ else:
         ui_preset_styles,
     )
     from .sd_backends.automatic1111 import automatic1111_api
+    from .sd_backends.dreamstudio import dreamstudio_api
 
 import bpy
 
@@ -50,6 +54,7 @@ def register():
     handlers.register()
     operators.register()
     preferences.register()
+    progress_bar.register()
     properties.register()
     task_queue.register()
     ui_panels.register()
@@ -61,6 +66,7 @@ def unregister():
     handlers.unregister()
     operators.unregister()
     preferences.unregister()
+    progress_bar.unregister()
     properties.unregister()
     task_queue.unregister()
     ui_panels.unregister()
