@@ -6,6 +6,20 @@ from . import (
 )
 from .ui import ui_preset_styles
 
+class AIRAnimationPromptProperties(bpy.types.PropertyGroup):
+    frame_start: bpy.props.IntProperty(
+        name="Frame Start",
+        default=1,
+        min=0,
+        max=100000,
+        description="The frame to start using this prompt on",
+    )
+    prompt_text: bpy.props.StringProperty(
+        name="Prompt Text",
+        default="",
+        description=config.default_prompt_text,
+    )
+
 class AIRProperties(bpy.types.PropertyGroup):
     is_enabled: bpy.props.BoolProperty(
         name="Enable AI Render",
@@ -14,9 +28,12 @@ class AIRProperties(bpy.types.PropertyGroup):
     )
     prompt_text: bpy.props.StringProperty(
         name="Prompt",
-        description="Describe anything for Stable Diffusion to create",
         default=config.default_prompt_text,
+        description="Describe anything for Stable Diffusion to create",
         update=operators.clear_error_handler,
+    )
+    animated_prompts: bpy.props.CollectionProperty(
+        type=AIRAnimationPromptProperties,
     )
     image_similarity: bpy.props.FloatProperty(
         name="Image Similarity",
@@ -140,7 +157,8 @@ class AIRProperties(bpy.types.PropertyGroup):
 
 
 classes = [
-    AIRProperties
+    AIRAnimationPromptProperties,
+    AIRProperties,
 ]
 
 

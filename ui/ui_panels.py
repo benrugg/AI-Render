@@ -148,13 +148,30 @@ class AIR_PT_prompt(bpy.types.Panel):
         # Show the error if we have one
         show_error_if_it_exists(layout, context, width_guess)
 
-        # Prompt
-        row = layout.row()
-        row.label(text="Prompt:")
+        # Animated Prompts
+        for animated_prompt in props.animated_prompts:
+            # c = layout.column(align=True)
+            row = layout.row(align=True)
+            row.scale_y = 1.5
+            first_split = row.split(factor=0.22, align=True)
+            c = first_split.column(align=True)
+            c.prop(animated_prompt, "frame_start", text="")
 
-        row = layout.row()
-        row.scale_y = 1.8
-        row.prop(props, "prompt_text", text="")
+            second_split = first_split.split(factor=0.9, align=True)
+            c = second_split.column(align=True)
+            c.prop(animated_prompt, "prompt_text", text="")
+
+            third_split = second_split.split(align=True)
+            c = third_split.column(align=True)
+            c.operator("wm.url_open", text="", icon="X")
+
+        # # Prompt
+        # row = layout.row()
+        # row.label(text="Prompt:")
+
+        # row = layout.row()
+        # row.scale_y = 1.8
+        # row.prop(props, "prompt_text", text="")
 
         # Preset Styles
         box = layout.box()
