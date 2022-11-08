@@ -178,6 +178,13 @@ def handle_error(msg, error_key = ''):
     return False
 
 
+def set_silent_error(scene, msg, error_key = ''):
+    """Set the error message to be displayed in the ui, but don't show a popup"""
+    print("AI Render Error: ", msg)
+    scene.air_props.error_message = msg
+    scene.air_props.error_key = error_key
+
+
 def clear_error(scene):
     """Clear the error message in the ui"""
     scene.air_props.error_message = ''
@@ -203,7 +210,7 @@ def render_frame(context, current_frame):
     bpy.ops.render.render()
 
     # post to the api
-    send_to_api(context.scene)
+    return send_to_api(context.scene)
 
 
 def save_render_to_file(scene, filename_prefix):
@@ -266,7 +273,7 @@ def save_animation_image(scene, filename_prefix, img_file):
 
 def do_pre_render_setup(scene, do_mute_node_group=True):
     # Lock the user interface when rendering, so that we can change
-    # compositor nodes in the render_pre handler without causing a crash!
+    # compositor nodes in the render_init handler without causing a crash!
     # See: https://docs.blender.org/api/current/bpy.app.handlers.html#note-on-altering-data
     scene.render.use_lock_interface = True
 
@@ -377,6 +384,9 @@ def send_to_api(scene):
 
     # if we got a successful image created, handle it
     if output_file:
+
+        # init var
+        new_output_file = None
 
         # autosave the after image, if we want that, and we're not rendering an animation
         if (
@@ -531,7 +541,10 @@ class AIR_OT_render_animation(bpy.types.Operator):
     bl_label = "Render Animation"
 
     _timer = None
+    _ticks_since_last_render = 0
     _finished = True
+    _start_frame = 0
+    _end_frame = 0
     _current_frame = 0
     _orig_current_frame = 0
 
@@ -539,9 +552,15 @@ class AIR_OT_render_animation(bpy.types.Operator):
         self._finished = False
 
         self._orig_current_frame = context.scene.frame_current
+        self._start_frame = context.scene.frame_start
+        self._end_frame = context.scene.frame_end
         self._current_frame = context.scene.frame_start
         context.scene.air_props.is_rendering_animation_manually = True
 
+        context.scene.air_progress_label = self._get_label()
+        context.scene.air_progress = 0
+
+        self._ticks_since_last_render = 0
         self._timer = context.window_manager.event_timer_add(0.1, window=context.window)
         context.window_manager.modal_handler_add(self)
 
@@ -551,6 +570,8 @@ class AIR_OT_render_animation(bpy.types.Operator):
         context.scene.frame_current = self._orig_current_frame
         context.scene.air_props.is_rendering_animation_manually = False
 
+        context.scene.air_progress = -1
+
         context.window_manager.event_timer_remove(self._timer)
 
     def _advance_frame(self, context):
@@ -558,6 +579,22 @@ class AIR_OT_render_animation(bpy.types.Operator):
             self._current_frame += 1
         else:
             self._end_render(context)
+
+    def _report_complete(self):
+        print("AI Render animation completed")
+        self.report({'INFO'}, "AI Render animation completed")
+
+    def _get_total_frames(self):
+        return self._end_frame - self._start_frame + 1
+
+    def _get_completed_frames(self):
+        return self._current_frame - self._start_frame
+
+    def _get_completed_percent(self):
+        return self._get_completed_frames() / self._get_total_frames()
+
+    def _get_label(self):
+        return f"AI Render (Frame {self._get_completed_frames()}/{self._get_total_frames()})"
 
     def modal(self, context, event):
         if event.type == 'ESC':
@@ -567,20 +604,38 @@ class AIR_OT_render_animation(bpy.types.Operator):
             return {'CANCELLED'}
 
         elif event.type == 'TIMER' and not self._finished:
-            render_frame(context, self._current_frame)
-            self._advance_frame(context)
+            # after each render, wait a few ticks before starting the next one,
+            # to give Blender time to update the UI
+            if self._ticks_since_last_render < 2:
+                self._ticks_since_last_render += 1
+                return {'PASS_THROUGH'}
+            else:
+                self._ticks_since_last_render = 0
 
-            if context.scene.air_props.error_message:
+            # render the current frame
+            was_successful = render_frame(context, self._current_frame)
+
+            # if the render was successful, advance to the next frame.
+            # otherwise, quit here with an error.
+            if was_successful:
+                self._advance_frame(context)
+            else:
                 print("AI Render animation ended with error")
                 self.report({'INFO'}, "AI Render animation ended with error")
                 self._end_render(context)
                 return {'CANCELLED'}
+
+            # if we're done, report success and quit. otherwise, update the progress bar.
+            if self._finished:
+                self._report_complete()
+                return {'FINISHED'}
             else:
+                context.scene.air_progress_label = self._get_label()
+                context.scene.air_progress = self._get_completed_percent() * 100
                 return {'PASS_THROUGH'}
 
         elif self._finished:
-            print("AI Render animation finished")
-            self.report({'INFO'}, "AI Render animation finished")
+            self._report_complete()
             self._end_render(context)
             return {'FINISHED'}
 
