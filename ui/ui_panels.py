@@ -301,13 +301,31 @@ class AIR_PT_animation(bpy.types.Panel):
         scene = context.scene
         props = scene.air_props
 
+        width_guess = 220
+
         # Render Animation
         row = layout.row()
         row.operator(operators.AIR_OT_render_animation.bl_idname, icon="RENDER_ANIMATION")
         row.enabled = props.animation_output_path != ""
 
+        # Path
         row = layout.row()
         row.prop(props, "animation_output_path", text="Path")
+
+        # Tips
+        if round(props.image_similarity, 2) < 0.7 and not props.close_animation_tips:
+            layout.separator()
+
+            box = layout.box()
+            row = box.row()
+            row.label(text="Animation Tip:", icon="INFO")
+            split = row.split(align=True)
+            split.prop(props, "close_animation_tips", text="", icon="X", emboss=False)
+
+            utils.label_multiline(box, text="For more stable animations, consider increasing \"Image Similarity\" to at least 0.7", width=width_guess)
+
+            row = box.row()
+            row.operator("wm.url_open", text="Get Animation Tips", icon="URL").url = config.ANIMATION_TIPS_URL
 
 
 classes = [

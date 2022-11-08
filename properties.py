@@ -133,6 +133,10 @@ class AIRProperties(bpy.types.PropertyGroup):
         default=False,
         description="Internal property to track if we are rendering an animation manually",
     )
+    close_animation_tips: bpy.props.BoolProperty(
+        name="Close Animation Tips",
+        default=False,
+    )
 
 
 classes = [
