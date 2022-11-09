@@ -250,7 +250,7 @@ class AIR_PT_operation(bpy.types.Panel):
         row.prop(props, 'auto_run')
 
         # Generate Image
-        manual_buttons_enabled = bpy.data.images['Render Result'].has_data
+        manual_buttons_enabled = 'Render Result' in bpy.data.images and bpy.data.images['Render Result'].has_data
 
         layout.separator()
 
