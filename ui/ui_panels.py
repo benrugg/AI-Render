@@ -150,7 +150,6 @@ class AIR_PT_prompt(bpy.types.Panel):
 
         # Animated Prompts
         for animated_prompt in props.animated_prompts:
-            # c = layout.column(align=True)
             row = layout.row(align=True)
             row.scale_y = 1.5
             first_split = row.split(factor=0.22, align=True)
