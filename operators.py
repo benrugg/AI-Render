@@ -5,6 +5,7 @@ import time
 
 from . import (
     config,
+    progress_bar,
     task_queue,
     utils,
 )
@@ -407,7 +408,7 @@ def send_to_api(scene):
 
         # load the image into our scene
         try:
-            img = bpy.data.images.load(output_file, check_existing=True)
+            img = bpy.data.images.load(output_file, check_existing=False)
         except:
             return handle_error("Couldn't load the image from Stable Diffusion")
 
@@ -561,6 +562,7 @@ class AIR_OT_render_animation(bpy.types.Operator):
         self._current_frame = context.scene.frame_start
         context.scene.air_props.is_rendering_animation_manually = True
 
+        context.scene.air_progress_status_message = ""
         context.scene.air_progress_label = self._get_label()
         context.scene.air_progress = 0
 
@@ -568,21 +570,21 @@ class AIR_OT_render_animation(bpy.types.Operator):
         self._timer = context.window_manager.event_timer_add(0.1, window=context.window)
         context.window_manager.modal_handler_add(self)
 
-    def _end_render(self, context):
+    def _end_render(self, context, status_message):
         self._finished = True
 
         context.scene.frame_current = self._orig_current_frame
         context.scene.air_props.is_rendering_animation_manually = False
 
-        context.scene.air_progress = -1
+        context.scene.air_progress_status_message = status_message
+        progress_bar.hide_progress_bar_after_delay()
 
         context.window_manager.event_timer_remove(self._timer)
 
     def _advance_frame(self, context):
-        if self._current_frame < context.scene.frame_end:
-            self._current_frame += 1
-        else:
-            self._end_render(context)
+        self._current_frame += 1
+        if self._current_frame > context.scene.frame_end:
+            self._end_render(context, "Animation Render Complete")
 
     def _report_complete(self):
         print("AI Render animation completed")
@@ -595,7 +597,7 @@ class AIR_OT_render_animation(bpy.types.Operator):
         return self._current_frame - self._start_frame
 
     def _get_completed_percent(self):
-        return self._get_completed_frames() / self._get_total_frames()
+        return round(self._get_completed_frames() / self._get_total_frames(), 2)
 
     def _get_label(self):
         return f"AI Render (Frame {self._get_completed_frames()}/{self._get_total_frames()})"
@@ -604,7 +606,7 @@ class AIR_OT_render_animation(bpy.types.Operator):
         if event.type == 'ESC':
             print("AI Render animation canceled")
             self.report({'INFO'}, "AI Render animation canceled")
-            self._end_render(context)
+            self._end_render(context, "Animation Render Canceled")
             return {'CANCELLED'}
 
         elif event.type == 'TIMER' and not self._finished:
@@ -626,21 +628,23 @@ class AIR_OT_render_animation(bpy.types.Operator):
             else:
                 print("AI Render animation ended with error")
                 self.report({'INFO'}, "AI Render animation ended with error")
-                self._end_render(context)
+                self._end_render(context, "Animation Render Error")
                 return {'CANCELLED'}
 
-            # if we're done, report success and quit. otherwise, update the progress bar.
+            # update the progress bar
+            context.scene.air_progress_label = self._get_label()
+            context.scene.air_progress = self._get_completed_percent() * 100
+
+            # if we're done, report success and quit. otherwise, pass through
             if self._finished:
                 self._report_complete()
                 return {'FINISHED'}
             else:
-                context.scene.air_progress_label = self._get_label()
-                context.scene.air_progress = self._get_completed_percent() * 100
                 return {'PASS_THROUGH'}
 
         elif self._finished:
             self._report_complete()
-            self._end_render(context)
+            self._end_render(context, "Animation Render Complete")
             return {'FINISHED'}
 
         return {'RUNNING_MODAL'}
