@@ -86,3 +86,22 @@ def handle_api_error(response):
             error_message = f"An unknown error occurred in the DreamStudio API. Full server response: {str(response.content)}"
 
         return operators.handle_error(error_message, error_key)
+
+
+def get_samplers():
+    # NOTE: Keep the number values (fourth item in the tuples) in sync with the local
+    # backends, like Automatic1111. These act like an internal unique ID for Blender
+    # to use when switching between the lists.
+    return [
+        ('k_euler', 'Euler', '', 10),
+        ('k_euler_ancestral', 'Euler a', '', 20),
+        ('k_heun', 'Heun', '', 30),
+        ('k_dpm_2', 'DPM2', '', 40),
+        ('k_dpm_2_ancestral', 'DPM2 a', '', 50),
+        ('k_lms', 'LMS', '', 60),
+        ('plms', 'PLMS', '', 200),
+        ('ddim', 'DDIM', '', 210),
+    ]
+
+def default_sampler():
+    return 'k_lms'

@@ -3,6 +3,7 @@ from bpy.app.handlers import persistent
 import functools
 from . import (
     operators,
+    properties,
     task_queue,
     utils,
 )
@@ -18,6 +19,10 @@ def load_post_handler(context):
     # right now, to ensure everything is running and in place
     if context.scene.air_props.is_enabled:
         operators.enable_air(context.scene)
+
+    # ensure that the sampler is set to a valid value (it could be wrong
+    # from an existing file with an older version of AI Render)
+    properties.ensure_sampler(None, context)
 
 
 @persistent

@@ -89,26 +89,48 @@ def handle_api_success(response, filename_prefix):
 
 def handle_api_error(response):
     if response.status_code == 404:
-        return operators.handle_error(f"It looks like the Automatic1111 server is running, but it's not in API mode. [Get help]({config.HELP_WITH_AUTOMATIC1111_NOT_IN_API_MODE_URL})")
+        import json
+
+        try:
+            response_obj = response.json()
+            if response_obj.get('detail') and response_obj['detail'] == "Sampler not found":
+                return operators.handle_error("The sampler you selected is not available on the Automatic1111 Stable Diffusion server. Please select a different sampler.")
+            else:
+                return operators.handle_error(f"An error occurred in the Automatic1111 Stable Diffusion server. Full server response: {json.dumps(response_obj)}")
+        except:
+            return operators.handle_error(f"It looks like the Automatic1111 server is running, but it's not in API mode. [Get help]({config.HELP_WITH_AUTOMATIC1111_NOT_IN_API_MODE_URL})")
+
     else:
         return operators.handle_error("An error occurred in the Automatic1111 Stable Diffusion server. Check the server logs for more info.")
 
+
+def get_samplers():
+    # NOTE: Keep the number values (fourth item in the tuples) in sync with DreamStudio's
+    # values (in dreamstudio_apy.py). These act like an internal unique ID for Blender
+    # to use when switching between the lists.
+    return [
+        ('Euler', 'Euler', '', 10),
+        ('Euler a', 'Euler a', '', 20),
+        ('Heun', 'Heun', '', 30),
+        ('DPM2', 'DPM2', '', 40),
+        ('DPM2 a', 'DPM2 a', '', 50),
+        ('LMS', 'LMS', '', 60),
+        ('DPM fast', 'DPM fast', '', 70),
+        ('DPM adaptive', 'DPM adaptive', '', 80),
+        ('DPM++ 2S a Karras', 'DPM++ 2S a Karras', '', 90),
+        ('DPM++ 2M Karras', 'DPM++ 2M Karras', '', 100),
+        ('DPM++ 2S a', 'DPM++ 2S a', '', 110),
+        ('DPM++ 2M', 'DPM++ 2M', '', 120),
+        ('PLMS', 'PLMS', '', 200),
+        ('DDIM', 'DDIM', '', 210),
+    ]
+
+def default_sampler():
+    return 'LMS'
 
 
 # SUPPORT FUNCTIONS:
 
 def map_params(params):
     params["denoising_strength"] = round(1 - params["image_similarity"], 2)
-    params["sampler_index"] = map_sampler(params["sampler"])
-
-
-def map_sampler(sampler):
-    samplers = {
-        "k_euler": "Euler",
-        "k_euler_ancestral": "Euler a",
-        "k_heun": "Heun",
-        "k_dpm_2": "DPM2",
-        "k_dpm_2_ancestral": "DPM2 a",
-        "k_lms": "LMS",
-    }
-    return samplers[sampler]
+    params["sampler_index"] = params["sampler"]
