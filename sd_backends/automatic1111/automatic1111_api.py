@@ -118,3 +118,34 @@ def map_sampler(sampler):
         "k_dpmpp_2m":"DPM++ 2M",
     }
     return samplers[sampler]
+
+def get_samplers():
+    # create the headers
+    headers = {
+        "User-Agent": "Blender/" + bpy.app.version_string,
+        "Accept": "*/*",
+        "Accept-Encoding": "gzip, deflate, br",
+    }
+
+    # prepare the server url
+    server_url = utils.local_sd_url().rstrip("/").strip()
+    if not server_url:
+        return operators.handle_error(f"You need to specify a location for the local Stable Diffusion server in the add-on preferences. [Get help]({config.HELP_WITH_LOCAL_INSTALLATION_URL})")
+    else:
+        server_url = server_url + "/sdapi/v1/samplers"
+
+    # send the API request
+    try:
+        response = requests.post(server_url, json=params, headers=headers, timeout=utils.local_sd_timeout())
+    except requests.exceptions.ConnectionError:
+        return operators.handle_error(f"The local Stable Diffusion server couldn't be found. It's either not running, or it's running at a different location than what you specified in the add-on preferences. [Get help]({config.HELP_WITH_LOCAL_INSTALLATION_URL})")
+    except requests.exceptions.MissingSchema:
+        return operators.handle_error(f"The url for your local Stable Diffusion server is invalid. Please set it correctly in the add-on preferences. [Get help]({config.HELP_WITH_LOCAL_INSTALLATION_URL})")
+    except requests.exceptions.ReadTimeout:
+        return operators.handle_error("The local Stable Diffusion server timed out. Set a longer timeout in AI Render preferences, or use a smaller image size.")
+
+    # handle the response
+    if response.status_code == 200:
+        return response
+    else:
+        return handle_api_error(response)
