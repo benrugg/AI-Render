@@ -149,17 +149,28 @@ class AIR_PT_prompt(bpy.types.Panel):
         show_error_if_it_exists(layout, context, width_guess)
 
         # Prompt
-        row = layout.row()
-        row.label(text="Prompt:")
+        if props.use_animated_prompts:
+            row = layout.row()
+            row.label(text="You are using animated prompts")
 
-        row = layout.row()
-        row.scale_y = 1.8
-        row.prop(props, "prompt_text", text="")
+            row = layout.row()
+            row.operator(operators.AIR_OT_edit_animated_prompts.bl_idname)
+
+            layout.separator()
+
+        else:
+            row = layout.row()
+            row.label(text="Prompt:")
+
+            row = layout.row()
+            row.scale_y = 1.8
+            row.prop(props, "prompt_text", text="")
 
         # Preset Styles
         box = layout.box()
         row = box.row()
-        row.prop(props, "use_preset")
+        label = "Apply a Preset Style (to All Prompts)" if props.use_animated_prompts else "Apply a Preset Style"
+        row.prop(props, "use_preset", text=label)
 
         if props.use_preset:
             row = box.row()
@@ -311,6 +322,16 @@ class AIR_PT_animation(bpy.types.Panel):
         # Path
         row = layout.row()
         row.prop(props, "animation_output_path", text="Path")
+
+        # Animated Prompts
+        layout.separator()
+
+        row = layout.row()
+        row.prop(props, "use_animated_prompts", text="Use Animated Prompts")
+
+        if props.use_animated_prompts:
+            row = layout.row()
+            row.operator(operators.AIR_OT_edit_animated_prompts.bl_idname)
 
         # Tips
         if round(props.image_similarity, 2) < 0.7 and not props.close_animation_tips:

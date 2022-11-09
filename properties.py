@@ -143,6 +143,11 @@ class AIRProperties(bpy.types.PropertyGroup):
         default=1,
         description="Internal property to track the frame the animation started on. This is used to determine if we are rendering an animation",
     )
+    use_animated_prompts: bpy.props.BoolProperty(
+        name="Use Animated Prompts",
+        default=False,
+        description="When true, will use the prompts from a text file to animate the image",
+    )
     is_rendering: bpy.props.BoolProperty(
         name="Is Rendering",
         default=False,

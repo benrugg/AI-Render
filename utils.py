@@ -94,17 +94,55 @@ def activate_workspace(context=None, workspace=None, workspace_id=None):
         bpy.data.window_managers[0].windows[0].workspace = workspace
 
 
-def view_render_result_in_air_image_editor():
-    image_editor_area = None
-    areas = bpy.data.workspaces[config.workspace_id].screens[0].areas
+def get_area_by_type(area_type, workspace_id=None):
+    if workspace_id:
+        workspace = bpy.data.workspaces[workspace_id]
+    else:
+        workspace = get_current_workspace()
 
-    for area in areas:
-        if area.type == 'IMAGE_EDITOR':
-            image_editor_area = area
-            break
+    for area in workspace.screens[0].areas:
+        if area.type == area_type:
+            return area
+    return None
+
+
+def get_smallest_area_by_type(area_type, workspace_id=None):
+    if workspace_id:
+        workspace = bpy.data.workspaces[workspace_id]
+    else:
+        workspace = get_current_workspace()
+
+    areas = []
+    for area in workspace.screens[0].areas:
+        if area.type == area_type:
+            areas.append({ 'area': area, 'screen_size': area.width * area.height })
+
+    areas.sort(key=lambda x: x['screen_size'])
+    return areas[0]['area']
+
+
+def split_area(context, area, direction='HORIZONTAL', factor=0.5):
+    if bpy.app.version >= (3, 2, 0):
+        with context.temp_override(area=area):
+            bpy.ops.screen.area_split(direction=direction, factor=factor)
+    else:
+        override = context.copy()
+        override['area'] = area
+        bpy.ops.screen.area_split(override, direction=direction, factor=factor)
+
+
+def view_render_result_in_air_image_editor():
+    image_editor_area = get_area_by_type('IMAGE_EDITOR', config.workspace_id)
 
     if image_editor_area:
         image_editor_area.spaces.active.image = bpy.data.images['Render Result']
+
+
+def get_animated_prompt_text_data_block():
+    if config.animated_prompts_text_name in bpy.data.texts:
+        return bpy.data.texts[config.animated_prompts_text_name]
+    else:
+        return None
 
 
 def get_api_key(context=None):
