@@ -379,7 +379,7 @@ def send_to_api(scene):
         if utils.local_sd_backend() == "automatic1111":
             output_file = automatic1111_api.send_to_api(params, img_file, after_output_filename_prefix)
         else:
-            return handle_error("You are trying to use a local Stable Diffusion installation that isn't supported")
+            return handle_error(f"You are trying to use a local Stable Diffusion installation that isn't supported: {utils.local_sd_backend()}")
     else:
         output_file = dreamstudio_api.send_to_api(params, img_file, after_output_filename_prefix)
 

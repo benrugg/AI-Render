@@ -3,8 +3,40 @@ import random
 from . import (
     config,
     operators,
+    utils,
 )
 from .ui import ui_preset_styles
+from .sd_backends.dreamstudio import dreamstudio_api
+from .sd_backends.automatic1111 import automatic1111_api
+
+
+def get_available_samplers(self, context):
+    if utils.do_use_local_sd():
+        if utils.local_sd_backend() == "automatic1111":
+            return automatic1111_api.get_samplers()
+        else:
+            print(f"You are trying to use a local Stable Diffusion installation that isn't supported: {utils.local_sd_backend()}")
+            return []
+    else:
+        return dreamstudio_api.get_samplers()
+
+
+def get_default_sampler():
+    if utils.do_use_local_sd():
+        if utils.local_sd_backend() == "automatic1111":
+            return automatic1111_api.default_sampler()
+        else:
+            return ""
+    else:
+        return dreamstudio_api.default_sampler()
+
+
+def ensure_sampler(self, context):
+    # """Ensure that the sampler is set to a valid value"""
+    scene = context.scene
+    if not scene.air_props.sampler:
+        scene.air_props.sampler = get_default_sampler()
+
 
 class AIRProperties(bpy.types.PropertyGroup):
     is_enabled: bpy.props.BoolProperty(
@@ -56,15 +88,8 @@ class AIRProperties(bpy.types.PropertyGroup):
     )
     sampler: bpy.props.EnumProperty(
         name="Sampler",
-        default="k_lms",
-        items=[
-            ('k_euler', 'k_euler', ''),
-            ('k_euler_ancestral', 'k_euler_ancestral', ''),
-            ('k_heun', 'k_heun', ''),
-            ('k_dpm_2', 'k_dpm_2', ''),
-            ('k_dpm_2_ancestral', 'k_dpm_2_ancestral', ''),
-            ('k_lms', 'k_lms', ''),
-        ],
+        default=60, # maps to "k_lms" or "LMS"
+        items=get_available_samplers,
         description="Which sampler method to use",
     )
     auto_run: bpy.props.BoolProperty(

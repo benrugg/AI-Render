@@ -3,6 +3,7 @@ from . import (
     addon_updater_ops,
     config,
     operators,
+    properties,
     utils,
 )
 
@@ -32,6 +33,7 @@ class AIRPreferences(bpy.types.AddonPreferences):
         name="Enable Rendering with Local Stable Diffusion",
         description="When true, AI Render will use your local backend installation of Stable Diffusion. When false, DreamStudio will be used",
         default=False,
+        update=properties.ensure_sampler,
     )
 
     local_sd_backend: bpy.props.EnumProperty(
@@ -40,6 +42,7 @@ class AIRPreferences(bpy.types.AddonPreferences):
         items=[
             ('automatic1111', 'Automatic1111', ''),
         ],
+        update=properties.ensure_sampler,
         description="Which local Stable Diffusion installation you have",
     )
 
