@@ -325,14 +325,14 @@ def do_pre_api_setup(scene):
     activate_air_workspace(scene)
 
 
-def validate_params(scene):
+def validate_params(scene, prompt=None):
     if utils.get_api_key().strip() == "" and not utils.do_use_local_sd():
         return handle_error("You must enter an API Key to render with Stable Diffusion", "api_key")
     if not utils.are_dimensions_valid(scene):
         return handle_error("Please set width and height to valid values", "dimensions")
     if utils.are_dimensions_too_large(scene):
         return handle_error("Image dimensions are too large. Please decrease width and/or height", "dimensions")
-    if not scene.air_props.use_animated_prompts and get_full_prompt(scene) == "":
+    if prompt == "":
         return handle_error("Please enter a prompt for Stable Diffusion", "prompt")
     return True
 
@@ -345,10 +345,33 @@ def validate_animation_output_path(scene):
         return True
 
 
+def get_full_prompt(scene, prompt=None):
+    props = scene.air_props
+
+    if prompt is None:
+        prompt = props.prompt_text.strip()
+
+    if prompt == config.default_prompt_text:
+        prompt = ""
+    if props.use_preset:
+        if prompt == "":
+            prompt = props.preset_style
+        else:
+            prompt = prompt + f", {props.preset_style}"
+    return prompt
+
+
+def get_prompt_at_frame(animated_prompts, frame):
+    for line in reversed(animated_prompts):
+        if line['start_frame'] <= frame:
+            return line['prompt']
+    return ""
+
+
 def validate_and_process_animated_prompt_text(scene):
     text_data = utils.get_animated_prompt_text_data_block()
     if text_data is None:
-        return handle_error("Animated Prompt text data block does not exist")
+        return handle_error("Animated prompt text does not exist. Please edit animated prompts.")
 
     lines = text_data.as_string().splitlines()
     lines = [line.strip() for line in lines]
@@ -375,39 +398,27 @@ def validate_and_process_animated_prompt_text(scene):
     return processed_lines
 
 
-def get_full_prompt(scene, prompt=None):
-    props = scene.air_props
-
-    if prompt is None:
-        prompt = props.prompt_text.strip()
-
-    if prompt == config.default_prompt_text:
-        prompt = ""
-    if props.use_preset:
-        if prompt == "":
-            prompt = props.preset_style
-        else:
-            prompt = prompt + f", {props.preset_style}"
-    return prompt
-
-
-def get_prompt_at_frame(animated_prompts, frame):
-    for line in reversed(animated_prompts):
-        if line['start_frame'] <= frame:
-            return line['prompt']
-    return ""
+def validate_and_process_animated_prompt_text_for_single_frame(scene, frame):
+    processed_lines = validate_and_process_animated_prompt_text(scene)
+    if not processed_lines:
+        return False
+    else:
+        return get_prompt_at_frame(processed_lines, frame)
 
 
 def send_to_api(scene, prompt=None):
     """Post to the API and process the resulting image"""
     props = scene.air_props
 
-    # TODO: REMOVE THIS
-    print(prompt)
-    return True
+    # get the prompt if we haven't been given one
+    if not prompt:
+        if scene.air_props.use_animated_prompts:
+            prompt = validate_and_process_animated_prompt_text_for_single_frame(scene, scene.frame_current)
+        else:
+            prompt = get_full_prompt(scene)
 
     # validate the parameters we will send
-    if not validate_params(scene):
+    if not validate_params(scene, prompt):
         return False
 
     # generate a new seed, if we want a random one
@@ -436,7 +447,7 @@ def send_to_api(scene, prompt=None):
 
     # prepare data for the API request
     params = {
-        "prompt": prompt if prompt else get_full_prompt(scene),
+        "prompt": prompt,
         "width": utils.get_output_width(scene),
         "height": utils.get_output_height(scene),
         "image_similarity": props.image_similarity,
