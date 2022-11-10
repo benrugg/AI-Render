@@ -469,7 +469,7 @@ class AIR_OT_show_other_dimension_options(bpy.types.Operator):
         default=512,
         step=6400,
         precision=0,
-        min=512,
+        min=384,
         description="Image Width"
     )
     height: bpy.props.FloatProperty(
@@ -477,7 +477,7 @@ class AIR_OT_show_other_dimension_options(bpy.types.Operator):
         default=512,
         step=6400,
         precision=0,
-        min=512,
+        min=384,
         description="Image Height"
     )
 
