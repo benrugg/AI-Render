@@ -308,7 +308,7 @@ def validate_params(scene):
     return True
 
 def validate_resolution(self,context):
-    print(self)
+    print(self.width)
 
 def validate_animation_output_path(scene):
     props = scene.air_props
