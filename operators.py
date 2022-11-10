@@ -204,7 +204,10 @@ def generate_new_random_seed(scene):
 
 
 def ensure_animated_prompts_text():
-    if not utils.get_animated_prompt_text_data_block():
+    text = utils.get_animated_prompt_text_data_block()
+    if text:
+        text.select_set(0, 0, -1, -1)
+    else:
         text = bpy.data.texts.new(config.animated_prompts_text_name)
         text.write("1: Stable Diffusion Prompt starting at frame 1\n")
         text.write("30: Stable Diffusion Prompt starting at frame 30\n")
@@ -214,19 +217,19 @@ def ensure_animated_prompts_text():
 
 def ensure_animated_prompts_text_editor_in_workspace(context):
     script_area = utils.get_area_by_type('TEXT_EDITOR', workspace_id=config.workspace_id)
-    if script_area:
-        return
 
-    area = utils.get_area_by_type('NODE_EDITOR', workspace_id=config.workspace_id)
-    if area is None:
-        area = utils.get_area_by_type('IMAGE_EDITOR', workspace_id=config.workspace_id)
-    if area is None:
-        return handle_error("Couldn't find the right areas in the AI Render workspace. Please re-enable AI Render.")
+    if not script_area:
+        area = utils.get_area_by_type('NODE_EDITOR', workspace_id=config.workspace_id)
+        if area is None:
+            area = utils.get_area_by_type('IMAGE_EDITOR', workspace_id=config.workspace_id)
+        if area is None:
+            return handle_error("Couldn't find the right areas in the AI Render workspace. Please re-enable AI Render.")
 
-    utils.split_area(context, area, factor=0.3)
+        utils.split_area(context, area, factor=0.3)
 
-    script_area = utils.get_smallest_area_by_type(area.type, workspace_id=config.workspace_id)
-    script_area.type = 'TEXT_EDITOR'
+        script_area = utils.get_smallest_area_by_type(area.type, workspace_id=config.workspace_id)
+        script_area.type = 'TEXT_EDITOR'
+
     script_area.spaces[0].text = utils.get_animated_prompt_text_data_block()
 
 
