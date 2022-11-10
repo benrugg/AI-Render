@@ -14,7 +14,6 @@ from .sd_backends.dreamstudio import dreamstudio_api
 from .sd_backends.automatic1111 import automatic1111_api
 
 
-valid_dimensions_tuple_list = utils.generate_valid_dimensions_tuple_list()
 
 
 def enable_air(scene):
