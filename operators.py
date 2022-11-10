@@ -592,6 +592,17 @@ class AIR_OT_show_other_dimension_options(bpy.types.Operator):
         return {'FINISHED'}
 
 
+class AIR_OT_copy_preset_text(bpy.types.Operator):
+    "Copy preset text to clipboard"
+    bl_idname = "ai_render.copy_preset_text"
+    bl_label = "Copy Preset Text"
+
+    def execute(self, context):
+        context.window_manager.clipboard = context.scene.air_props.preset_style
+        self.report({'INFO'}, "Preset text copied to clipboard")
+        return {'FINISHED'}
+
+
 class AIR_OT_edit_animated_prompts(bpy.types.Operator):
     "Show the animated prompts panel, and focus it"
     bl_idname = "ai_render.edit_animated_prompts"
@@ -849,6 +860,7 @@ classes = [
     AIR_OT_enable,
     AIR_OT_set_valid_render_dimensions,
     AIR_OT_show_other_dimension_options,
+    AIR_OT_copy_preset_text,
     AIR_OT_edit_animated_prompts,
     AIR_OT_generate_new_image_from_render,
     AIR_OT_generate_new_image_from_current,

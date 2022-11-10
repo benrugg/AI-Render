@@ -177,7 +177,11 @@ class AIR_PT_prompt(bpy.types.Panel):
             row.template_icon_view(props, "preset_style", show_labels=True, scale_popup=7.7)
 
             row = box.row()
-            row.label(text=f"\"{props.preset_style}\"")
+            col = row.column()
+            col.label(text=f"\"{props.preset_style}\"")
+
+            col = row.column()
+            col.operator(operators.AIR_OT_copy_preset_text.bl_idname, text="", icon="COPYDOWN")
 
 
 class AIR_PT_advanced_options(bpy.types.Panel):
