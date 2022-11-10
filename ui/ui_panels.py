@@ -320,8 +320,16 @@ class AIR_PT_animation(bpy.types.Panel):
 
         # Render Animation
         row = layout.row()
-        row.operator(operators.AIR_OT_render_animation.bl_idname, icon="RENDER_ANIMATION")
-        row.enabled = props.animation_output_path != ""
+        is_animation_enabled_button_enabled = props.animation_output_path != ""
+        if is_animation_enabled_button_enabled:
+            num_frames = scene.frame_end - scene.frame_start + 1
+            frame_or_frames = "Frame" if num_frames == 1 else "Frames"
+            render_animation_text = f"Render Animation ({num_frames} {frame_or_frames})"
+        else:
+            render_animation_text = "Render Animation"
+
+        row.operator(operators.AIR_OT_render_animation.bl_idname, icon="RENDER_ANIMATION", text=render_animation_text)
+        row.enabled = is_animation_enabled_button_enabled
 
         # Path
         row = layout.row()
