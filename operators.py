@@ -370,6 +370,7 @@ def validate_and_process_animated_prompt_text(scene):
         return handle_error(f"Animated Prompt text is empty or invalid. [Get help with animated prompts]({config.HELP_WITH_ANIMATED_PROMPTS_URL})")
 
     processed_lines.sort(key=lambda x: x['start_frame'])
+    processed_lines[0]['start_frame'] = 1 # ensure the first frame is 1
 
     return processed_lines
 
@@ -391,8 +392,8 @@ def get_full_prompt(scene, prompt=None):
 
 
 def get_prompt_at_frame(animated_prompts, frame):
-    for line in animated_prompts:
-        if line['start_frame'] >= frame:
+    for line in reversed(animated_prompts):
+        if line['start_frame'] <= frame:
             return line['prompt']
     return ""
 
@@ -636,13 +637,24 @@ class AIR_OT_render_animation(bpy.types.Operator):
     _static_prompt = None
 
     def _pre_render(self, context):
+        scene = context.scene
+
+        # do validation and setup
+        if validate_params(scene) and validate_animation_output_path(scene):
+            do_pre_render_setup(scene)
+            do_pre_api_setup(scene)
+        else:
+            return False
+
+        # validate and process the animated prompts, if we are using them
         if context.scene.air_props.use_animated_prompts:
             self._animated_prompts = validate_and_process_animated_prompt_text(context.scene)
-            if self._animated_prompts is None:
+            if not self._animated_prompts:
                 return False
         else:
             self._animated_prompts = None
             self._static_prompt = get_full_prompt(context.scene)
+
         return True
 
     def _start_render(self, context):
@@ -747,19 +759,11 @@ class AIR_OT_render_animation(bpy.types.Operator):
         return {'RUNNING_MODAL'}
 
     def execute(self, context):
-        scene = context.scene
-
-        if validate_params(scene) and validate_animation_output_path(scene):
-            do_pre_render_setup(scene)
-            do_pre_api_setup(scene)
-
-            if not self._pre_render(context):
-                return {'CANCELLED'}
-
-            self._start_render(context)
-            return {'RUNNING_MODAL'}
-        else:
+        if not self._pre_render(context):
             return {'CANCELLED'}
+
+        self._start_render(context)
+        return {'RUNNING_MODAL'}
 
 
 class AIR_OT_setup_instructions_popup(bpy.types.Operator):
