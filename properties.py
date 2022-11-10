@@ -50,6 +50,12 @@ class AIRProperties(bpy.types.PropertyGroup):
         default=config.default_prompt_text,
         update=operators.clear_error_handler,
     )
+    negative_prompt_text: bpy.props.StringProperty(
+        name="Negative Prompt",
+        description="Describe what Stable Diffusion needs to steer away from",
+        default="",
+        update=operators.clear_error_handler,
+    )
     image_similarity: bpy.props.FloatProperty(
         name="Image Similarity",
         default=0.4,

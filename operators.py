@@ -316,18 +316,20 @@ def validate_animation_output_path(scene):
         return True
 
 
-def get_full_prompt(scene):
+def get_full_prompt(scene, include):
     props = scene.air_props
-    prompt = props.prompt_text.strip()
-    if prompt == config.default_prompt_text:
-        prompt = ""
-    if props.use_preset:
-        if prompt == "":
-            prompt = props.preset_style
-        else:
-            prompt = prompt + f", {props.preset_style}"
+    if include:
+        prompt = props.prompt_text.strip()
+        if prompt == config.default_prompt_text:
+            prompt = ""
+        if props.use_preset:
+            if prompt == "":
+                prompt = props.preset_style
+            else:
+                prompt = prompt + f", {props.preset_style}"
+    else:
+        prompt = props.negative_prompt_text.strip()
     return prompt
-
 
 def send_to_api(scene):
     """Post to the API and process the resulting image"""
@@ -363,7 +365,8 @@ def send_to_api(scene):
 
     # prepare data for the API request
     params = {
-        "prompt": get_full_prompt(scene),
+        "prompt": get_full_prompt(scene,True),
+        "negative_prompt": get_full_prompt(scene,False),
         "width": utils.get_output_width(scene),
         "height": utils.get_output_height(scene),
         "image_similarity": props.image_similarity,
