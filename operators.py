@@ -465,16 +465,20 @@ class AIR_OT_show_other_dimension_options(bpy.types.Operator):
 
     panel_width = 250
 
-    width: bpy.props.EnumProperty(
+    width: bpy.props.FloatProperty(
         name="Image Width",
-        default="512",
-        items=valid_dimensions_tuple_list,
+        default=512,
+        step=6400,
+        precision=0,
+        min=512,
         description="Image Width"
     )
-    height: bpy.props.EnumProperty(
+    height: bpy.props.FloatProperty(
         name="Image Height",
-        default="512",
-        items=valid_dimensions_tuple_list,
+        default=512,
+        step=6400,
+        precision=0,
+        min=512,
         description="Image Height"
     )
 
