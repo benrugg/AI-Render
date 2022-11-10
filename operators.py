@@ -303,7 +303,7 @@ def validate_params(scene):
         return handle_error("Please set width and height to valid values", "dimensions")
     if utils.are_dimensions_too_large(scene):
         return handle_error("Image dimensions are too large. Please decrease width and/or height", "dimensions")
-    if get_full_prompt(scene) == "":
+    if get_full_prompt(scene, True) == "":
         return handle_error("Please enter a prompt for Stable Diffusion", "prompt")
     return True
 
