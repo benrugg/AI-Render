@@ -158,7 +158,7 @@ class AIR_PT_prompt(bpy.types.Panel):
 
         # Negative Prompt
         row = layout.row()
-        row.label(text="Prompt:")
+        row.label(text="Negative prompt:")
 
         row = layout.row()
         row.scale_y = 1.8
