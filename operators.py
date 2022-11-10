@@ -307,6 +307,8 @@ def validate_params(scene):
         return handle_error("Please enter a prompt for Stable Diffusion", "prompt")
     return True
 
+def validate_resolution(self,context):
+    print(self)
 
 def validate_animation_output_path(scene):
     props = scene.air_props
@@ -470,7 +472,8 @@ class AIR_OT_show_other_dimension_options(bpy.types.Operator):
         step=6400,
         precision=0,
         min=384,
-        description="Image Width"
+        description="Image Width",
+        update= validate_resolution
     )
     height: bpy.props.FloatProperty(
         name="Image Height",
@@ -478,7 +481,8 @@ class AIR_OT_show_other_dimension_options(bpy.types.Operator):
         step=6400,
         precision=0,
         min=384,
-        description="Image Height"
+        description="Image Height",
+        update= validate_resolution
     )
 
     def draw(self, context):
