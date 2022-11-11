@@ -38,17 +38,21 @@ See the wiki for [help with prompt engineering and ideas](https://github.com/ben
 AI Render supports running Stable Diffusion locally with the `Automatic1111 Stable Diffusion Web UI`. See the [local installation instructions](https://github.com/benrugg/AI-Render/wiki/Local-Installation).
 
 
+## Animation
+
+You can render animations with AI Render, with all of Blender's animation tools, as well the ability to animate Stable Diffusion settings and even prompt text!
+
+You can also use animation for **batch processing** - for example, to try many different settings or prompts.
+
+See the [Animation Instructions and Tips](https://github.com/benrugg/AI-Render/wiki/Animation).
+
+
 ## Bug Reporting and Feature Requests
 
 Help make the add-on better by reporting any bugs (big or small) or requesting new features:
 
 - [Report a Bug](https://github.com/benrugg/AI-Render/issues/new?assignees=&labels=&template=bug-report.yaml)
 - [Request a Feature](https://github.com/benrugg/AI-Render/issues/new?assignees=&labels=&template=feature-request.yaml)
-
-
-## Known Limitations
-
-- AI Render currently only does still frames (not animations). Animations are planned for a future release!
 
 
 ## Share images and feedback!
@@ -62,9 +66,7 @@ If you have ideas for prompts that could become preset styles, or if you have an
 
 Here the highest priority new features and enhancements that are in the works:
 
-- Animation support
 - Upscaling
-- Batch rendering
 - Viewing/copying history of images and prompts
 - A panel with prompt modifiers and keyword ideas
 - Ability to generate textures with Stable Diffusion
