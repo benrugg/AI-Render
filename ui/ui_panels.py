@@ -1,4 +1,5 @@
 import bpy
+import math
 from .. import (
     addon_updater_ops,
     config,
@@ -322,7 +323,7 @@ class AIR_PT_animation(bpy.types.Panel):
         row = layout.row()
         is_animation_enabled_button_enabled = props.animation_output_path != ""
         if is_animation_enabled_button_enabled:
-            num_frames = scene.frame_end - scene.frame_start + 1
+            num_frames = math.floor(((scene.frame_end - scene.frame_start) / scene.frame_step) + 1)
             frame_or_frames = "Frame" if num_frames == 1 else "Frames"
             render_animation_text = f"Render Animation ({num_frames} {frame_or_frames})"
         else:

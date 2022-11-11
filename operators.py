@@ -1,5 +1,6 @@
 import bpy
 import functools
+import math
 import random
 import re
 import time
@@ -656,6 +657,7 @@ class AIR_OT_render_animation(bpy.types.Operator):
     _finished = True
     _start_frame = 0
     _end_frame = 0
+    _frame_step = 1
     _current_frame = 0
     _orig_current_frame = 0
     _animated_prompts = None
@@ -688,6 +690,7 @@ class AIR_OT_render_animation(bpy.types.Operator):
         self._orig_current_frame = context.scene.frame_current
         self._start_frame = context.scene.frame_start
         self._end_frame = context.scene.frame_end
+        self._frame_step = context.scene.frame_step
         self._current_frame = context.scene.frame_start
         context.scene.air_props.is_rendering_animation_manually = True
 
@@ -711,7 +714,7 @@ class AIR_OT_render_animation(bpy.types.Operator):
         context.window_manager.event_timer_remove(self._timer)
 
     def _advance_frame(self, context):
-        self._current_frame += 1
+        self._current_frame += self._frame_step
         if self._current_frame > context.scene.frame_end:
             self._end_render(context, "Animation Render Complete")
 
@@ -720,10 +723,10 @@ class AIR_OT_render_animation(bpy.types.Operator):
         self.report({'INFO'}, "AI Render animation completed")
 
     def _get_total_frames(self):
-        return self._end_frame - self._start_frame + 1
+        return math.floor(((self._end_frame - self._start_frame) / self._frame_step) + 1)
 
     def _get_completed_frames(self):
-        return self._current_frame - self._start_frame
+        return math.floor((self._current_frame - self._start_frame) / self._frame_step)
 
     def _get_completed_percent(self):
         return round(self._get_completed_frames() / self._get_total_frames(), 2)
