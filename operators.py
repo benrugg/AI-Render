@@ -349,19 +349,19 @@ def validate_animation_output_path(scene):
         return True
 
 
-def get_full_prompt(scene, prompt=None):
+def get_full_prompt(scene, include, prompt=None):
     props = scene.air_props
-
-    if prompt is None:
+    if include:
         prompt = props.prompt_text.strip()
-
-    if prompt == config.default_prompt_text:
-        prompt = ""
-    if props.use_preset:
-        if prompt == "":
-            prompt = props.preset_style
-        else:
-            prompt = prompt + f", {props.preset_style}"
+        if prompt == config.default_prompt_text:
+            prompt = ""
+        if props.use_preset:
+            if prompt == "":
+                prompt = props.preset_style
+            else:
+                prompt = prompt + f", {props.preset_style}"
+    else:
+        prompt = props.negative_prompt_text.strip()
     return prompt
 
 
@@ -389,7 +389,7 @@ def validate_and_process_animated_prompt_text(scene):
         if m:
             start_frame = int(m.group(1))
             prompt = m.group(2).strip()
-            processed_lines.append({'start_frame': start_frame, 'prompt': get_full_prompt(scene, prompt=prompt)})
+            processed_lines.append({'start_frame': start_frame, 'prompt': get_full_prompt(scene, True, prompt=prompt), 'negative_prompt': get_full_prompt(scene, False, prompt=prompt)})
 
     processed_lines = list(filter(lambda x: x['prompt'] != "", processed_lines))
 
@@ -419,7 +419,8 @@ def send_to_api(scene, prompt=None):
         if scene.air_props.use_animated_prompts:
             prompt = validate_and_process_animated_prompt_text_for_single_frame(scene, scene.frame_current)
         else:
-            prompt = get_full_prompt(scene)
+            prompt = get_full_prompt(scene, True)
+            negative_prompt = get_full_prompt(scene, False)
 
     # validate the parameters we will send
     if not validate_params(scene, prompt):
@@ -452,6 +453,7 @@ def send_to_api(scene, prompt=None):
     # prepare data for the API request
     params = {
         "prompt": prompt,
+        "negative_prompt": negative_prompt,
         "width": utils.get_output_width(scene),
         "height": utils.get_output_height(scene),
         "image_similarity": props.image_similarity,
@@ -680,7 +682,7 @@ class AIR_OT_render_animation(bpy.types.Operator):
                 return False
         else:
             self._animated_prompts = None
-            self._static_prompt = get_full_prompt(context.scene)
+            self._static_prompt = get_full_prompt(context.scene, True)
 
         return True
 
