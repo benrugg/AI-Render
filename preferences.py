@@ -126,6 +126,12 @@ class AIRPreferences(bpy.types.AddonPreferences):
             row.operator("wm.url_open", text="Sign Up For DreamStudio (free)", icon="URL").url = config.DREAM_STUDIO_URL
 
             row = box.row()
+            col = row.column()
+            col.label(text="Stable Diffusion Backend:")
+            col = row.column()
+            col.prop(self, "local_sd_backend", text="")
+
+            row = box.row()
             row.prop(self, "dream_studio_api_key")
 
             # Notes

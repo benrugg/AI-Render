@@ -14,6 +14,7 @@ from . import (
 
 from .sd_backends.dreamstudio import dreamstudio_api
 from .sd_backends.automatic1111 import automatic1111_api
+from .sd_backends.stablehorde import stablehorde_api
 
 
 valid_dimensions_tuple_list = utils.generate_valid_dimensions_tuple_list()
@@ -248,7 +249,7 @@ def render_frame(context, current_frame, prompt):
 
 def save_render_to_file(scene, filename_prefix):
     try:
-        temp_file = utils.create_temp_file(filename_prefix + "-")
+        temp_file = utils.create_temp_file(filename_prefix + "-", ".webp")
     except:
         return handle_error("Couldn't create temp file for image")
 
@@ -257,7 +258,7 @@ def save_render_to_file(scene, filename_prefix):
         orig_render_color_mode = scene.render.image_settings.color_mode
         orig_render_color_depth = scene.render.image_settings.color_depth
 
-        scene.render.image_settings.file_format = 'PNG'
+        scene.render.image_settings.file_format = 'WEBP'
         scene.render.image_settings.color_mode = 'RGBA'
         scene.render.image_settings.color_depth = '8'
 
@@ -411,6 +412,7 @@ def validate_and_process_animated_prompt_text_for_single_frame(scene, frame):
 
 
 def send_to_api(scene, prompt=None):
+    print("Sending to API")
     """Post to the API and process the resulting image"""
     props = scene.air_props
 
@@ -468,7 +470,7 @@ def send_to_api(scene, prompt=None):
         else:
             return handle_error(f"You are trying to use a local Stable Diffusion installation that isn't supported: {utils.local_sd_backend()}")
     else:
-        output_file = dreamstudio_api.send_to_api(params, img_file, after_output_filename_prefix)
+        output_file = stablehorde_api.send_to_api(params, img_file, after_output_filename_prefix)
 
     # if we got a successful image created, handle it
     if output_file:
