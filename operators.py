@@ -410,21 +410,26 @@ def validate_and_process_animated_prompt_text_for_single_frame(scene, frame):
         return get_prompt_at_frame(processed_lines, frame)
 
 
-def send_to_api(scene, prompt=None):
+def send_to_api(scene, prompts=None):
     """Post to the API and process the resulting image"""
     props = scene.air_props
 
     # get the prompt if we haven't been given one
-    if not prompt:
+    if not prompts:
         if scene.air_props.use_animated_prompts:
             prompt = validate_and_process_animated_prompt_text_for_single_frame(scene, scene.frame_current)
+            negative_prompt = ""
         else:
             prompt = get_full_prompt(scene, True)
             negative_prompt = get_full_prompt(scene, False)
-
+    else:
+        prompt = prompts["prompt"]
+        negative_prompt = prompts["negative_prompt"]
     # validate the parameters we will send
     if not validate_params(scene, prompt):
         return False
+
+
 
     # generate a new seed, if we want a random one
     generate_new_random_seed(scene)
@@ -664,6 +669,7 @@ class AIR_OT_render_animation(bpy.types.Operator):
     _orig_current_frame = 0
     _animated_prompts = None
     _static_prompt = None
+    _negative_static_prompt = None
 
     def _pre_render(self, context):
         scene = context.scene
@@ -683,6 +689,7 @@ class AIR_OT_render_animation(bpy.types.Operator):
         else:
             self._animated_prompts = None
             self._static_prompt = get_full_prompt(context.scene, True)
+            self._negative_static_prompt = get_full_prompt(context.scene, False)
 
         return True
 
@@ -755,10 +762,12 @@ class AIR_OT_render_animation(bpy.types.Operator):
             # render the current frame
             if context.scene.air_props.use_animated_prompts:
                 prompt = get_prompt_at_frame(self._animated_prompts, self._current_frame)
+                negative_prompt = ""
             else:
                 prompt = self._static_prompt
+                negative_prompt = self._negative_static_prompt
 
-            was_successful = render_frame(context, self._current_frame, prompt)
+            was_successful = render_frame(context, self._current_frame, {"prompt":prompt,"negative_prompt":negative_prompt})
 
             # if the render was successful, advance to the next frame.
             # otherwise, quit here with an error.
