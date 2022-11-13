@@ -6,7 +6,6 @@ from . import (
     utils,
 )
 from .ui import ui_preset_styles
-from .sd_backends.stablehorde import stablehorde_api
 
 
 def get_available_samplers(self, context):

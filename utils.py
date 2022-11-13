@@ -157,8 +157,6 @@ def do_use_local_sd(context=None):
 
 
 def local_sd_backend(context=None):
-    print(str(get_addon_preferences(context)))
-    print(str(get_addon_preferences(context).local_sd_backend))
     return get_addon_preferences(context).local_sd_backend
 
 
