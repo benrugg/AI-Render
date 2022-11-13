@@ -23,6 +23,9 @@ import os
 import shutil
 import tempfile
 from . import config
+from .sd_backends.dreamstudio import dreamstudio_api
+from .sd_backends.automatic1111 import automatic1111_api
+from .sd_backends.stablehorde import stablehorde_api
 
 
 valid_dimensions = [384, 448, 512, 576, 640, 704, 768, 832, 896, 960, 1024]
@@ -154,6 +157,8 @@ def do_use_local_sd(context=None):
 
 
 def local_sd_backend(context=None):
+    print(str(get_addon_preferences(context)))
+    print(str(get_addon_preferences(context).local_sd_backend))
     return get_addon_preferences(context).local_sd_backend
 
 
@@ -313,6 +318,15 @@ def label_multiline(layout, text='', icon='NONE', width=-1, max_lines=12, use_ur
     return rows
 
 
+def get_active_backend():
+    if local_sd_backend() == "dreamstudio":
+        return dreamstudio_api
+    elif local_sd_backend() == "stablehorde":
+        return stablehorde_api
+    elif local_sd_backend() == "automatic1111":
+        return automatic1111_api
+
+
 def is_installation_valid():
     return __package__ == config.package_name
 
@@ -322,3 +336,4 @@ def show_invalid_installation_message(layout, width):
     box.label(text="Installation Error:")
 
     label_multiline(box, text=f"It looks like this add-on wasn't installed correctly. Please remove it and get a new copy. [Get AI Render]({config.ADDON_DOWNLOAD_URL})", icon="ERROR", alert=True, width=width)
+

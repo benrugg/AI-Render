@@ -16,16 +16,13 @@ SAMPLER_MAP = {
     "DDIM": "k_ddim",
     "PLMS": ""
 }
+
 # CORE FUNCTIONS:
 
-def send_to_api(params, img_file, filename_prefix):
+def get_image_format():
+    return 'WEBP'
 
-    # Open img_file png and convert to webp
-    # TODO: Change operators.py to render directly to webp
-    # image = PIL.Image.open(img_file)  # Open image
-    # webp_filename = img_file + ".webp"
-    # image.save(webp_filename, format="webp")  # Convert image to webp
-    print("Sending: " + str(img_file))
+def send_to_api(params, img_file, filename_prefix):
 
     # map the generic params to the specific ones for the Automatic1111 API
     # map_params(params)
@@ -40,7 +37,7 @@ def send_to_api(params, img_file, filename_prefix):
             "denoising_strength": round(1 - params["image_similarity"], 2),
             "seed": str(params["seed"]),
             "steps": params["steps"],
-            #"sampler_name": params["sampler"],
+            "sampler_name": params["sampler"],
         }
     }
 
@@ -141,30 +138,23 @@ def handle_api_error(response):
 
 
 def get_samplers():
-    def get_samplers():
-        # NOTE: Keep the number values (fourth item in the tuples) in sync with DreamStudio's
-        # values (in dreamstudio_apy.py). These act like an internal unique ID for Blender
-        # to use when switching between the lists.
-        return [
-            ('k_euler', 'Euler', '', 10),
-            ('k_euler_a', 'Euler a', '', 20),
-            ('k_heun', 'Heun', '', 30),
-            ('k_dpm_2', 'DPM2', '', 40),
-            ('k_dpm_2_a', 'DPM2 a', '', 50),
-            ('k_dpm_fast', 'DPM fast', '', 70),
-            ('k_dpm_adaptive', 'DPM adaptive', '', 80),
-            ('k_lms', 'LMS', '', 60),
-            ('k_dpmpp_2s_a', 'DPM++ 2S a', '', 110),
-            ('k_dpmpp_2m', 'DPM++ 2M', '', 120),
-            # TODO: Stable horde does have karras support, but it's a separate boolean
-        ]
+    # NOTE: Keep the number values (fourth item in the tuples) in sync with DreamStudio's
+    # values (in dreamstudio_apy.py). These act like an internal unique ID for Blender
+    # to use when switching between the lists.
+    return [
+        ('k_euler', 'Euler', '', 10),
+        ('k_euler_a', 'Euler a', '', 20),
+        ('k_heun', 'Heun', '', 30),
+        ('k_dpm_2', 'DPM2', '', 40),
+        ('k_dpm_2_a', 'DPM2 a', '', 50),
+        ('k_lms', 'LMS', '', 60),
+        ('k_dpm_fast', 'DPM fast', '', 70),
+        ('k_dpm_adaptive', 'DPM adaptive', '', 80),
+        ('k_dpmpp_2s_a', 'DPM++ 2S a', '', 110),
+        ('k_dpmpp_2m', 'DPM++ 2M', '', 120),
+        # TODO: Stable horde does have karras support, but it's a separate boolean
+    ]
 
 def default_sampler():
-    return 'Euler a'
+    return 'k_euler_a'
 
-
-# SUPPORT FUNCTIONS:
-
-def map_params(params):
-    params["denoising_strength"] = round(1 - params["image_similarity"], 2)
-    params["sampler_index"] = params["sampler"]

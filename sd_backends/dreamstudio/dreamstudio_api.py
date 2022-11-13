@@ -8,6 +8,8 @@ from ... import (
 
 
 # CORE FUNCTIONS:
+def get_image_format():
+    return 'PNG'
 
 def send_to_api(params, img_file, filename_prefix):
 

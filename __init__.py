@@ -27,6 +27,7 @@ if "bpy" in locals():
     imp.reload(utils)
     imp.reload(automatic1111_api)
     imp.reload(dreamstudio_api)
+    imp.reload(stablehorde_api)
 else:
     from . import (
         addon_updater_ops,
@@ -45,6 +46,7 @@ else:
     )
     from .sd_backends.automatic1111 import automatic1111_api
     from .sd_backends.dreamstudio import dreamstudio_api
+    from .sd_backends.stablehorde import stablehorde_api
 
 import bpy
 

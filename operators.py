@@ -464,13 +464,7 @@ def send_to_api(scene, prompt=None):
     }
 
     # send to whichever API we're using
-    if utils.do_use_local_sd():
-        if utils.local_sd_backend() == "automatic1111":
-            output_file = automatic1111_api.send_to_api(params, img_file, after_output_filename_prefix)
-        else:
-            return handle_error(f"You are trying to use a local Stable Diffusion installation that isn't supported: {utils.local_sd_backend()}")
-    else:
-        output_file = stablehorde_api.send_to_api(params, img_file, after_output_filename_prefix)
+    output_file = utils.get_active_backend().send_to_api(params, img_file, after_output_filename_prefix)
 
     # if we got a successful image created, handle it
     if output_file:

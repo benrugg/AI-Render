@@ -31,19 +31,21 @@ class AIRPreferences(bpy.types.AddonPreferences):
 
     is_local_sd_enabled: bpy.props.BoolProperty(
         name="Enable Rendering with Local Stable Diffusion",
-        description="When true, AI Render will use your local backend installation of Stable Diffusion. When false, DreamStudio will be used",
+        description="When true, AI Render will use your local backend installation of Stable Diffusion.",
         default=False,
         update=properties.ensure_sampler,
     )
 
     local_sd_backend: bpy.props.EnumProperty(
-        name="Local Stable Diffusion Backend",
-        default="automatic1111",
+        name="Stable Diffusion Backend",
+        default="dreamstudio",
         items=[
+            ('dreamstudio', 'Dream Studio', ''),
+            ('stablehorde', 'Stable Horde', ''),
             ('automatic1111', 'Automatic1111', ''),
         ],
         update=properties.ensure_sampler,
-        description="Which local Stable Diffusion installation you have",
+        description="Which Stable Diffusion back-end do you want to use?",
     )
 
     local_sd_url: bpy.props.StringProperty(
@@ -157,12 +159,6 @@ class AIRPreferences(bpy.types.AddonPreferences):
 
                 row = box.row()
                 row.prop(self, "is_local_sd_enabled")
-
-                row = box.row()
-                col = row.column()
-                col.label(text="Local Stable Diffusion Backend:")
-                col = row.column()
-                col.prop(self, "local_sd_backend", text="")
 
                 row = box.row()
                 col = row.column()
