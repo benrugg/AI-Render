@@ -24,8 +24,7 @@ def get_image_format():
 
 def send_to_api(params, img_file, filename_prefix):
 
-    # map the generic params to the specific ones for the Automatic1111 API
-    # map_params(params)
+    # map the generic params to the specific ones for the Stable Horde API
     stablehorde_params = {
         "prompt": params["prompt"],
         # add a base 64 encoded image to the params
@@ -44,12 +43,15 @@ def send_to_api(params, img_file, filename_prefix):
     #webp_filename.close()
     img_file.close()
 
+    # If no api-key specified, use the default non-authenticated api-key
+    apikey = utils.get_api_key() if not utils.get_api_key().strip() == "" else "0000000000"
+
     # create the headers
     headers = {
         "User-Agent": "Blender/" + bpy.app.version_string,
         "Accept": "*/*",
         "Accept-Encoding": "gzip, deflate, br",
-        "apikey": utils.get_api_key()
+        "apikey": apikey
     }
 
     # send the API request

@@ -249,7 +249,7 @@ def render_frame(context, current_frame, prompt):
 
 def save_render_to_file(scene, filename_prefix):
     try:
-        temp_file = utils.create_temp_file(filename_prefix + "-", ".webp")
+        temp_file = utils.create_temp_file(filename_prefix + "-", utils.get_active_backend().get_image_format().lower())
     except:
         return handle_error("Couldn't create temp file for image")
 
@@ -258,7 +258,7 @@ def save_render_to_file(scene, filename_prefix):
         orig_render_color_mode = scene.render.image_settings.color_mode
         orig_render_color_depth = scene.render.image_settings.color_depth
 
-        scene.render.image_settings.file_format = 'WEBP'
+        scene.render.image_settings.file_format = utils.get_active_backend().get_image_format()
         scene.render.image_settings.color_mode = 'RGBA'
         scene.render.image_settings.color_depth = '8'
 
@@ -331,8 +331,8 @@ def do_pre_api_setup(scene):
 
 
 def validate_params(scene, prompt=None):
-    if utils.get_api_key().strip() == "" and not utils.do_use_local_sd():
-        return handle_error("You must enter an API Key to render with Stable Diffusion", "api_key")
+    if utils.get_api_key().strip() == "" and utils.local_sd_backend() == "dreamstudio":
+        return handle_error("You must enter an API Key to render with the selected back-end", "api_key")
     if not utils.are_dimensions_valid(scene):
         return handle_error("Please set width and height to valid values", "dimensions")
     if utils.are_dimensions_too_large(scene):
