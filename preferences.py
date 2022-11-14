@@ -128,6 +128,10 @@ class AIRPreferences(bpy.types.AddonPreferences):
             row.operator("wm.url_open", text="Sign Up For DreamStudio (free)", icon="URL").url = config.DREAM_STUDIO_URL
 
             row = box.row()
+            row.operator("wm.url_open", text="Get a Stable Horde API key (free / not required)", icon="URL").url \
+                = config.STABLE_HORDE_URL
+
+            row = box.row()
             col = row.column()
             col.label(text="Stable Diffusion Backend:")
             col = row.column()

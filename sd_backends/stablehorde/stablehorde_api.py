@@ -64,7 +64,7 @@ def send_to_api(params, img_file, filename_prefix):
 
     # For debugging
     # print("Send to Stable Horde: " + str(stablehorde_params))
-    # print("Received from Stable Horde: " + str(response))
+    # print("Received from Stable Horde: " + str(response.json()))
 
     # handle the response
     if response.status_code == 200:
@@ -79,6 +79,9 @@ def handle_api_success(response, filename_prefix):
     try:
         response_obj = response.json()
         base64_img = response_obj["generations"][0]["img"]
+        print(f"Worker: {response_obj['generations'][0]['worker_name']}, " +
+              f"queue position: {response_obj['queue_position']}, wait time: {response_obj['wait_time']}, " +
+              f"kudos: {response_obj['kudos']}")
     except:
         print("Stable Horde response content: ")
         print(response.content)
