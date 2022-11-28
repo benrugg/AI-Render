@@ -3,9 +3,6 @@ default_prompt_text = 'Describe anything you can imagine'
 tmp_path_subfolder = 'ai-render-temp'
 workspace_id = 'AI Render'
 animated_prompts_text_name = 'AI Render Animated Prompts'
-max_image_px_area = 458752 # 896 x 512 or 960 x 448 (anything larger than this risks a timeout)
-
-request_timeout = 60
 
 API_URL = "https://c7vllddffse76obdapr6s2p4du0ydjrn.lambda-url.us-west-2.on.aws/"
 ADDON_DOWNLOAD_URL = "https://airender.gumroad.com/l/ai-render"

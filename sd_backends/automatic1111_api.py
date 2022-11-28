@@ -3,7 +3,7 @@ import json
 import base64
 import re
 import requests
-from ... import (
+from .. import (
     config,
     operators,
     utils,
@@ -11,8 +11,6 @@ from ... import (
 
 
 # CORE FUNCTIONS:
-def get_image_format():
-    return 'PNG'
 
 def send_to_api(params, img_file, filename_prefix):
 
@@ -108,7 +106,7 @@ def handle_api_error(response):
 
 def get_samplers():
     # NOTE: Keep the number values (fourth item in the tuples) in sync with DreamStudio's
-    # values (in dreamstudio_apy.py). These act like an internal unique ID for Blender
+    # values (in dreamstudio_api.py). These act like an internal unique ID for Blender
     # to use when switching between the lists.
     return [
         ('Euler', 'Euler', '', 10),
@@ -127,8 +125,17 @@ def get_samplers():
         ('DDIM', 'DDIM', '', 210),
     ]
 
+
 def default_sampler():
     return 'LMS'
+
+
+def get_image_format():
+    return 'PNG'
+
+
+def max_image_size():
+    return 1024 * 1024
 
 
 # SUPPORT FUNCTIONS:

@@ -1,6 +1,6 @@
 import bpy
 import requests
-from ... import (
+from .. import (
     config,
     operators,
     utils,
@@ -8,8 +8,6 @@ from ... import (
 
 
 # CORE FUNCTIONS:
-def get_image_format():
-    return 'PNG'
 
 def send_to_api(params, img_file, filename_prefix):
 
@@ -18,7 +16,7 @@ def send_to_api(params, img_file, filename_prefix):
         "User-Agent": "Blender/" + bpy.app.version_string,
         "Accept": "*/*",
         "Accept-Encoding": "gzip, deflate, br",
-        "Dream-Studio-Api-Key": utils.get_api_key(),
+        "Dream-Studio-Api-Key": utils.get_dream_studio_api_key(),
     }
 
     # prepare the file input
@@ -26,7 +24,7 @@ def send_to_api(params, img_file, filename_prefix):
 
     # send the API request
     try:
-        response = requests.post(config.API_URL, params=params, headers=headers, files=files, timeout=config.request_timeout)
+        response = requests.post(config.API_URL, params=params, headers=headers, files=files, timeout=request_timeout())
         img_file.close()
     except requests.exceptions.ReadTimeout:
         img_file.close()
@@ -91,7 +89,7 @@ def handle_api_error(response):
 
 
 def get_samplers():
-    # NOTE: Keep the number values (fourth item in the tuples) in sync with the local
+    # NOTE: Keep the number values (fourth item in the tuples) in sync with the other
     # backends, like Automatic1111. These act like an internal unique ID for Blender
     # to use when switching between the lists.
     return [
@@ -105,5 +103,18 @@ def get_samplers():
         ('ddim', 'DDIM', '', 210),
     ]
 
+
 def default_sampler():
     return 'k_lms'
+
+
+def request_timeout():
+    return 18 # until this is using DreamStudio's REST API, this has to stay low to avoid timeouts on our Lambda function
+
+
+def get_image_format():
+    return 'PNG'
+
+
+def max_image_size():
+    return 458752 # 896 x 512 or 960 x 448 (anything larger than this risks a timeout)

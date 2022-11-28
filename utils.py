@@ -23,9 +23,11 @@ import os
 import shutil
 import tempfile
 from . import config
-from .sd_backends.dreamstudio import dreamstudio_api
-from .sd_backends.automatic1111 import automatic1111_api
-from .sd_backends.stablehorde import stablehorde_api
+from .sd_backends import (
+    dreamstudio_api,
+    automatic1111_api,
+    stablehorde_api,
+)
 
 
 valid_dimensions = [384, 448, 512, 576, 640, 704, 768, 832, 896, 960, 1024]
@@ -148,16 +150,16 @@ def get_animated_prompt_text_data_block():
         return None
 
 
-def get_api_key(context=None):
+def get_dream_studio_api_key(context=None):
     return get_addon_preferences(context).dream_studio_api_key
 
 
-def do_use_local_sd(context=None):
-    return get_addon_preferences(context).is_local_sd_enabled
+def get_stable_horde_api_key(context=None):
+    return get_addon_preferences(context).stable_horde_api_key
 
 
-def local_sd_backend(context=None):
-    return get_addon_preferences(context).local_sd_backend
+def sd_backend(context=None):
+    return get_addon_preferences(context).sd_backend
 
 
 def local_sd_url(context=None):
@@ -184,10 +186,7 @@ def are_dimensions_valid(scene):
 
 
 def are_dimensions_too_large(scene):
-    if do_use_local_sd():
-        return False
-    else:
-        return get_output_width(scene) * get_output_height(scene) > config.max_image_px_area
+    return get_output_width(scene) * get_output_height(scene) > get_active_backend().max_image_size()
 
 
 def generate_valid_dimensions_tuple_list():
@@ -317,11 +316,11 @@ def label_multiline(layout, text='', icon='NONE', width=-1, max_lines=12, use_ur
 
 
 def get_active_backend():
-    if local_sd_backend() == "dreamstudio":
+    if sd_backend() == "dreamstudio":
         return dreamstudio_api
-    elif local_sd_backend() == "stablehorde":
+    elif sd_backend() == "stablehorde":
         return stablehorde_api
-    elif local_sd_backend() == "automatic1111":
+    elif sd_backend() == "automatic1111":
         return automatic1111_api
 
 

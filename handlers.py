@@ -3,6 +3,7 @@ from bpy.app.handlers import persistent
 import functools
 from . import (
     operators,
+    preferences,
     properties,
     task_queue,
     utils,
@@ -23,6 +24,9 @@ def load_post_handler(context):
     # ensure that the sampler is set to a valid value (it could be wrong
     # from an existing file with an older version of AI Render)
     properties.ensure_sampler(None, context)
+
+    # update the sd backend to migrate a possible old value from a previous installation
+    preferences.update_sd_backend_from_previous_installation(context)
 
 
 @persistent
@@ -61,13 +65,13 @@ def render_complete_handler(scene):
     """Handle render completed (this is where the API and Stable Diffusion start)"""
 
     # if AI Render wasn't installed correctly, or it isn't enabled, or we don't want
-    # to run automatically, or we don't have an API Key (and we're not running locally),
+    # to run automatically, or we don't have an API Key (and we're using Dream Studio),
     # quit here
     if (
         not utils.is_installation_valid()
         or not scene.air_props.is_enabled
         or not scene.air_props.auto_run
-        or (not utils.get_api_key() and not utils.do_use_local_sd())
+        or (not utils.get_dream_studio_api_key() and utils.sd_backend() == "dreamstudio")
     ):
         return
 
