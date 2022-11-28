@@ -6,29 +6,14 @@ from . import (
     utils,
 )
 from .ui import ui_preset_styles
-from .sd_backends.dreamstudio import dreamstudio_api
-from .sd_backends.automatic1111 import automatic1111_api
 
 
 def get_available_samplers(self, context):
-    if utils.do_use_local_sd():
-        if utils.local_sd_backend() == "automatic1111":
-            return automatic1111_api.get_samplers()
-        else:
-            print(f"You are trying to use a local Stable Diffusion installation that isn't supported: {utils.local_sd_backend()}")
-            return []
-    else:
-        return dreamstudio_api.get_samplers()
+    return utils.get_active_backend().get_samplers()
 
 
 def get_default_sampler():
-    if utils.do_use_local_sd():
-        if utils.local_sd_backend() == "automatic1111":
-            return automatic1111_api.default_sampler()
-        else:
-            return ""
-    else:
-        return dreamstudio_api.default_sampler()
+    return utils.get_active_backend().default_sampler()
 
 
 def ensure_sampler(self, context):

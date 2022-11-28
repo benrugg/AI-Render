@@ -12,8 +12,11 @@ from . import (
     utils,
 )
 
-from .sd_backends.dreamstudio import dreamstudio_api
-from .sd_backends.automatic1111 import automatic1111_api
+from .sd_backends import (
+    automatic1111_api,
+    dreamstudio_api,
+    stablehorde_api,
+)
 
 
 valid_dimensions_tuple_list = utils.generate_valid_dimensions_tuple_list()
@@ -248,7 +251,7 @@ def render_frame(context, current_frame, prompt):
 
 def save_render_to_file(scene, filename_prefix):
     try:
-        temp_file = utils.create_temp_file(filename_prefix + "-")
+        temp_file = utils.create_temp_file(filename_prefix + "-", suffix=f".{utils.get_active_backend().get_image_format().lower()}")
     except:
         return handle_error("Couldn't create temp file for image")
 
@@ -257,7 +260,7 @@ def save_render_to_file(scene, filename_prefix):
         orig_render_color_mode = scene.render.image_settings.color_mode
         orig_render_color_depth = scene.render.image_settings.color_depth
 
-        scene.render.image_settings.file_format = 'PNG'
+        scene.render.image_settings.file_format = utils.get_active_backend().get_image_format()
         scene.render.image_settings.color_mode = 'RGBA'
         scene.render.image_settings.color_depth = '8'
 
@@ -285,7 +288,7 @@ def save_before_image(scene, filename_prefix):
 
 
 def save_after_image(scene, filename_prefix, img_file):
-    filename = f"{filename_prefix}.png"
+    filename = f"{filename_prefix}.{utils.get_active_backend().get_image_format().lower()}"
     full_path_and_filename = utils.get_absolute_path_for_output_file(scene.air_props.autosave_image_path, filename)
     try:
         utils.copy_file(img_file, full_path_and_filename)
@@ -295,7 +298,7 @@ def save_after_image(scene, filename_prefix, img_file):
 
 
 def save_animation_image(scene, filename_prefix, img_file):
-    filename = f"{filename_prefix}{str(scene.frame_current).zfill(4)}.png"
+    filename = f"{filename_prefix}{str(scene.frame_current).zfill(4)}.{utils.get_active_backend().get_image_format().lower()}"
     full_path_and_filename = utils.get_absolute_path_for_output_file(scene.air_props.animation_output_path, filename)
     try:
         utils.copy_file(img_file, full_path_and_filename)
@@ -330,8 +333,8 @@ def do_pre_api_setup(scene):
 
 
 def validate_params(scene, prompt=None):
-    if utils.get_api_key().strip() == "" and not utils.do_use_local_sd():
-        return handle_error("You must enter an API Key to render with Stable Diffusion", "api_key")
+    if utils.get_dream_studio_api_key().strip() == "" and utils.sd_backend() == "dreamstudio":
+        return handle_error("You must enter an API Key to render with DreamStudio", "api_key")
     if not utils.are_dimensions_valid(scene):
         return handle_error("Please set width and height to valid values", "dimensions")
     if utils.are_dimensions_too_large(scene):
@@ -462,13 +465,7 @@ def send_to_api(scene, prompt=None):
     }
 
     # send to whichever API we're using
-    if utils.do_use_local_sd():
-        if utils.local_sd_backend() == "automatic1111":
-            output_file = automatic1111_api.send_to_api(params, img_file, after_output_filename_prefix)
-        else:
-            return handle_error(f"You are trying to use a local Stable Diffusion installation that isn't supported: {utils.local_sd_backend()}")
-    else:
-        output_file = dreamstudio_api.send_to_api(params, img_file, after_output_filename_prefix)
+    output_file = utils.get_active_backend().send_to_api(params, img_file, after_output_filename_prefix)
 
     # if we got a successful image created, handle it
     if output_file:
@@ -807,12 +804,15 @@ class AIR_OT_setup_instructions_popup(bpy.types.Operator):
     )
 
     def draw(self, context):
-        utils.label_multiline(self.layout, text=self.message, icon="HELP", width=self.width-3, alignment="CENTER")
+        utils.label_multiline(self.layout, text=self.message, icon="HELP", width=self.width-3, alignment="CENTER", max_lines=15)
         row = self.layout.row()
         row.operator("wm.url_open", text="Sign Up For DreamStudio (free)", icon="URL").url = config.DREAM_STUDIO_URL
+        row = self.layout.row()
+        row.operator("wm.url_open", text="Get a Stable Horde API key (free / not required)", icon="URL").url = config.STABLE_HORDE_URL
 
     def invoke(self, context, event):
-        self.message = "This add-on uses a service called DreamStudio. You will need to create a DreamStudio account, and get your own API KEY from them. You will get free credits, which will be used when you render. After using your free credits, you will need to sign up for a membership. DreamStudio is unaffiliated with this Blender add-on. It's just a great and easy to use option!"
+        self.message = ("This add-on uses a service called DreamStudio. You will need to create a DreamStudio account, and get your own API KEY from them. You will get free credits, which will be used when you render. After using your free credits, you will need to sign up for a membership. DreamStudio is unaffiliated with this Blender add-on. It's just a great and easy to use option!\n" +
+            "Alternatively, use the 'Stable Horde' crowdsourced distributed GPU cluster. It's free with unlimited generations and doesn't require registration, but it can be very slow when demand is high. Create an API KEY for faster rendering, and consider running a worker for even more speed and to help others with their renders!")
         return context.window_manager.invoke_props_dialog(self, width=self.width)
 
     def execute(self, context):

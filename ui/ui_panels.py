@@ -65,7 +65,7 @@ class AIR_PT_setup(bpy.types.Panel):
 
     @classmethod
     def is_api_key_valid(cls, context):
-        return utils.get_api_key(context) != '' and context.scene.air_props.error_key != 'api_key'
+        return utils.get_dream_studio_api_key(context) != '' and context.scene.air_props.error_key != 'api_key'
 
     @classmethod
     def are_dimensions_valid(cls, context):
@@ -87,7 +87,7 @@ class AIR_PT_setup(bpy.types.Panel):
         width_guess = 220
 
         # if the api key is invalid, show the initial setup instructions
-        if not AIR_PT_setup.is_api_key_valid(context) and not utils.get_addon_preferences(context).is_local_sd_enabled:
+        if not AIR_PT_setup.is_api_key_valid(context) and utils.sd_backend(context) == "dreamstudio":
 
             utils.label_multiline(layout, text="Setup is quick and easy. No downloads or installation. Just register for a Dream Studio API Key.", icon="INFO", width=width_guess)
 
