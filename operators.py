@@ -251,7 +251,7 @@ def render_frame(context, current_frame, prompt):
 
 def save_render_to_file(scene, filename_prefix):
     try:
-        temp_file = utils.create_temp_file(filename_prefix + "-", "." + utils.get_active_backend().get_image_format().lower())
+        temp_file = utils.create_temp_file(filename_prefix + "-", suffix=f".{utils.get_active_backend().get_image_format().lower()}")
     except:
         return handle_error("Couldn't create temp file for image")
 
@@ -288,7 +288,7 @@ def save_before_image(scene, filename_prefix):
 
 
 def save_after_image(scene, filename_prefix, img_file):
-    filename = f"{filename_prefix}.png"
+    filename = f"{filename_prefix}.{utils.get_active_backend().get_image_format().lower()}"
     full_path_and_filename = utils.get_absolute_path_for_output_file(scene.air_props.autosave_image_path, filename)
     try:
         utils.copy_file(img_file, full_path_and_filename)
@@ -298,7 +298,7 @@ def save_after_image(scene, filename_prefix, img_file):
 
 
 def save_animation_image(scene, filename_prefix, img_file):
-    filename = f"{filename_prefix}{str(scene.frame_current).zfill(4)}.png"
+    filename = f"{filename_prefix}{str(scene.frame_current).zfill(4)}.{utils.get_active_backend().get_image_format().lower()}"
     full_path_and_filename = utils.get_absolute_path_for_output_file(scene.air_props.animation_output_path, filename)
     try:
         utils.copy_file(img_file, full_path_and_filename)

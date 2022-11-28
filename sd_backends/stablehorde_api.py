@@ -87,7 +87,7 @@ def handle_api_success(response, filename_prefix):
 
     # create a temp file
     try:
-        output_file = utils.create_temp_file(filename_prefix + "-", "." + get_image_format().lower())
+        output_file = utils.create_temp_file(filename_prefix + "-", suffix=f".{get_image_format().lower()}")
     except:
         return operators.handle_error("Couldn't create a temp file to save image.")
 
