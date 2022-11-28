@@ -812,7 +812,7 @@ class AIR_OT_setup_instructions_popup(bpy.types.Operator):
 
     def invoke(self, context, event):
         self.message = ("This add-on uses a service called DreamStudio. You will need to create a DreamStudio account, and get your own API KEY from them. You will get free credits, which will be used when you render. After using your free credits, you will need to sign up for a membership. DreamStudio is unaffiliated with this Blender add-on. It's just a great and easy to use option!\n" +
-            "Alternatively, use the 'Stable Horde' crowdsourced distributed GPU cluster. It's free with unlimited generations and doesn't require registration, but it can be slower when demand is high. Create an API KEY for faster rendering, and consider running a worker for even more speed and to help others with their renders!")
+            "Alternatively, use the 'Stable Horde' crowdsourced distributed GPU cluster. It's free with unlimited generations and doesn't require registration, but it can be very slow when demand is high. Create an API KEY for faster rendering, and consider running a worker for even more speed and to help others with their renders!")
         return context.window_manager.invoke_props_dialog(self, width=self.width)
 
     def execute(self, context):
