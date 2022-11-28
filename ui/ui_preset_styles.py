@@ -8,7 +8,7 @@ img_dir = utils.get_preset_style_thumnails_filepath()
 
 preset_styles = [
     ("Digital Portrait", "beautiful portrait, 8k resolution concept art portrait, hyperdetailed, intricately detailed, trending on Artstation, triadic colors, volumetric lighting, soft focus, dynamic lighting", "digital-portrait.jpg"),
-    ("B&W Portrait", "b&w photography, close up portrait, ambient light, depth of field, intricately detailed, Nikon 15mm f/1.8G, photograph by Annie Leibovitz", "bw-portrait.jpg"),
+    ("B&W Portrait", "b&w photography, close up portrait, ambient light, depth of field, intricately detailed, Nikon 15mm, photograph by Annie Leibovitz", "bw-portrait.jpg"),
     ("Photorealistic", "stunning photograph, natural light, megapixel, pro canon 50mm lens", "photorealistic.jpg"),
     ("Impressionist", "impressionist painting by Claude Monet, impressionism, visible brushstrokes, beautiful light", "impressionist.jpg"),
     ("Expressionist", "expressionist painting by Edvard Munch, subjective perspective, emotionally evocative painting", "expressionist.jpg"),
