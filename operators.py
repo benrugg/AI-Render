@@ -12,12 +12,6 @@ from . import (
     utils,
 )
 
-from .sd_backends import (
-    automatic1111_api,
-    dreamstudio_api,
-    stablehorde_api,
-)
-
 
 valid_dimensions_tuple_list = utils.generate_valid_dimensions_tuple_list()
 
