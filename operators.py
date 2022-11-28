@@ -210,6 +210,12 @@ def ensure_animated_prompts_text():
         text.write("1: Stable Diffusion Prompt starting at frame 1\n")
         text.write("30: Stable Diffusion Prompt starting at frame 30\n")
         text.write("# etc...\n")
+        text.write("\n")
+        text.write("# If you are using Automatic1111, you can also include negative prompts\n")
+        text.write("# See more info at ...\n")
+        text.write("Negative:\n")
+        text.write("1: ugly, bad art\n")
+
         text.select_set(0, 3, 0, -1)
 
 
@@ -231,7 +237,7 @@ def ensure_animated_prompts_text_editor_in_workspace(context):
     script_area.spaces[0].text = utils.get_animated_prompt_text_data_block()
 
 
-def render_frame(context, current_frame, prompt):
+def render_frame(context, current_frame, prompts):
     """Render the current frame as part of an animation"""
     # set the frame
     context.scene.frame_set(current_frame)
@@ -240,7 +246,7 @@ def render_frame(context, current_frame, prompt):
     bpy.ops.render.render()
 
     # post to the api
-    return send_to_api(context.scene, prompt)
+    return send_to_api(context.scene, prompts)
 
 
 def save_render_to_file(scene, filename_prefix):
@@ -359,6 +365,7 @@ def get_full_prompt(scene, prompt=None):
             prompt = props.preset_style
         else:
             prompt = prompt + f", {props.preset_style}"
+
     return prompt
 
 
@@ -377,46 +384,76 @@ def validate_and_process_animated_prompt_text(scene):
     lines = text_data.as_string().splitlines()
     lines = [line.strip() for line in lines]
 
-    r = re.compile('^(\d+):(.*)')
-    lines = list(filter(r.match, lines))
+    # find "Negative:" in lines, if it exists
+    negative_index = -1
+    for i, line in enumerate(lines):
+        if line.lower() == "negative:":
+            negative_index = i
+            break
 
-    processed_lines = []
-    for line in lines:
-        m = r.match(line)
-        if m:
-            start_frame = int(m.group(1))
-            prompt = m.group(2).strip()
-            processed_lines.append({'start_frame': start_frame, 'prompt': get_full_prompt(scene, prompt=prompt)})
+    if negative_index > -1:
+        positive_lines = lines[:negative_index]
+        negative_lines = lines[negative_index+1:]
+    else:
+        positive_lines = lines
+        negative_lines = []
 
-    processed_lines = list(filter(lambda x: x['prompt'] != "", processed_lines))
+    def parse_lines(lines, is_positive=True):
+        r = re.compile('^(\d+):(.*)')
+        lines = list(filter(r.match, lines))
 
-    if len(processed_lines) == 0:
-        return handle_error(f"Animated Prompt text is empty or invalid. [Get help with animated prompts]({config.HELP_WITH_ANIMATED_PROMPTS_URL})")
+        processed_lines = []
+        for line in lines:
+            m = r.match(line)
+            if m:
+                start_frame = int(m.group(1))
+                prompt = m.group(2).strip()
+                processed_lines.append({
+                    'start_frame': start_frame,
+                    'prompt': get_full_prompt(scene, prompt=prompt) if is_positive else prompt,
+                })
 
-    processed_lines.sort(key=lambda x: x['start_frame'])
-    processed_lines[0]['start_frame'] = 1 # ensure the first frame is 1
+        processed_lines = list(filter(lambda x: x['prompt'] != "", processed_lines))
 
-    return processed_lines
+        if len(processed_lines) == 0 and is_positive:
+            return handle_error(f"Animated Prompt text is empty or invalid. [Get help with animated prompts]({config.HELP_WITH_ANIMATED_PROMPTS_URL})")
+
+        if len(processed_lines) > 0:
+            processed_lines.sort(key=lambda x: x['start_frame'])
+            processed_lines[0]['start_frame'] = 1 # ensure the first frame is 1
+
+        return processed_lines
+
+    positive_lines = parse_lines(positive_lines)
+    negative_lines = parse_lines(negative_lines, is_positive=False)
+
+    return positive_lines, negative_lines
 
 
 def validate_and_process_animated_prompt_text_for_single_frame(scene, frame):
-    processed_lines = validate_and_process_animated_prompt_text(scene)
-    if not processed_lines:
-        return False
+    positive_lines, negative_lines = validate_and_process_animated_prompt_text(scene)
+    if not positive_lines:
+        return None, None
     else:
-        return get_prompt_at_frame(processed_lines, frame)
+        return get_prompt_at_frame(positive_lines, frame), get_prompt_at_frame(negative_lines, frame)
 
 
-def send_to_api(scene, prompt=None):
+def send_to_api(scene, prompts=None):
     """Post to the API and process the resulting image"""
     props = scene.air_props
 
     # get the prompt if we haven't been given one
-    if not prompt:
+    if not prompts:
         if scene.air_props.use_animated_prompts:
-            prompt = validate_and_process_animated_prompt_text_for_single_frame(scene, scene.frame_current)
+            prompt, negative_prompt = validate_and_process_animated_prompt_text_for_single_frame(scene, scene.frame_current)
+            if not prompt:
+                return False
         else:
             prompt = get_full_prompt(scene)
+            negative_prompt = props.negative_prompt_text.strip()
+    else:
+        prompt = prompts["prompt"]
+        negative_prompt = prompts["negative_prompt"]
 
     # validate the parameters we will send
     if not validate_params(scene, prompt):
@@ -449,6 +486,7 @@ def send_to_api(scene, prompt=None):
     # prepare data for the API request
     params = {
         "prompt": prompt,
+        "negative_prompt": negative_prompt,
         "width": utils.get_output_width(scene),
         "height": utils.get_output_height(scene),
         "image_similarity": props.image_similarity,
@@ -652,7 +690,9 @@ class AIR_OT_render_animation(bpy.types.Operator):
     _current_frame = 0
     _orig_current_frame = 0
     _animated_prompts = None
+    _animated_negative_prompts = None
     _static_prompt = None
+    _negative_static_prompt = None
 
     def _pre_render(self, context):
         scene = context.scene
@@ -666,12 +706,13 @@ class AIR_OT_render_animation(bpy.types.Operator):
 
         # validate and process the animated prompts, if we are using them
         if context.scene.air_props.use_animated_prompts:
-            self._animated_prompts = validate_and_process_animated_prompt_text(context.scene)
+            self._animated_prompts, self._animated_negative_prompts = validate_and_process_animated_prompt_text(context.scene)
             if not self._animated_prompts:
                 return False
         else:
             self._animated_prompts = None
             self._static_prompt = get_full_prompt(context.scene)
+            self._negative_static_prompt = scene.air_props.negative_prompt_text.strip()
 
         return True
 
@@ -744,10 +785,12 @@ class AIR_OT_render_animation(bpy.types.Operator):
             # render the current frame
             if context.scene.air_props.use_animated_prompts:
                 prompt = get_prompt_at_frame(self._animated_prompts, self._current_frame)
+                negative_prompt = get_prompt_at_frame(self._animated_negative_prompts, self._current_frame)
             else:
                 prompt = self._static_prompt
+                negative_prompt = self._negative_static_prompt
 
-            was_successful = render_frame(context, self._current_frame, prompt)
+            was_successful = render_frame(context, self._current_frame, {"prompt": prompt, "negative_prompt": negative_prompt})
 
             # if the render was successful, advance to the next frame.
             # otherwise, quit here with an error.
