@@ -166,7 +166,8 @@ class AIR_PT_prompt(bpy.types.Panel):
             row = layout.row()
             row.scale_y = 1.8
             row.prop(props, "prompt_text", text="")
-            if utils.sd_backend() == "automatic1111":
+
+            if utils.get_active_backend().supports_negative_prompts():
                 row = layout.row()
                 row.label(text="Negative prompt:")
 

@@ -142,5 +142,9 @@ def get_image_format():
     return 'WEBP'
 
 
+def supports_negative_prompts():
+    return False
+
+
 def max_image_size():
     return 1024 * 1024

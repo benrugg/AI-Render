@@ -37,7 +37,7 @@ class AIRProperties(bpy.types.PropertyGroup):
     )
     negative_prompt_text: bpy.props.StringProperty(
         name="Negative Prompt",
-        description="Describe what Stable Diffusion needs to steer away from",
+        description="Optionally, describe what Stable Diffusion needs to steer away from",
         default="",
     )
     image_similarity: bpy.props.FloatProperty(

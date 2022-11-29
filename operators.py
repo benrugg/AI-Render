@@ -211,10 +211,10 @@ def ensure_animated_prompts_text():
         text.write("30: Stable Diffusion Prompt starting at frame 30\n")
         text.write("# etc...\n")
         text.write("\n")
-        text.write("# If you are using Automatic1111, you can also include negative prompts\n")
-        text.write("# See more info at ...\n")
+        text.write("# You can also include negative prompts\n")
+        text.write(f"# See more info at {config.HELP_WITH_NEGATIVE_PROMPTS_URL}\n")
         text.write("Negative:\n")
-        text.write("1: ugly, bad art\n")
+        text.write("1: ugly, boring, bad art\n")
 
         text.select_set(0, 3, 0, -1)
 
@@ -413,7 +413,8 @@ def validate_and_process_animated_prompt_text(scene):
                     'prompt': get_full_prompt(scene, prompt=prompt) if is_positive else prompt,
                 })
 
-        processed_lines = list(filter(lambda x: x['prompt'] != "", processed_lines))
+        if is_positive:
+            processed_lines = list(filter(lambda x: x['prompt'] != "", processed_lines))
 
         if len(processed_lines) == 0 and is_positive:
             return handle_error(f"Animated Prompt text is empty or invalid. [Get help with animated prompts]({config.HELP_WITH_ANIMATED_PROMPTS_URL})")
