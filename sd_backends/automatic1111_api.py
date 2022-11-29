@@ -93,7 +93,9 @@ def handle_api_error(response):
 
         try:
             response_obj = response.json()
-            if response_obj.get('detail') and response_obj['detail'] == "Sampler not found":
+            if response_obj.get('detail') and response_obj['detail'] == "Not Found":
+                return operators.handle_error(f"It looks like the Automatic1111 server is running, but it's not in API mode. [Get help]({config.HELP_WITH_AUTOMATIC1111_NOT_IN_API_MODE_URL})")
+            elif response_obj.get('detail') and response_obj['detail'] == "Sampler not found":
                 return operators.handle_error("The sampler you selected is not available on the Automatic1111 Stable Diffusion server. Please select a different sampler.")
             else:
                 return operators.handle_error(f"An error occurred in the Automatic1111 Stable Diffusion server. Full server response: {json.dumps(response_obj)}")
