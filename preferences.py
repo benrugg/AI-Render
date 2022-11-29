@@ -39,12 +39,12 @@ class AIRPreferences(bpy.types.AddonPreferences):
         name="Stable Diffusion Backend",
         default="dreamstudio",
         items=[
-            ('dreamstudio', 'Dream Studio (cloud)', ''),
+            ('dreamstudio', 'DreamStudio (cloud)', ''),
             ('stablehorde', 'Stable Horde (cloud)', ''),
             ('automatic1111', 'Automatic1111 (local)', ''),
         ],
         update=properties.ensure_sampler,
-        description="Choose a Stable Diffusion backend to use. Dream Studio is the default, and is the quickest to run. Stable Horde is a community-run backend that is completely free. Automatic1111 is a local installation of Stable Diffusion.",
+        description="Choose a Stable Diffusion backend to use. DreamStudio is the default, and is the quickest to run. Stable Horde is a community-run backend that is completely free. Automatic1111 is a local installation of Stable Diffusion.",
     )
 
     local_sd_url: bpy.props.StringProperty(

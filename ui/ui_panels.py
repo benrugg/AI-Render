@@ -69,7 +69,7 @@ class AIR_PT_setup(bpy.types.Panel):
 
     @classmethod
     def are_dimensions_valid(cls, context):
-        return utils.are_dimensions_valid(context.scene)
+        return utils.are_dimensions_valid(context.scene) and context.scene.air_props.error_key != 'dimensions'
 
     @classmethod
     def are_dimensions_small_enough(cls, context):
@@ -89,7 +89,7 @@ class AIR_PT_setup(bpy.types.Panel):
         # if the api key is invalid, show the initial setup instructions
         if not AIR_PT_setup.is_api_key_valid(context) and utils.sd_backend(context) == "dreamstudio":
 
-            utils.label_multiline(layout, text="Setup is quick and easy. No downloads or installation. Just register for a Dream Studio API Key.", icon="INFO", width=width_guess)
+            utils.label_multiline(layout, text="Setup is quick and easy. No downloads or installation. Just register for a DreamStudio API Key.", icon="INFO", width=width_guess)
 
             row = layout.row()
             col = row.column()

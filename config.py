@@ -4,8 +4,8 @@ tmp_path_subfolder = 'ai-render-temp'
 workspace_id = 'AI Render'
 animated_prompts_text_name = 'AI Render Animated Prompts'
 
-API_URL = "https://c7vllddffse76obdapr6s2p4du0ydjrn.lambda-url.us-west-2.on.aws/"
 ADDON_DOWNLOAD_URL = "https://airender.gumroad.com/l/ai-render"
+STABILITY_API_URL = "https://api.stability.ai/v1alpha/generation/"
 DREAM_STUDIO_URL = "https://beta.dreamstudio.ai/membership?tab=apiKeys"
 STABLE_HORDE_URL = "https://stablehorde.net/"
 VIDEO_TUTORIAL_URL = "https://www.youtube.com/watch?v=tmyln5bwnO8"

@@ -173,14 +173,14 @@ def set_image_dimensions(context, width, height):
 
 def handle_error(msg, error_key = ''):
     """Show an error popup, and set the error message to be displayed in the ui"""
-    print("AI Render Error: ", msg)
+    print("AI Render Error:", msg)
     task_queue.add(functools.partial(bpy.ops.ai_render.show_error_popup, 'INVOKE_DEFAULT', error_message=msg, error_key=error_key))
     return False
 
 
 def set_silent_error(scene, msg, error_key = ''):
     """Set the error message to be displayed in the ui, but don't show a popup"""
-    print("AI Render Error: ", msg)
+    print("AI Render Error:", msg)
     scene.air_props.error_message = msg
     scene.air_props.error_key = error_key
 
@@ -596,7 +596,7 @@ class AIR_OT_show_other_dimension_options(bpy.types.Operator):
 
     def draw(self, context):
         layout = self.layout
-        utils.label_multiline(layout, text="Choose dimensions that Stable Diffusion can work with. (Anything larger than 512x512 risks taking too long and timing out without results)", width=self.panel_width)
+        utils.label_multiline(layout, text="Choose dimensions that Stable Diffusion can work with. (Dimensions larger than 512x512 take longer and use more credits)", width=self.panel_width)
 
         layout.separator()
 

@@ -2,7 +2,7 @@ bl_info = {
     "name": "AI Render - Stable Diffusion in Blender",
     "description": "Create amazing images using Stable Diffusion AI",
     "author": "Ben Rugg",
-    "version": (0, 6, 1),
+    "version": (0, 6, 2),
     "blender": (3, 0, 0),
     "location": "Render Properties > AI Render",
     "warning": "",
@@ -27,6 +27,7 @@ if "bpy" in locals():
     imp.reload(utils)
     imp.reload(automatic1111_api)
     imp.reload(dreamstudio_api)
+    imp.reload(stability_api)
     imp.reload(stablehorde_api)
 else:
     from . import (
@@ -47,6 +48,7 @@ else:
     from .sd_backends import (
         automatic1111_api,
         dreamstudio_api,
+        stability_api,
         stablehorde_api,
     )
 

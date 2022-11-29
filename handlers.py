@@ -65,7 +65,7 @@ def render_complete_handler(scene):
     """Handle render completed (this is where the API and Stable Diffusion start)"""
 
     # if AI Render wasn't installed correctly, or it isn't enabled, or we don't want
-    # to run automatically, or we don't have an API Key (and we're using Dream Studio),
+    # to run automatically, or we don't have an API Key (and we're using DreamStudio),
     # quit here
     if (
         not utils.is_installation_valid()

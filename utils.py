@@ -26,11 +26,12 @@ from . import config
 from .sd_backends import (
     dreamstudio_api,
     automatic1111_api,
+    stability_api,
     stablehorde_api,
 )
 
 
-valid_dimensions = [384, 448, 512, 576, 640, 704, 768, 832, 896, 960, 1024]
+valid_dimensions = [512, 576, 640, 704, 768, 832, 896, 960, 1024]
 file_formats = {"JPEG": "jpg", "BMP": "bmp", "IRIS": "rgb", "PNG": "png", "JPEG2000": "jp2", "TARGA": "tga", "TARGA_RAW": "tga", "CINEON": "cin", "DPX": "dpx", "OPEN_EXR_MULTILAYER": "exr", "OPEN_EXR": "exr", "HDR": "hdr", "TIFF": "tif", "WEBP": "webp"}
 
 
@@ -317,7 +318,7 @@ def label_multiline(layout, text='', icon='NONE', width=-1, max_lines=12, use_ur
 
 def get_active_backend():
     if sd_backend() == "dreamstudio":
-        return dreamstudio_api
+        return stability_api
     elif sd_backend() == "stablehorde":
         return stablehorde_api
     elif sd_backend() == "automatic1111":

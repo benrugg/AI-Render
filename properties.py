@@ -52,9 +52,11 @@ class AIRProperties(bpy.types.PropertyGroup):
     cfg_scale: bpy.props.FloatProperty(
         name="Prompt Strength",
         default=7,
-        min=-24,
-        max=24,
-        description="How closely the text prompt will be followed. Too high can 'overcook' your image. Negative values can be used to generate the opposite of your prompt",
+        soft_min=1,
+        soft_max=24,
+        min=0,
+        max=35,
+        description="How closely the text prompt will be followed. Too high can 'overcook' your image",
     )
     use_random_seed: bpy.props.BoolProperty(
         name="Random Seed",
@@ -73,8 +75,8 @@ class AIRProperties(bpy.types.PropertyGroup):
         soft_min=10,
         soft_max=50,
         min=10,
-        max=100,
-        description="How long to process the image. Values in the range of 25-50 generally work well. Higher values take longer and won't necessarily improve results",
+        max=150,
+        description="How long to process the image. Values in the range of 25-50 generally work well. Higher values take longer (and use more credits) and won't necessarily improve results",
     )
     sampler: bpy.props.EnumProperty(
         name="Sampler",
