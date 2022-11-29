@@ -113,7 +113,7 @@ def handle_api_error(response):
 
 def get_samplers():
     # NOTE: Keep the number values (fourth item in the tuples) in sync with DreamStudio's
-    # values (in dreamstudio_api.py). These act like an internal unique ID for Blender
+    # values (in stability_api.py). These act like an internal unique ID for Blender
     # to use when switching between the lists.
     return [
         ('k_euler', 'Euler', '', 10),

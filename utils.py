@@ -24,7 +24,6 @@ import shutil
 import tempfile
 from . import config
 from .sd_backends import (
-    dreamstudio_api,
     automatic1111_api,
     stability_api,
     stablehorde_api,
