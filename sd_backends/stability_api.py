@@ -10,7 +10,7 @@ from .. import (
 
 # CORE FUNCTIONS:
 
-def send_to_api(params, img_file, filename_prefix):
+def send_to_api(params, img_file, filename_prefix, sd_model):
 
     # map the generic params to the specific ones for the Stability API
     map_params(params)
@@ -30,7 +30,14 @@ def send_to_api(params, img_file, filename_prefix):
     }
 
     # prepare the URL
-    engine = "stable-diffusion-v1-5" # TODO: make this a param
+    if sd_model == 'v2-0':
+        if params["width"] >= 768 and params["height"] >= 768:
+            engine = f"stable-diffusion-768-{sd_model}"
+        else:
+            engine = f"stable-diffusion-512-{sd_model}"
+    else:
+        engine = f"stable-diffusion-{sd_model}"
+
     api_url = f"{config.STABILITY_API_URL}{engine}/image-to-image"
 
     # send the API request
@@ -102,6 +109,38 @@ def handle_api_error(response):
         return operators.handle_error(error_message, error_key)
 
 
+# PRIVATE SUPPORT FUNCTIONS:
+
+def map_params(params):
+    params["step_schedule_start"] = round(1 - params["image_similarity"], 2)
+    params["sampler"] = params["sampler"].upper()
+    params["text_prompts"] = [
+        {"text": params["prompt"], "weight": 1},
+    ]
+    if params["negative_prompt"]:
+        params["text_prompts"].append({"text": params["negative_prompt"], "weight": -1})
+
+
+def parse_message_for_error(message):
+    if "\"Authorization\" is missing" in message:
+        return "Your DreamStudio API key is missing. Please enter it above.", "api_key"
+    elif "Incorrect API key" in message or "Unauthenticated" in message:
+        return f"Your DreamStudio API key is incorrect. Please find it on the DreamStudio website, and re-enter it above. [DreamStudio website]({config.DREAM_STUDIO_URL})", "api_key"
+    elif "body.width must be" in message or "body.height must be" in message:
+        return "Invalid width or height. They must be one of the following values: 512, 576, 640, 704, 768, 832, 896, 960, 1024.", "dimensions"
+    elif "body.sampler must be" in message:
+        return "Invalid sampler. Please choose a new Sampler under 'Advanced Options'.", "sampler"
+    elif "body.cfg_scale must be" in message:
+        return "Invalid prompt strength. 'Prompt Strength' must be in the range 0-35.", "prompt_strength"
+    elif "body.seed must be" in message:
+        return "Invalid seed value. Please choose a new 'Seed'.", "seed"
+    elif "body.steps must be" in message:
+        return "Invalid number of steps. 'Steps' must be in the range 10-150.", "steps"
+    return "", ""
+
+
+# PUBLIC SUPPORT FUNCTIONS:
+
 def get_samplers():
     # NOTE: Keep the number values (fourth item in the tuples) in sync with the other
     # backends, like Automatic1111. These act like an internal unique ID for Blender
@@ -135,35 +174,9 @@ def supports_negative_prompts():
     return True
 
 
+def supports_choosing_model():
+    return True
+
+
 def max_image_size():
     return 1024 * 1024
-
-
-# SUPPORT FUNCTIONS:
-
-def map_params(params):
-    params["step_schedule_start"] = round(1 - params["image_similarity"], 2)
-    params["sampler"] = params["sampler"].upper()
-    params["text_prompts"] = [
-        {"text": params["prompt"], "weight": 1},
-    ]
-    if params["negative_prompt"]:
-        params["text_prompts"].append({"text": params["negative_prompt"], "weight": -1})
-
-
-def parse_message_for_error(message):
-    if "\"Authorization\" is missing" in message:
-        return "Your DreamStudio API key is missing. Please enter it above.", "api_key"
-    elif "Incorrect API key" in message or "Unauthenticated" in message:
-        return f"Your DreamStudio API key is incorrect. Please find it on the DreamStudio website, and re-enter it above. [DreamStudio website]({config.DREAM_STUDIO_URL})", "api_key"
-    elif "body.width must be" in message or "body.height must be" in message:
-        return "Invalid width or height. They must be one of the following values: 512, 576, 640, 704, 768, 832, 896, 960, 1024.", "dimensions"
-    elif "body.sampler must be" in message:
-        return "Invalid sampler. Please choose a new Sampler under 'Advanced Options'.", "sampler"
-    elif "body.cfg_scale must be" in message:
-        return "Invalid prompt strength. 'Prompt Strength' must be in the range 0-35.", "prompt_strength"
-    elif "body.seed must be" in message:
-        return "Invalid seed value. Please choose a new 'Seed'.", "seed"
-    elif "body.steps must be" in message:
-        return "Invalid number of steps. 'Steps' must be in the range 10-150.", "steps"
-    return "", ""

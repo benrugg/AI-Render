@@ -9,31 +9,16 @@ from .. import (
     utils,
 )
 
-API_URL = "https://stablehorde.net/api/v2/generate/sync"
-SAMPLER_MAP = {
-    "DDIM": "k_ddim",
-    "PLMS": ""
-}
 
 # CORE FUNCTIONS:
 
-def send_to_api(params, img_file, filename_prefix):
+def send_to_api(params, img_file, filename_prefix, sd_model):
 
     # map the generic params to the specific ones for the Stable Horde API
-    stablehorde_params = {
-        "prompt": params["prompt"],
-        # add a base 64 encoded image to the params
-        "source_image": base64.b64encode(img_file.read()).decode(),
-        "params": {
-            "cfg_scale": params["cfg_scale"],
-            "width": params["width"],
-            "height": params["height"],
-            "denoising_strength": round(1 - params["image_similarity"], 2),
-            "seed": str(params["seed"]),
-            "steps": params["steps"],
-            "sampler_name": params["sampler"],
-        }
-    }
+    stablehorde_params = map_params(params)
+
+    # add a base 64 encoded image to the params
+    stablehorde_params["source_image"] = base64.b64encode(img_file.read()).decode()
 
     # close the image file
     img_file.close()
@@ -53,7 +38,7 @@ def send_to_api(params, img_file, filename_prefix):
     start_time = time.monotonic()
     print("Sending to Stable Horde")
     try:
-        response = requests.post(API_URL, json=stablehorde_params, headers=headers, timeout=request_timeout())
+        response = requests.post(config.STABLE_HORDE_API_URL, json=stablehorde_params, headers=headers, timeout=request_timeout())
         img_file.close()
     except requests.exceptions.ReadTimeout:
         img_file.close()
@@ -111,6 +96,26 @@ def handle_api_success(response, filename_prefix):
 def handle_api_error(response):
     return operators.handle_error("The Stable Horde server returned an error: " + str(response.content))
 
+
+# PRIVATE SUPPORT FUNCTIONS:
+
+def map_params(params):
+    return {
+        "prompt": params["prompt"],
+        "params": {
+            "cfg_scale": params["cfg_scale"],
+            "width": params["width"],
+            "height": params["height"],
+            "denoising_strength": round(1 - params["image_similarity"], 2),
+            "seed": str(params["seed"]),
+            "steps": params["steps"],
+            "sampler_name": params["sampler"],
+        }
+    }
+
+
+# PUBLIC SUPPORT FUNCTIONS:
+
 def get_samplers():
     # NOTE: Keep the number values (fourth item in the tuples) in sync with DreamStudio's
     # values (in stability_api.py). These act like an internal unique ID for Blender
@@ -143,6 +148,10 @@ def get_image_format():
 
 
 def supports_negative_prompts():
+    return False
+
+
+def supports_choosing_model():
     return False
 
 

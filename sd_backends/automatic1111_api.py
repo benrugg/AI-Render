@@ -12,7 +12,7 @@ from .. import (
 
 # CORE FUNCTIONS:
 
-def send_to_api(params, img_file, filename_prefix):
+def send_to_api(params, img_file, filename_prefix, sd_model):
 
     # map the generic params to the specific ones for the Automatic1111 API
     map_params(params)
@@ -106,6 +106,15 @@ def handle_api_error(response):
         return operators.handle_error("An error occurred in the Automatic1111 Stable Diffusion server. Check the server logs for more info.")
 
 
+# PRIVATE SUPPORT FUNCTIONS:
+
+def map_params(params):
+    params["denoising_strength"] = round(1 - params["image_similarity"], 2)
+    params["sampler_index"] = params["sampler"]
+
+
+# PUBLIC SUPPORT FUNCTIONS:
+
 def get_samplers():
     # NOTE: Keep the number values (fourth item in the tuples) in sync with DreamStudio's
     # values (in stability_api.py). These act like an internal unique ID for Blender
@@ -140,12 +149,9 @@ def supports_negative_prompts():
     return True
 
 
+def supports_choosing_model():
+    return False
+
+
 def max_image_size():
     return 1024 * 1024
-
-
-# SUPPORT FUNCTIONS:
-
-def map_params(params):
-    params["denoising_strength"] = round(1 - params["image_similarity"], 2)
-    params["sampler_index"] = params["sampler"]

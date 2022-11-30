@@ -498,7 +498,7 @@ def send_to_api(scene, prompts=None):
     }
 
     # send to whichever API we're using
-    output_file = utils.get_active_backend().send_to_api(params, img_file, after_output_filename_prefix)
+    output_file = utils.get_active_backend().send_to_api(params, img_file, after_output_filename_prefix, props.sd_model)
 
     # if we got a successful image created, handle it
     if output_file:

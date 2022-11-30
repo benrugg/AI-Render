@@ -241,6 +241,14 @@ class AIR_PT_advanced_options(bpy.types.Panel):
         sub = row.column()
         sub.prop(props, 'cfg_scale', text="", slider=False)
 
+        # SD Model
+        if utils.get_active_backend().supports_choosing_model():
+            row = layout.row()
+            sub = row.column()
+            sub.label(text="Model")
+            sub = row.column()
+            sub.prop(props, 'sd_model', text="")
+
         # Sampler
         row = layout.row()
         sub = row.column()
