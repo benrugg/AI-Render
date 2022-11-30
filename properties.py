@@ -80,7 +80,7 @@ class AIRProperties(bpy.types.PropertyGroup):
     )
     sampler: bpy.props.EnumProperty(
         name="Sampler",
-        default=60, # maps to "k_lms" or "LMS"
+        default=120, # maps to DPM++ 2M, which is a good, fast sampler
         items=get_available_samplers,
         description="Which sampler method to use",
     )
