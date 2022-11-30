@@ -6,6 +6,7 @@ import re
 import time
 
 from . import (
+    analytics,
     config,
     progress_bar,
     task_queue,
@@ -445,7 +446,7 @@ def send_to_api(scene, prompts=None):
 
     # get the prompt if we haven't been given one
     if not prompts:
-        if scene.air_props.use_animated_prompts:
+        if props.use_animated_prompts:
             prompt, negative_prompt = validate_and_process_animated_prompt_text_for_single_frame(scene, scene.frame_current)
             if not prompt:
                 return False
@@ -498,6 +499,7 @@ def send_to_api(scene, prompts=None):
     }
 
     # send to whichever API we're using
+    start_time = time.time()
     output_file = utils.get_active_backend().send_to_api(params, img_file, after_output_filename_prefix, props.sd_model)
 
     # if we got a successful image created, handle it
@@ -540,6 +542,18 @@ def send_to_api(scene, prompts=None):
             unmute_compositor_node_group(scene)
         except:
             return handle_error("Couldn't unmute the compositor node")
+
+        # track an analytics event
+        additional_params = {
+            "backend": utils.sd_backend(),
+            "model": props.sd_model if utils.get_active_backend().supports_choosing_model() else "none",
+            "preset_style": props.preset_style if props.use_preset else "none",
+            "is_animation_frame": "yes" if prompts else "no",
+            "has_animated_prompt": "yes" if props.use_animated_prompts else "no",
+            "duration": round(time.time() - start_time),
+        }
+        event_params = analytics.prepare_event('generate_image', generation_params=params, additional_params=additional_params)
+        task_queue.add(functools.partial(analytics.track_event, 'generate_image', event_params))
 
         # return success status
         return True
