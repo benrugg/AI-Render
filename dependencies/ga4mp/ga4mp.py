@@ -227,11 +227,16 @@ class BaseGa4mp(object):
             jsondata = json.dumps(request)
             json_data_as_bytes = jsondata.encode("utf-8")  # needs to be bytes
             req.add_header("Content-Length", len(json_data_as_bytes))
-            result = urllib.request.urlopen(req, json_data_as_bytes, context=ctx) # NOTE: Modified by @benrugg
 
-            status_code = result.status
-            logger.info(f"Batch Number: {batch_number}")
-            logger.info(f"Status code: {status_code}")
+            # NOTE: Modified by @benrugg to capture errors, apply timeout and fix SSL certificate verification
+            try:
+                result = urllib.request.urlopen(req, json_data_as_bytes, context=ctx, timeout=3)
+                status_code = result.status
+                logger.info(f"Batch Number: {batch_number}")
+                logger.info(f"Status code: {status_code}")
+            except:
+                print("GA request failed")
+
             batch_number += 1
 
         return status_code
