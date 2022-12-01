@@ -29,8 +29,11 @@ from .sd_backends import (
     stablehorde_api,
 )
 
+min_dimension_size = 512
+max_dimension_size = 2048
+valid_dimension_step_size = 64
 
-valid_dimensions = [512, 576, 640, 704, 768, 832, 896, 960, 1024] # 1088, 1152, 1216, 1280, 1344, 1408, 1472, 1536, 1600, 1664, 1728, 1792, 1856, 1920, 1984, 2048]
+example_dimensions = [512, 640, 768, 896, 960, 1024, 1280, 1344, 1600, 1920, 2048]
 file_formats = {"JPEG": "jpg", "BMP": "bmp", "IRIS": "rgb", "PNG": "png", "JPEG2000": "jp2", "TARGA": "tga", "TARGA_RAW": "tga", "CINEON": "cin", "DPX": "dpx", "OPEN_EXR_MULTILAYER": "exr", "OPEN_EXR": "exr", "HDR": "hdr", "TIFF": "tif", "WEBP": "webp"}
 
 
@@ -180,8 +183,16 @@ def get_output_height(scene):
 
 def are_dimensions_valid(scene):
     return (
-        get_output_width(scene) in valid_dimensions and
-        get_output_height(scene) in valid_dimensions
+        get_output_width(scene) in range(
+            min_dimension_size,
+            max_dimension_size + valid_dimension_step_size, # range is exclusive of the last value
+            valid_dimension_step_size
+        ) and
+        get_output_height(scene) in range(
+            min_dimension_size,
+            max_dimension_size + valid_dimension_step_size, # range is exclusive of the last value
+            valid_dimension_step_size
+        )
     )
 
 
@@ -189,9 +200,9 @@ def are_dimensions_too_large(scene):
     return get_output_width(scene) * get_output_height(scene) > get_active_backend().max_image_size()
 
 
-def generate_valid_dimensions_tuple_list():
+def generate_example_dimensions_tuple_list():
     return_tuple = lambda num: (str(num), str(num) + " px", str(num))
-    return list(map(return_tuple, valid_dimensions))
+    return list(map(return_tuple, example_dimensions))
 
 
 def has_url(text, strict_match_protocol=False):

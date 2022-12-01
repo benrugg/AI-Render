@@ -69,11 +69,11 @@ class AIR_PT_setup(bpy.types.Panel):
 
     @classmethod
     def are_dimensions_valid(cls, context):
-        return utils.are_dimensions_valid(context.scene) and context.scene.air_props.error_key != 'dimensions'
+        return utils.are_dimensions_valid(context.scene) and context.scene.air_props.error_key != 'invalid_dimensions'
 
     @classmethod
     def are_dimensions_small_enough(cls, context):
-        return not utils.are_dimensions_too_large(context.scene)
+        return not utils.are_dimensions_too_large(context.scene) and context.scene.air_props.error_key != 'dimensions_too_large'
 
     @classmethod
     def poll(cls, context):
@@ -107,9 +107,9 @@ class AIR_PT_setup(bpy.types.Panel):
         # show the image dimension help if the dimensions are invalid or too large
         elif not AIR_PT_setup.are_dimensions_valid(context) or not AIR_PT_setup.are_dimensions_small_enough(context):
             if not AIR_PT_setup.are_dimensions_valid(context):
-                utils.label_multiline(layout, text=f"Adjust Image Size: \nStable Diffusion only works on certain image dimensions.", icon="INFO", width=width_guess)
+                utils.label_multiline(layout, text="Adjust Image Size: \nStable Diffusion only works on certain image dimensions.", icon="INFO", width=width_guess)
             else:
-                utils.label_multiline(layout, text=f"Adjust Image Size: \nImage dimensions are too large. Please decrease width and/or height.", icon="INFO", width=width_guess)
+                utils.label_multiline(layout, text=f"Adjust Image Size: \nImage dimensions are too large. Please decrease width and/or height. Total pixel area must be a max of {round(utils.get_active_backend().max_image_size() / (1024*1024), 1)} megapixels.", icon="INFO", width=width_guess)
 
             row = layout.row()
             row.label(text="Set Image Size:")

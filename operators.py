@@ -14,7 +14,7 @@ from . import (
 )
 
 
-valid_dimensions_tuple_list = utils.generate_valid_dimensions_tuple_list()
+example_dimensions_tuple_list = utils.generate_example_dimensions_tuple_list()
 
 
 def enable_air(scene):
@@ -337,9 +337,9 @@ def validate_params(scene, prompt=None):
     if utils.get_dream_studio_api_key().strip() == "" and utils.sd_backend() == "dreamstudio":
         return handle_error("You must enter an API Key to render with DreamStudio", "api_key")
     if not utils.are_dimensions_valid(scene):
-        return handle_error("Please set width and height to valid values", "dimensions")
+        return handle_error("Please set width and height to valid values", "invalid_dimensions")
     if utils.are_dimensions_too_large(scene):
-        return handle_error("Image dimensions are too large. Please decrease width and/or height", "dimensions")
+        return handle_error("Image dimensions are too large. Please decrease width and/or height", "dimensions_too_large")
     if prompt == "":
         return handle_error("Please enter a prompt for Stable Diffusion", "prompt")
     return True
@@ -610,21 +610,24 @@ class AIR_OT_show_other_dimension_options(bpy.types.Operator):
     width: bpy.props.EnumProperty(
         name="Image Width",
         default="512",
-        items=valid_dimensions_tuple_list,
+        items=example_dimensions_tuple_list,
         description="Image Width"
     )
     height: bpy.props.EnumProperty(
         name="Image Height",
         default="512",
-        items=valid_dimensions_tuple_list,
+        items=example_dimensions_tuple_list,
         description="Image Height"
     )
 
     def draw(self, context):
         layout = self.layout
-        utils.label_multiline(layout, text="Choose dimensions that Stable Diffusion can work with. (Dimensions larger than 512x512 take longer and use more credits)", width=self.panel_width)
+        utils.label_multiline(layout, text=f"Choose dimensions that Stable Diffusion can work with. (Dimensions larger than 512x512 take longer and use more credits). Dimensions can be any multiple of {utils.valid_dimension_step_size} in the range {utils.min_dimension_size}-{utils.max_dimension_size}.", width=self.panel_width)
 
         layout.separator()
+
+        row = layout.row()
+        row.label(text="Common Dimensions:")
 
         row = layout.row()
         col = row.column()

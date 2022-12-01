@@ -124,10 +124,12 @@ def map_params(params):
 def parse_message_for_error(message):
     if "\"Authorization\" is missing" in message:
         return "Your DreamStudio API key is missing. Please enter it above.", "api_key"
-    elif "Incorrect API key" in message or "Unauthenticated" or "Unable to find corresponding account" in message:
+    elif "Incorrect API key" in message or "Unauthenticated" in message or "Unable to find corresponding account" in message:
         return f"Your DreamStudio API key is incorrect. Please find it on the DreamStudio website, and re-enter it above. [DreamStudio website]({config.DREAM_STUDIO_URL})", "api_key"
+    elif "image too large" in message:
+        return "Image size is too large. Please decrease width/height.", "dimensions_too_large"
     elif "body.width must be" in message or "body.height must be" in message:
-        return "Invalid width or height. They must be in the range 512-2048 in multiples of 64.", "dimensions"
+        return "Invalid width or height. They must be in the range 512-2048 in multiples of 64.", "invalid_dimensions"
     elif "body.sampler must be" in message:
         return "Invalid sampler. Please choose a new Sampler under 'Advanced Options'.", "sampler"
     elif "body.cfg_scale must be" in message:
