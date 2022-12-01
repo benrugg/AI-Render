@@ -161,7 +161,7 @@ def activate_air_workspace(scene):
         utils.view_render_result_in_air_image_editor()
     except:
         scene.air_props.is_enabled = False
-        handle_error("Couldn't find the AI Render workspace. Please re-enable AI Render, or deactivate the AI Render add-on.")
+        handle_error("Couldn't find the AI Render workspace. Please re-enable AI Render, or deactivate the AI Render add-on.", "no_workspace")
 
 
 def set_image_dimensions(context, width, height):
@@ -228,7 +228,7 @@ def ensure_animated_prompts_text_editor_in_workspace(context):
         if area is None:
             area = utils.get_area_by_type('IMAGE_EDITOR', workspace_id=config.workspace_id)
         if area is None:
-            return handle_error("Couldn't find the right areas in the AI Render workspace. Please re-enable AI Render.")
+            return handle_error("Couldn't find the right areas in the AI Render workspace. Please re-enable AI Render.", "invalid_workspace")
 
         utils.split_area(context, area, factor=0.3)
 
@@ -254,7 +254,7 @@ def save_render_to_file(scene, filename_prefix):
     try:
         temp_file = utils.create_temp_file(filename_prefix + "-", suffix=f".{utils.get_active_backend().get_image_format().lower()}")
     except:
-        return handle_error("Couldn't create temp file for image")
+        return handle_error("Couldn't create temp file for image", "temp_file")
 
     try:
         orig_render_file_format = scene.render.image_settings.file_format
@@ -271,7 +271,7 @@ def save_render_to_file(scene, filename_prefix):
         scene.render.image_settings.color_mode = orig_render_color_mode
         scene.render.image_settings.color_depth = orig_render_color_depth
     except:
-        return handle_error("Couldn't save rendered image")
+        return handle_error("Couldn't save rendered image", "save_render")
 
     return temp_file
 
@@ -285,7 +285,7 @@ def save_before_image(scene, filename_prefix):
     try:
         bpy.data.images['Render Result'].save_render(bpy.path.abspath(full_path_and_filename))
     except:
-        return handle_error(f"Couldn't save 'before' image to {bpy.path.abspath(full_path_and_filename)}")
+        return handle_error(f"Couldn't save 'before' image to {bpy.path.abspath(full_path_and_filename)}", "save_image")
 
 
 def save_after_image(scene, filename_prefix, img_file):
@@ -295,7 +295,7 @@ def save_after_image(scene, filename_prefix, img_file):
         utils.copy_file(img_file, full_path_and_filename)
         return full_path_and_filename
     except:
-        return handle_error(f"Couldn't save 'after' image to {bpy.path.abspath(full_path_and_filename)}")
+        return handle_error(f"Couldn't save 'after' image to {bpy.path.abspath(full_path_and_filename)}", "save_image")
 
 
 def save_animation_image(scene, filename_prefix, img_file):
@@ -305,7 +305,7 @@ def save_animation_image(scene, filename_prefix, img_file):
         utils.copy_file(img_file, full_path_and_filename)
         return full_path_and_filename
     except:
-        return handle_error(f"Couldn't save animation image to {bpy.path.abspath(full_path_and_filename)}")
+        return handle_error(f"Couldn't save animation image to {bpy.path.abspath(full_path_and_filename)}", "save_image")
 
 
 def do_pre_render_setup(scene, do_mute_node_group=True):
@@ -348,7 +348,7 @@ def validate_params(scene, prompt=None):
 def validate_animation_output_path(scene):
     props = scene.air_props
     if not utils.does_path_exist(props.animation_output_path):
-        return handle_error("Animation output path does not exist")
+        return handle_error("Animation output path does not exist", "animation_output_path")
     else:
         return True
 
@@ -380,7 +380,7 @@ def get_prompt_at_frame(animated_prompts, frame):
 def validate_and_process_animated_prompt_text(scene):
     text_data = utils.get_animated_prompt_text_data_block()
     if text_data is None:
-        return handle_error("Animated prompt text does not exist. Please edit animated prompts.")
+        return handle_error("Animated prompt text does not exist. Please edit animated prompts.", "animated_prompt_text_data_block")
 
     lines = text_data.as_string().splitlines()
     lines = [line.strip() for line in lines]
@@ -418,7 +418,7 @@ def validate_and_process_animated_prompt_text(scene):
             processed_lines = list(filter(lambda x: x['prompt'] != "", processed_lines))
 
         if len(processed_lines) == 0 and is_positive:
-            return handle_error(f"Animated Prompt text is empty or invalid. [Get help with animated prompts]({config.HELP_WITH_ANIMATED_PROMPTS_URL})")
+            return handle_error(f"Animated Prompt text is empty or invalid. [Get help with animated prompts]({config.HELP_WITH_ANIMATED_PROMPTS_URL})", "animated_prompt_text")
 
         if len(processed_lines) > 0:
             processed_lines.sort(key=lambda x: x['start_frame'])
@@ -529,19 +529,19 @@ def send_to_api(scene, prompts=None):
         try:
             img = bpy.data.images.load(output_file, check_existing=False)
         except:
-            return handle_error("Couldn't load the image from Stable Diffusion")
+            return handle_error("Couldn't load the image from Stable Diffusion", "load_sd_image")
 
         # load the image into the compositor
         try:
             update_compositor_node_with_image(scene, img)
         except:
-            return handle_error("Couldn't load the image into the compositor")
+            return handle_error("Couldn't load the image into the compositor", "update_compositor")
 
         # unmute the compositor node group
         try:
             unmute_compositor_node_group(scene)
         except:
-            return handle_error("Couldn't unmute the compositor node")
+            return handle_error("Couldn't unmute the compositor node", "unmute_compositor")
 
         # track an analytics event
         additional_params = {

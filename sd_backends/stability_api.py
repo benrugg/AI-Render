@@ -46,7 +46,7 @@ def send_to_api(params, img_file, filename_prefix, sd_model):
         img_file.close()
     except requests.exceptions.ReadTimeout:
         img_file.close()
-        return operators.handle_error(f"The server timed out. Try again in a moment, or get help. [Get help with timeouts]({config.HELP_WITH_TIMEOUTS_URL})")
+        return operators.handle_error(f"The server timed out. Try again in a moment, or get help. [Get help with timeouts]({config.HELP_WITH_TIMEOUTS_URL})", "timeout")
 
     # NOTE: For debugging:
     # print("request body:")
@@ -76,13 +76,13 @@ def handle_api_success(response, filename_prefix):
 
         return output_file
     except:
-        return operators.handle_error(f"Couldn't create a temp file to save image")
+        return operators.handle_error(f"Couldn't create a temp file to save image", "temp_file")
 
 
 def handle_api_error(response):
     # handle 404
     if response.status_code in [403, 404]:
-        return operators.handle_error("It looks like the web server this add-on relies on is missing. It's possible this is temporary, and you can try again later.")
+        return operators.handle_error("It looks like the web server this add-on relies on is missing. It's possible this is temporary, and you can try again later.", "server_missing")
 
     # handle all other errors
     else:
@@ -99,12 +99,12 @@ def handle_api_error(response):
             # handle the different types of errors
             if response_obj.get('timeout', False):
                 error_message = f"The server timed out. Try again in a moment, or get help. [Get help with timeouts]({config.HELP_WITH_TIMEOUTS_URL})"
+                error_key = "timeout"
             else:
                 error_message, error_key = parse_message_for_error(message)
-                if not error_message:
-                    error_message = f"(Server Error) An error occurred in the Stability API. Full server response: {message}"
         except:
             error_message = f"(Server Error) An unknown error occurred in the Stability API. Full server response: {str(response.content)}"
+            error_key = "unknown_error_response"
 
         return operators.handle_error(error_message, error_key)
 
@@ -138,7 +138,7 @@ def parse_message_for_error(message):
         return "Invalid seed value. Please choose a new 'Seed'.", "seed"
     elif "body.steps must be" in message:
         return "Invalid number of steps. 'Steps' must be in the range 10-150.", "steps"
-    return "", ""
+    return f"(Server Error) An error occurred in the Stability API. Full server response: {message}", "unknown_error"
 
 
 # PUBLIC SUPPORT FUNCTIONS:

@@ -102,7 +102,7 @@ def render_complete_handler(scene):
         # post to the api (on a different thread, outside the handler)
         task_queue.add(functools.partial(operators.send_to_api, scene))
     else:
-        operators.handle_error("Rendered image is not ready. Try generating a new image manually under AI Render > Operation")
+        operators.handle_error("Rendered image is not ready. Try generating a new image manually under AI Render > Operation", "image_not_ready")
 
     # track that we're no longer rendering
     scene.air_props.is_rendering = False

@@ -42,7 +42,7 @@ def send_to_api(params, img_file, filename_prefix, sd_model):
         img_file.close()
     except requests.exceptions.ReadTimeout:
         img_file.close()
-        return operators.handle_error(f"The server timed out. Try again in a moment, or get help. [Get help with timeouts]({config.HELP_WITH_TIMEOUTS_URL})")
+        return operators.handle_error(f"The server timed out. Try again in a moment, or get help. [Get help with timeouts]({config.HELP_WITH_TIMEOUTS_URL})", "timeout")
     print("The horde took " + str(time.monotonic() - start_time) + " seconds to imagine this frame.")
 
     # For debugging
@@ -68,33 +68,33 @@ def handle_api_success(response, filename_prefix):
     except:
         print("Stable Horde response content: ")
         print(response.content)
-        return operators.handle_error("Received an unexpected response from the Stable Horde server.")
+        return operators.handle_error("Received an unexpected response from the Stable Horde server.", "unexpected_response")
 
     # create a temp file
     try:
         output_file = utils.create_temp_file(filename_prefix + "-", suffix=f".{get_image_format().lower()}")
     except:
-        return operators.handle_error("Couldn't create a temp file to save image.")
+        return operators.handle_error("Couldn't create a temp file to save image.", "temp_file")
 
     # decode base64 image
     try:
         img_binary = base64.b64decode(base64_img.replace("data:image/png;base64,", ""))
     except:
-        return operators.handle_error("Couldn't decode base64 image from the Stable Horde server.")
+        return operators.handle_error("Couldn't decode base64 image from the Stable Horde server.", "base64_decode")
 
     # save the image to the temp file
     try:
         with open(output_file, 'wb') as file:
             file.write(img_binary)
     except:
-        return operators.handle_error("Couldn't write to temp file.")
+        return operators.handle_error("Couldn't write to temp file.", "temp_file_write")
 
     # return the temp file
     return output_file
 
 
 def handle_api_error(response):
-    return operators.handle_error("The Stable Horde server returned an error: " + str(response.content))
+    return operators.handle_error("The Stable Horde server returned an error: " + str(response.content), "unknown_error")
 
 
 # PRIVATE SUPPORT FUNCTIONS:
