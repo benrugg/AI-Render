@@ -148,12 +148,6 @@ class AIRPreferences(bpy.types.AddonPreferences):
                 row = box.row()
                 row.prop(self, "stable_horde_api_key")
 
-            # Notes
-            box = layout.box()
-            box.label(text="Note:")
-
-            utils.label_multiline(box, text="AI image generation is an incredible technology, and it's only in its infancy. Please use it responsibly and ethically.", width=width_guess)
-
             # Local Installation with Automatic1111
             if self.sd_backend == "automatic1111":
                 box = layout.box()
@@ -181,6 +175,15 @@ class AIRPreferences(bpy.types.AddonPreferences):
 
                 box.separator()
                 utils.label_multiline(box, text=f"Currently, only Automatic1111's Web UI is supported. Collaboration to support more installations is welcome! [Help with local installation]({config.HELP_WITH_LOCAL_INSTALLATION_URL}) [Help add support for other local installations]({config.CONTRIBUTING_URL}) ", width=width_guess)
+
+            # Notes
+            box = layout.box()
+            box.label(text="Note:")
+
+            utils.label_multiline(box, text="AI image generation is an incredible technology, and it's only in its infancy. Please use it responsibly and ethically.", width=width_guess)
+
+            box.separator()
+            utils.label_multiline(box, text="AI Render sends anonymous meta information to Google Analytics, to help improve the add-on. No prompt text or images are sent or stored in any way.", width=width_guess)
 
             # Add-on Updater
             box = layout.box()
