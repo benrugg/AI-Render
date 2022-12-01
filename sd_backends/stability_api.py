@@ -128,7 +128,7 @@ def parse_message_for_error(message):
         return f"Your DreamStudio API key is incorrect. Please find it on the DreamStudio website, and re-enter it above. [DreamStudio website]({config.DREAM_STUDIO_URL})", "api_key"
     elif "image too large" in message:
         return "Image size is too large. Please decrease width/height.", "dimensions_too_large"
-    elif "body.width must be" in message or "body.height must be" in message:
+    elif "body.width must be" in message or "body.height must be" in message or "image dimensions must be" in message:
         return "Invalid width or height. They must be in the range 512-2048 in multiples of 64.", "invalid_dimensions"
     elif "body.sampler must be" in message:
         return "Invalid sampler. Please choose a new Sampler under 'Advanced Options'.", "sampler"

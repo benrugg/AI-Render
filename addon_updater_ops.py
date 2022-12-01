@@ -27,7 +27,10 @@ import traceback
 import bpy
 from bpy.app.handlers import persistent
 
-from . import config
+from . import (
+    analytics,
+    config,
+)
 
 # Safely import the updater.
 # Prevents popups for users with invalid python installs e.g. missing libraries
@@ -746,6 +749,9 @@ def post_update_callback(module_name, res=None):
         # This is the same code as in conditional at the end of the register
         # function, ie if "auto_reload_post_update" == True, skip code.
         updater.print_verbose(f"{updater.addon_nice_name} updater: Running post update callback")
+
+        # Added by @benrugg: track the update event
+        analytics.track_event("ai_render_update")
 
         atr = AddonUpdaterUpdatedSuccessful.bl_idname.split(".")
         getattr(getattr(bpy.ops, atr[0]), atr[1])('INVOKE_DEFAULT')

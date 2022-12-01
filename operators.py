@@ -176,6 +176,7 @@ def handle_error(msg, error_key = ''):
     """Show an error popup, and set the error message to be displayed in the ui"""
     print("AI Render Error:", msg)
     task_queue.add(functools.partial(bpy.ops.ai_render.show_error_popup, 'INVOKE_DEFAULT', error_message=msg, error_key=error_key))
+    analytics.track_event('ai_render_error', value=error_key)
     return False
 
 
@@ -553,7 +554,7 @@ def send_to_api(scene, prompts=None):
             "duration": round(time.time() - start_time),
         }
         event_params = analytics.prepare_event('generate_image', generation_params=params, additional_params=additional_params)
-        task_queue.add(functools.partial(analytics.track_event, 'generate_image', event_params))
+        analytics.track_event('generate_image', event_params=event_params)
 
         # return success status
         return True

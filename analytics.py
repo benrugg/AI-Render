@@ -1,18 +1,23 @@
+import functools
 import os
 import sys
 import bpy
+from . import task_queue
 
-# Add dependencies dir to local path (must do, because ga4mp does self-importing)
+# Add dependencies dir to local path
+# (must do, because ga4mp imports itself with its name)
 base = os.path.dirname(__file__)
 module_dir = os.path.join(base, "dependencies")
 sys.path.append(module_dir)
 
 from ga4mp import GtagMP
 
+# Config
 CLIENT_ID_FILENAME = ".analytics_client_id"
 API_SECRET = 'iVOq-KSaTDGvpfvk5HO1bg'
 MEASUREMENT_ID = 'G-GW18C76QQL'
 
+# Vars
 ga = None
 env_params = {}
 
@@ -26,8 +31,10 @@ def init_analytics(bl_info):
     ga = GtagMP(measurement_id=MEASUREMENT_ID, api_secret=API_SECRET, client_id='1234567890.1234567890')
 
     # get our stored client ID, or create and store a new one
+    is_new_installation = False
     client_id = get_stored_client_id()
     if not client_id:
+        is_new_installation = True
         client_id = create_random_client_id()
         store_client_id(client_id)
 
@@ -40,6 +47,10 @@ def init_analytics(bl_info):
         'blender_version': bpy.app.version_string,
         'platform': sys.platform,
     }
+
+    # track the installation event if this is a new installation
+    if is_new_installation:
+        track_event('ai_render_installation')
 
 
 def get_stored_client_id():
@@ -76,28 +87,58 @@ def get_first_words(text, num_words):
     return ' '.join(words[:num_words])
 
 
-# PUBLIC FUNCTIONS:
-
-def track_event(event_name, event_params):
+def _track_event(event_name, event_params):
     global ga
     event = ga.create_new_event(name=event_name)
 
     for key, value in event_params.items():
         event.set_event_param(name=key, value=value)
 
+    # Note: For debugging:
     # print("Track event:", event_name, event_params, ga.client_id)
 
     ga.send(events=[event])
 
 
-def prepare_event(event_name, generation_params=None, additional_params=None):
+# PUBLIC FUNCTIONS:
+
+# track_event() can be called one of three ways:
+# 1. track_event(event_name, event_params=event_params) - dict event_params, returned by prepare_event()
+# 2. track_event(event_name, value=value) - single value
+# 3. track_event(event_name) - no additional value
+def track_event(event_name, event_params=None, value=None):
+    if event_params is None:
+        event_params = prepare_event(event_name, value=value)
+    task_queue.add(functools.partial(_track_event, event_name, event_params))
+
+
+def prepare_event(event_name, generation_params=None, additional_params=None, value=None):
     global env_params
 
-    if event_name == 'generate_image':
-        return {
+    # start with the environment parameters passed to all events
+    shared_params = {
             "ai_render_version": env_params['ai_render_version'],
             "blender_version": env_params['blender_version'],
             "platform": env_params['platform'],
+    }
+
+    # add event-specific params
+    # NOTE: The events here are the only allowed events
+    if event_name == 'ai_render_installation':
+        return shared_params
+
+    elif event_name == 'ai_render_update':
+        return shared_params
+
+    elif event_name == 'ai_render_error':
+        return {
+            **shared_params,
+            "error_key": value,
+        }
+
+    elif event_name == 'generate_image':
+        return {
+            **shared_params,
             "backend": additional_params['backend'],
             "width": generation_params['width'],
             "height": generation_params['height'],
@@ -111,6 +152,8 @@ def prepare_event(event_name, generation_params=None, additional_params=None):
             "has_animated_prompt": additional_params['has_animated_prompt'],
             "duration": additional_params['duration'],
         }
+
+    # raise an error if this event is not recognized
     raise ValueError("Unknown analytics event name: " + event_name)
 
 
