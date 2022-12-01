@@ -577,14 +577,25 @@ class AIR_OT_enable(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class AIR_OT_set_valid_render_dimensions(bpy.types.Operator):
+class AIR_OT_set_image_size_to_512x512(bpy.types.Operator):
     "Set render width and height to 512 x 512"
-    bl_idname = "ai_render.set_valid_render_dimensions"
-    bl_label = "Set Image Size to 512x512"
+    bl_idname = "ai_render.set_image_size_to_512x512"
+    bl_label = "512x512"
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
         set_image_dimensions(context, 512, 512)
+        return {'FINISHED'}
+
+
+class AIR_OT_set_image_size_to_768x768(bpy.types.Operator):
+    "Set render width and height to 768 x 768"
+    bl_idname = "ai_render.set_image_size_to_768x768"
+    bl_label = "768x768"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):
+        set_image_dimensions(context, 768, 768)
         return {'FINISHED'}
 
 
@@ -913,7 +924,8 @@ class AIR_OT_show_error_popup(bpy.types.Operator):
 
 classes = [
     AIR_OT_enable,
-    AIR_OT_set_valid_render_dimensions,
+    AIR_OT_set_image_size_to_512x512,
+    AIR_OT_set_image_size_to_768x768,
     AIR_OT_show_other_dimension_options,
     AIR_OT_copy_preset_text,
     AIR_OT_edit_animated_prompts,

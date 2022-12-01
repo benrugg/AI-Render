@@ -30,7 +30,7 @@ from .sd_backends import (
 )
 
 
-valid_dimensions = [512, 576, 640, 704, 768, 832, 896, 960, 1024]
+valid_dimensions = [512, 576, 640, 704, 768, 832, 896, 960, 1024] # 1088, 1152, 1216, 1280, 1344, 1408, 1472, 1536, 1600, 1664, 1728, 1792, 1856, 1920, 1984, 2048]
 file_formats = {"JPEG": "jpg", "BMP": "bmp", "IRIS": "rgb", "PNG": "png", "JPEG2000": "jp2", "TARGA": "tga", "TARGA_RAW": "tga", "CINEON": "cin", "DPX": "dpx", "OPEN_EXR_MULTILAYER": "exr", "OPEN_EXR": "exr", "HDR": "hdr", "TIFF": "tif", "WEBP": "webp"}
 
 

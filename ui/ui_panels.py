@@ -107,15 +107,20 @@ class AIR_PT_setup(bpy.types.Panel):
         # show the image dimension help if the dimensions are invalid or too large
         elif not AIR_PT_setup.are_dimensions_valid(context) or not AIR_PT_setup.are_dimensions_small_enough(context):
             if not AIR_PT_setup.are_dimensions_valid(context):
-                utils.label_multiline(layout, text=f"Adjust Image Size: \nStable Diffusion only works on a few specific image dimensions.", icon="INFO", width=width_guess)
+                utils.label_multiline(layout, text=f"Adjust Image Size: \nStable Diffusion only works on certain image dimensions.", icon="INFO", width=width_guess)
             else:
                 utils.label_multiline(layout, text=f"Adjust Image Size: \nImage dimensions are too large. Please decrease width and/or height.", icon="INFO", width=width_guess)
 
+            row = layout.row()
+            row.label(text="Set Image Size:")
+
             row = layout.row(align=True)
             col = row.column()
-            col.operator(operators.AIR_OT_set_valid_render_dimensions.bl_idname)
+            col.operator(operators.AIR_OT_set_image_size_to_512x512.bl_idname)
             col = row.column()
-            col.operator(operators.AIR_OT_show_other_dimension_options.bl_idname, text="", icon="QUESTION")
+            col.operator(operators.AIR_OT_set_image_size_to_768x768.bl_idname)
+            col = row.column()
+            col.operator(operators.AIR_OT_show_other_dimension_options.bl_idname, text="Other")
 
         # else, show the ready / getting started message
         else:
