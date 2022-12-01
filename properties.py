@@ -71,12 +71,12 @@ class AIRProperties(bpy.types.PropertyGroup):
     )
     steps: bpy.props.IntProperty(
         name="Steps",
-        default=40,
+        default=30,
         soft_min=10,
         soft_max=50,
         min=10,
         max=150,
-        description="How long to process the image. Values in the range of 25-50 generally work well. Higher values take longer (and use more credits) and won't necessarily improve results",
+        description="How long to process the image. Values in the range of 25-50 generally work well. Higher values take longer (and use more credits) and may or may not improve results",
     )
     sd_model: bpy.props.EnumProperty(
         name="Stable Diffusion Model",
