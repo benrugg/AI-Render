@@ -117,9 +117,9 @@ def prepare_event(event_name, generation_params=None, additional_params=None, va
 
     # start with the environment parameters passed to all events
     shared_params = {
-            "ai_render_version": env_params['ai_render_version'],
-            "blender_version": env_params['blender_version'],
-            "platform": env_params['platform'],
+        "ai_render_version": env_params['ai_render_version'],
+        "blender_version": env_params['blender_version'],
+        "platform": env_params['platform'],
     }
 
     # add event-specific params
@@ -128,6 +128,7 @@ def prepare_event(event_name, generation_params=None, additional_params=None, va
         return shared_params
 
     elif event_name == 'ai_render_update':
+        shared_params['ai_render_version_prev'] = shared_params.pop('ai_render_version')
         return shared_params
 
     elif event_name == 'ai_render_error':
