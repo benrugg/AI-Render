@@ -58,18 +58,25 @@ def init_analytics(bl_info):
 
 
 def get_stored_client_id():
-    file_path = os.path.join(os.path.dirname(__file__), CLIENT_ID_FILENAME)
-    if os.path.exists(file_path):
-        with open(file_path, "r") as f:
-            return f.read()
-    else:
+    try:
+        file_path = os.path.join(os.path.dirname(__file__), CLIENT_ID_FILENAME)
+        if os.path.exists(file_path):
+            with open(file_path, "r") as f:
+                return f.read()
+        else:
+            return None
+    except:
+        print("Couldn't read file for GA")
         return None
 
 
 def store_client_id(client_id):
-    file_path = os.path.join(os.path.dirname(__file__), CLIENT_ID_FILENAME)
-    with open(file_path, "w") as f:
-        f.write(client_id)
+    try:
+        file_path = os.path.join(os.path.dirname(__file__), CLIENT_ID_FILENAME)
+        with open(file_path, "w") as f:
+            f.write(client_id)
+    except:
+        print("Couldn't write file for GA")
 
 
 def create_random_client_id():
