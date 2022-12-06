@@ -9,6 +9,9 @@ from .. import (
     utils,
 )
 
+API_REQUEST_URL = config.STABLE_HORDE_API_URL_BASE + "/generate/async"
+API_CHECK_URL = config.STABLE_HORDE_API_URL_BASE + "/generate/check"
+API_GET_URL = config.STABLE_HORDE_API_URL_BASE + "/generate/status"
 
 # CORE FUNCTIONS:
 
@@ -36,24 +39,54 @@ def send_to_api(params, img_file, filename_prefix, sd_model):
 
     # send the API request
     start_time = time.monotonic()
-    print("Sending to Stable Horde")
     try:
-        response = requests.post(config.STABLE_HORDE_API_URL, json=stablehorde_params, headers=headers, timeout=request_timeout())
+        print(f"Sending request to Stable Horde API: {API_REQUEST_URL}")
+        response = requests.post(API_REQUEST_URL, json=stablehorde_params, headers=headers, timeout=request_timeout())
+        print(response.json())
+        id = response.json()["id"]
         img_file.close()
-    except requests.exceptions.ReadTimeout:
+    except Exception as e:
+        print(e)
         img_file.close()
-        return operators.handle_error(f"The server timed out. Try again in a moment, or get help. [Get help with timeouts]({config.HELP_WITH_TIMEOUTS_URL})", "timeout")
-    print("The horde took " + str(time.monotonic() - start_time) + " seconds to imagine this frame.")
+        return operators.handle_error(f"Timeout or error sending request. Try again in a moment, or get help. [Get help with timeouts]({config.HELP_WITH_TIMEOUTS_URL})")
+
+    # Check the status of the request (For at most 5 mins)
+    for i in range(300):
+        try:
+            time.sleep(1)
+            URL=API_CHECK_URL + "/" + id
+            print(f"Checking status of request at Stable Horde API: {URL}")
+            response = requests.get(URL, headers=headers, timeout=5)
+            print(f"Waiting for {str(time.monotonic() - start_time)}s. Response: {response.json()}")
+            if response.json()["done"] == True:
+                print("The horde took " + str(time.monotonic() - start_time) + "s to imagine this frame.")
+                break
+        except requests.exceptions.ReadTimeout:
+            # Ignore timeouts
+            print("WARN: Timeout while checking status")
+        except Exception as e: # Catch all other errors
+            print(e)
+            return operators.handle_error("Error while checking status")
+    if (i == 299):
+        return operators.handle_error("Image generation not completed after 5 minutes. Aborting.")
+
+    # Get the image
+    try:
+        URL=API_GET_URL + "/" + id
+        print(f"Retrieving image from Stable Horde API: {URL}")
+        response = requests.get(URL, headers=headers, timeout=request_timeout())
+        # handle the response
+        if response.status_code == 200:
+            return handle_api_success(response, filename_prefix)
+        else:
+            return handle_api_error(response)
+    except:
+        return operators.handle_error("Timeout or error getting image. Try again in a moment, or get help. [Get help with timeouts]({config.HELP_WITH_TIMEOUTS_URL})")
 
     # For debugging
     # print("Send to Stable Horde: " + str(stablehorde_params))
     # print("Received from Stable Horde: " + str(response.json()))
 
-    # handle the response
-    if response.status_code == 200:
-        return handle_api_success(response, filename_prefix)
-    else:
-        return handle_api_error(response)
 
 
 def handle_api_success(response, filename_prefix):
@@ -63,7 +96,6 @@ def handle_api_success(response, filename_prefix):
         response_obj = response.json()
         base64_img = response_obj["generations"][0]["img"]
         print(f"Worker: {response_obj['generations'][0]['worker_name']}, " +
-              f"queue position: {response_obj['queue_position']}, wait time: {response_obj['wait_time']}, " +
               f"kudos: {response_obj['kudos']}")
     except:
         print("Stable Horde response content: ")
@@ -127,10 +159,6 @@ def get_samplers():
         ('k_dpm_2', 'DPM2', '', 40),
         ('k_dpm_2_a', 'DPM2 a', '', 50),
         ('k_lms', 'LMS', '', 60),
-        ('k_dpm_fast', 'DPM fast', '', 70),
-        ('k_dpm_adaptive', 'DPM adaptive', '', 80),
-        ('k_dpmpp_2s_a', 'DPM++ 2S a', '', 110),
-        ('k_dpmpp_2m', 'DPM++ 2M', '', 120),
         # TODO: Stable horde does have karras support, but it's a separate boolean
     ]
 
