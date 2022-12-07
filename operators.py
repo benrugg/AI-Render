@@ -216,7 +216,7 @@ def ensure_animated_prompts_text():
         text.write("# You can also include negative prompts\n")
         text.write(f"# See more info at {config.HELP_WITH_NEGATIVE_PROMPTS_URL}\n")
         text.write("Negative:\n")
-        text.write("1: ugly, boring, bad art\n")
+        text.write("1: ugly, bad art, poorly drawn hands, poorly drawn feet, poorly drawn face, out of frame, extra limbs, disfigured, deformed, body out of frame, blurry, bad anatomy, blurred, watermark, grainy, tiling, signature, cut off, draft\n")
 
         text.select_set(0, 3, 0, -1)
 

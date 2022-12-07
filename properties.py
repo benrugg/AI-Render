@@ -38,7 +38,7 @@ class AIRProperties(bpy.types.PropertyGroup):
     negative_prompt_text: bpy.props.StringProperty(
         name="Negative Prompt",
         description="Optionally, describe what Stable Diffusion needs to steer away from",
-        default="",
+        default="ugly, bad art, poorly drawn hands, poorly drawn feet, poorly drawn face, out of frame, extra limbs, disfigured, deformed, body out of frame, blurry, bad anatomy, blurred, watermark, grainy, tiling, signature, cut off, draft",
     )
     image_similarity: bpy.props.FloatProperty(
         name="Image Similarity",
