@@ -80,10 +80,11 @@ class AIRProperties(bpy.types.PropertyGroup):
     )
     sd_model: bpy.props.EnumProperty(
         name="Stable Diffusion Model",
-        default=20,
+        default=40,
         items=[
             ('v1-5', 'SD 1.5', '', 20),
             ('v2-0', 'SD 2.0', '', 30),
+            ('v2-1', 'SD 2.1', '', 40),
         ],
         description="The Stable Diffusion model to use. 2.0 is more accurate with some types of images, and prompts differently from earlier versions. 1.5 is better for using artist names and art styles in prompts",
     )
