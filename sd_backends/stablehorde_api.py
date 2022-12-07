@@ -41,22 +41,23 @@ def send_to_api(params, img_file, filename_prefix, sd_model):
     start_time = time.monotonic()
     try:
         print(f"Sending request to Stable Horde API: {API_REQUEST_URL}")
-        response = requests.post(API_REQUEST_URL, json=stablehorde_params, headers=headers, timeout=request_timeout())
+        response = requests.post(API_REQUEST_URL, json=stablehorde_params, headers=headers, timeout=20)
         print(response.json())
         id = response.json()["id"]
         img_file.close()
+    except requests.exceptions.ReadTimeout:
+        return operators.handle_error(f"Timeout sending request. Try again in a moment, or get help. [Get help with timeouts]({config.HELP_WITH_TIMEOUTS_URL})", "timeout")
     except Exception as e:
-        print(e)
         img_file.close()
-        return operators.handle_error(f"Timeout or error sending request. Try again in a moment, or get help. [Get help with timeouts]({config.HELP_WITH_TIMEOUTS_URL})")
+        return operators.handle_error(f"error sending request: {e}", "unknown_error")
 
-    # Check the status of the request (For at most 5 mins)
-    for i in range(300):
+    # Check the status of the request (For at most request_timeout seconds)
+    for i in range(request_timeout()):
         try:
             time.sleep(1)
             URL=API_CHECK_URL + "/" + id
             print(f"Checking status of request at Stable Horde API: {URL}")
-            response = requests.get(URL, headers=headers, timeout=5)
+            response = requests.get(URL, headers=headers, timeout=20)
             print(f"Waiting for {str(time.monotonic() - start_time)}s. Response: {response.json()}")
             if response.json()["done"] == True:
                 print("The horde took " + str(time.monotonic() - start_time) + "s to imagine this frame.")
@@ -65,27 +66,25 @@ def send_to_api(params, img_file, filename_prefix, sd_model):
             # Ignore timeouts
             print("WARN: Timeout while checking status")
         except Exception as e: # Catch all other errors
-            print(e)
-            return operators.handle_error("Error while checking status")
+            return operators.handle_error(f"Error while checking status: {e}", "unknown_error")
     if (i == 299):
-        return operators.handle_error("Image generation not completed after 5 minutes. Aborting.")
+        return operators.handle_error(f"Image generation not completed after {request_timeout()} seconds. Aborting.", "timeout")
 
     # Get the image
     try:
         URL=API_GET_URL + "/" + id
         print(f"Retrieving image from Stable Horde API: {URL}")
-        response = requests.get(URL, headers=headers, timeout=request_timeout())
+        response = requests.get(URL, headers=headers, timeout=20)
         # handle the response
         if response.status_code == 200:
             return handle_api_success(response, filename_prefix)
         else:
             return handle_api_error(response)
-    except:
-        return operators.handle_error("Timeout or error getting image. Try again in a moment, or get help. [Get help with timeouts]({config.HELP_WITH_TIMEOUTS_URL})")
 
-    # For debugging
-    # print("Send to Stable Horde: " + str(stablehorde_params))
-    # print("Received from Stable Horde: " + str(response.json()))
+    except requests.exceptions.ReadTimeout:
+        return operators.handle_error(f"Timeout sending request. Try again in a moment, or get help. [Get help with timeouts]({config.HELP_WITH_TIMEOUTS_URL})", "timeout")
+    except Exception as e:
+        return operators.handle_error(f"error sending request: {e}", "unknown_error")
 
 
 
