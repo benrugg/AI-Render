@@ -165,7 +165,7 @@ def default_sampler():
 
 
 def request_timeout():
-    return 60
+    return 55
 
 
 def get_image_format():
