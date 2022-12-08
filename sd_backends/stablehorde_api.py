@@ -46,10 +46,11 @@ def send_to_api(params, img_file, filename_prefix, sd_model):
         id = response.json()["id"]
         img_file.close()
     except requests.exceptions.ReadTimeout:
-        return operators.handle_error(f"Timeout sending request. Try again in a moment, or get help. [Get help with timeouts]({config.HELP_WITH_TIMEOUTS_URL})", "timeout")
+        img_file.close()
+        return operators.handle_error(f"There was an error sending this request to Stable Horde. Please try again in a moment.", "timeout")
     except Exception as e:
         img_file.close()
-        return operators.handle_error(f"error sending request: {e}", "unknown_error")
+        return operators.handle_error(f"Error with Stable Horde. Full error message: {e}", "unknown_error")
 
     # Check the status of the request (For at most request_timeout seconds)
     for i in range(request_timeout()):
@@ -67,8 +68,8 @@ def send_to_api(params, img_file, filename_prefix, sd_model):
             print("WARN: Timeout while checking status")
         except Exception as e: # Catch all other errors
             return operators.handle_error(f"Error while checking status: {e}", "unknown_error")
-    if (i == 299):
-        return operators.handle_error(f"Image generation not completed after {request_timeout()} seconds. Aborting.", "timeout")
+    if (i == request_timeout() - 1):
+        return operators.handle_error(f"Timeout generating image. Try again in a moment, or get help. [Get help with timeouts]({config.HELP_WITH_TIMEOUTS_URL})", "timeout")
 
     # Get the image
     try:
@@ -82,9 +83,9 @@ def send_to_api(params, img_file, filename_prefix, sd_model):
             return handle_api_error(response)
 
     except requests.exceptions.ReadTimeout:
-        return operators.handle_error(f"Timeout sending request. Try again in a moment, or get help. [Get help with timeouts]({config.HELP_WITH_TIMEOUTS_URL})", "timeout")
+        return operators.handle_error(f"Timeout getting image from Stable Horde. Try again in a moment, or get help. [Get help with timeouts]({config.HELP_WITH_TIMEOUTS_URL})", "timeout")
     except Exception as e:
-        return operators.handle_error(f"error sending request: {e}", "unknown_error")
+        return operators.handle_error(f"Error with Stable Horde. Full error message: {e}", "unknown_error")
 
 
 
@@ -167,7 +168,7 @@ def default_sampler():
 
 
 def request_timeout():
-    return 600
+    return 300
 
 
 def get_image_format():
