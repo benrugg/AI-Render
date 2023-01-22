@@ -42,7 +42,6 @@ def send_to_api(params, img_file, filename_prefix, sd_model):
     try:
         print(f"Sending request to Stable Horde API: {API_REQUEST_URL}")
         response = requests.post(API_REQUEST_URL, json=stablehorde_params, headers=headers, timeout=20)
-        print(response.json())
         id = response.json()["id"]
         img_file.close()
     except requests.exceptions.ReadTimeout:
@@ -94,7 +93,7 @@ def handle_api_success(response, filename_prefix):
     # ensure we have the type of response we are expecting
     try:
         response_obj = response.json()
-        base64_img = response_obj["generations"][0]["img"]
+        img_url = response_obj["generations"][0]["img"]
         print(f"Worker: {response_obj['generations'][0]['worker_name']}, " +
               f"kudos: {response_obj['kudos']}")
     except:
@@ -108,11 +107,14 @@ def handle_api_success(response, filename_prefix):
     except:
         return operators.handle_error("Couldn't create a temp file to save image.", "temp_file")
 
-    # decode base64 image
+    # Retrieve img from img_url and write it to the temp file
+    img_binary = None
     try:
-        img_binary = base64.b64decode(base64_img.replace("data:image/png;base64,", ""))
-    except:
-        return operators.handle_error("Couldn't decode base64 image from the Stable Horde server.", "base64_decode")
+        print(f"Retrieving image file from R2: {img_url}")
+        response = requests.get(img_url, timeout=20)
+        img_binary = response.content
+    except requests.exceptions.ReadTimeout:
+        return operators.handle_error(f"Timeout retrieving file. Try again in a moment, or get help. [Get help with timeouts]({config.HELP_WITH_TIMEOUTS_URL})", "timeout")
 
     # save the image to the temp file
     try:
@@ -134,6 +136,7 @@ def handle_api_error(response):
 def map_params(params):
     return {
         "prompt": params["prompt"],
+        "r2": True,
         "params": {
             "cfg_scale": params["cfg_scale"],
             "width": params["width"],
