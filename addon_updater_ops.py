@@ -750,9 +750,6 @@ def post_update_callback(module_name, res=None):
         # function, ie if "auto_reload_post_update" == True, skip code.
         updater.print_verbose(f"{updater.addon_nice_name} updater: Running post update callback")
 
-        # Added by @benrugg: track the update event
-        analytics.track_event("ai_render_update")
-
         atr = AddonUpdaterUpdatedSuccessful.bl_idname.split(".")
         getattr(getattr(bpy.ops, atr[0]), atr[1])('INVOKE_DEFAULT')
         global ran_update_success_popup

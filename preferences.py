@@ -183,7 +183,7 @@ class AIRPreferences(bpy.types.AddonPreferences):
             utils.label_multiline(box, text="AI image generation is an incredible technology, and it's only in its infancy. Please use it responsibly and ethically.", width=width_guess)
 
             box.separator()
-            utils.label_multiline(box, text="AI Render sends anonymous meta information to Google Analytics, to help improve the add-on. No prompt text or images are sent or stored in any way.", width=width_guess)
+            utils.label_multiline(box, text="This version doesn't send any analytics anywhere.", width=width_guess)
 
             # Add-on Updater
             box = layout.box()

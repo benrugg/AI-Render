@@ -176,7 +176,6 @@ def handle_error(msg, error_key = ''):
     """Show an error popup, and set the error message to be displayed in the ui"""
     print("AI Render Error:", msg)
     task_queue.add(functools.partial(bpy.ops.ai_render.show_error_popup, 'INVOKE_DEFAULT', error_message=msg, error_key=error_key))
-    analytics.track_event('ai_render_error', value=error_key)
     return False
 
 
@@ -543,26 +542,8 @@ def send_to_api(scene, prompts=None):
             unmute_compositor_node_group(scene)
         except:
             return handle_error("Couldn't unmute the compositor node", "unmute_compositor")
-
-        # track an analytics event
-        additional_params = {
-            "backend": utils.sd_backend(),
-            "model": props.sd_model if utils.get_active_backend().supports_choosing_model() else "none",
-            "preset_style": props.preset_style if props.use_preset else "none",
-            "is_animation_frame": "yes" if prompts else "no",
-            "has_animated_prompt": "yes" if props.use_animated_prompts else "no",
-            "duration": round(time.time() - start_time),
-        }
-        event_params = analytics.prepare_event('generate_image', generation_params=params, additional_params=additional_params)
-        analytics.track_event('generate_image', event_params=event_params)
-
-        # return success status
         return True
-
-    # else, an error should have been created by the api function
     else:
-
-        # return error status
         return False
 
 

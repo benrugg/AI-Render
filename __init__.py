@@ -57,7 +57,6 @@ import bpy
 
 def register():
     addon_updater_ops.register(bl_info)
-    analytics.register(bl_info)
     handlers.register()
     operators.register()
     preferences.register()
@@ -70,7 +69,6 @@ def register():
 
 def unregister():
     addon_updater_ops.unregister()
-    analytics.unregister()
     handlers.unregister()
     operators.unregister()
     preferences.unregister()

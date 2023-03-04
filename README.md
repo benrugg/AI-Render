@@ -4,6 +4,8 @@ Render with Stable Diffusion in Blender. This add-on renders an AI generated ima
 
 Create incredible AI generated images with Stable Diffusion easily, without running any code on your own computer!
 
+This version removes all analytics, which previously you weren't allowed to opt out of.
+
 
 ## Installation
 
