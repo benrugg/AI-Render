@@ -86,6 +86,8 @@ def ensure_compositor_node_group(scene):
 
     # otherwise, create a new node group
     node_tree = bpy.data.node_groups.new('AIR_node_group_v1', 'CompositorNodeTree')
+    node_tree.inputs.new('NodeSocketColor', 'Image')
+    node_tree.outputs.new('NodeSocketColor', 'Image')
 
     node_group = compositor_nodes.new('CompositorNodeGroup')
     node_group.node_tree = node_tree
