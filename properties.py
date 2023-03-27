@@ -6,6 +6,7 @@ from . import (
     utils,
 )
 from .ui import ui_preset_styles
+from .sd_backends import automatic1111_api
 
 
 def get_available_samplers(self, context):
@@ -14,6 +15,20 @@ def get_available_samplers(self, context):
 
 def get_default_sampler():
     return utils.get_active_backend().default_sampler()
+
+
+def get_available_controlnet_models(self, context):
+    if utils.sd_backend() == "automatic1111":
+        return automatic1111_api.get_available_controlnet_models(context)
+    else:
+        return[]
+
+
+def get_available_controlnet_modules(self, context):
+    if utils.sd_backend() == "automatic1111":
+        return automatic1111_api.get_available_controlnet_modules(context)
+    else:
+        return[]
 
 
 def ensure_sampler(self, context):
@@ -168,6 +183,25 @@ class AIRProperties(bpy.types.PropertyGroup):
     close_animation_tips: bpy.props.BoolProperty(
         name="Close Animation Tips",
         default=False,
+    )
+    controlnet_is_enabled: bpy.props.BoolProperty(
+        name="Enable ControlNet",
+        default=False,
+        description="When true, will use ControlNet for each rendered image",
+    )
+    controlnet_close_help: bpy.props.BoolProperty(
+        name="Close ControlNet Help",
+        default=False,
+    )
+    controlnet_available_models: bpy.props.EnumProperty(
+        name="ControlNet Models",
+        items=get_available_controlnet_models,
+        description="Which ControlNet model to use (these must be downloaded and installed locally)",
+    )
+    controlnet_available_modules: bpy.props.EnumProperty(
+        name="ControlNet Models",
+        items=get_available_controlnet_modules,
+        description="Which ControlNet model to use (these must be downloaded and installed locally)",
     )
 
 

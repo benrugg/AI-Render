@@ -13,6 +13,8 @@ from . import (
     utils,
 )
 
+from .sd_backends import automatic1111_api
+
 
 example_dimensions_tuple_list = utils.generate_example_dimensions_tuple_list()
 
@@ -503,7 +505,7 @@ def send_to_api(scene, prompts=None):
 
     # send to whichever API we're using
     start_time = time.time()
-    output_file = utils.get_active_backend().send_to_api(params, img_file, after_output_filename_prefix, props.sd_model)
+    output_file = utils.get_active_backend().send_to_api(params, img_file, after_output_filename_prefix, props)
 
     # if we got a successful image created, handle it
     if output_file:
@@ -927,6 +929,37 @@ class AIR_OT_show_error_popup(bpy.types.Operator):
         return {'FINISHED'}
 
 
+class AIR_OT_automatic1111_load_controlnet_models(bpy.types.Operator):
+    "Load the available ControlNet models from Automatic1111"
+    bl_idname = "ai_render.automatic1111_load_controlnet_models"
+    bl_label = "Load ControlNet Models"
+
+    def execute(self, context):
+        automatic1111_api.load_controlnet_models(context)
+        return {'FINISHED'}
+
+
+class AIR_OT_automatic1111_load_controlnet_modules(bpy.types.Operator):
+    "Load the available ControlNet modules (preprocessors) from Automatic1111"
+    bl_idname = "ai_render.automatic1111_load_controlnet_modules"
+    bl_label = "Load ControlNet Modules"
+
+    def execute(self, context):
+        automatic1111_api.load_controlnet_modules(context)
+        return {'FINISHED'}
+
+
+class AIR_OT_automatic1111_load_controlnet_models_and_modules(bpy.types.Operator):
+    "Load the available ControlNet models and modules (preprocessors) from Automatic1111"
+    bl_idname = "ai_render.automatic1111_load_controlnet_models_and_modules"
+    bl_label = "Load ControlNet Models and Modules"
+
+    def execute(self, context):
+        automatic1111_api.load_controlnet_models(context)
+        automatic1111_api.load_controlnet_modules(context)
+        return {'FINISHED'}
+
+
 
 classes = [
     AIR_OT_enable,
@@ -940,6 +973,9 @@ classes = [
     AIR_OT_render_animation,
     AIR_OT_setup_instructions_popup,
     AIR_OT_show_error_popup,
+    AIR_OT_automatic1111_load_controlnet_models,
+    AIR_OT_automatic1111_load_controlnet_modules,
+    AIR_OT_automatic1111_load_controlnet_models_and_modules,
 ]
 
 

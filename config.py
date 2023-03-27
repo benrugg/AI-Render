@@ -15,5 +15,6 @@ HELP_WITH_LOCAL_INSTALLATION_URL = "https://github.com/benrugg/AI-Render/wiki/Lo
 HELP_WITH_AUTOMATIC1111_NOT_IN_API_MODE_URL = "https://github.com/benrugg/AI-Render/wiki/Local-Installation#troubleshooting"
 HELP_WITH_ANIMATED_PROMPTS_URL = "https://github.com/benrugg/AI-Render/wiki/Animation#animated-prompts"
 HELP_WITH_NEGATIVE_PROMPTS_URL = "https://github.com/benrugg/AI-Render/wiki/Animation#negative-prompts"
+HELP_WITH_CONTROLNET_URL = "https://github.com/benrugg/AI-Render/wiki/ControlNet#installation"
 ANIMATION_TIPS_URL = "https://github.com/benrugg/AI-Render/wiki/Animation#animation-tips"
 CONTRIBUTING_URL = "https://github.com/benrugg/AI-Render/blob/main/CONTRIBUTING.md"

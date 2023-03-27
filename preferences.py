@@ -61,6 +61,18 @@ class AIRPreferences(bpy.types.AddonPreferences):
         max=3600,
     )
 
+    automatic1111_controlnet_available_models: bpy.props.StringProperty(
+        name="ControlNet Models",
+        description="A list of the available ControlNet models (loaded from the Automatic1111 API)",
+        default="",
+    )
+
+    automatic1111_controlnet_available_modules: bpy.props.StringProperty(
+        name="ControlNet Modules (Preprocessors)",
+        description="A list of the available ControlNet modules (preprocessors) (loaded from the Automatic1111 API)",
+        default="",
+    )
+
     # Add-on Updater Preferences
     updater_expanded_in_preferences_panel: bpy.props.BoolProperty(
         name="Show the updater preferences",

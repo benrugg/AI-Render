@@ -262,6 +262,66 @@ class AIR_PT_advanced_options(bpy.types.Panel):
         sub.prop(props, 'sampler', text="")
 
 
+class AIR_PT_controlnet(bpy.types.Panel):
+    bl_label = "ControlNet"
+    bl_idname = "AIR_PT_controlnet"
+    bl_parent_id = "AIR_PT_main"
+    bl_space_type = "PROPERTIES"
+    bl_region_type = "WINDOW"
+    bl_context = "render"
+    bl_options = {'DEFAULT_CLOSED'}
+
+    @classmethod
+    def poll(cls, context):
+        return utils.is_installation_valid() and context.scene.air_props.is_enabled and utils.sd_backend(context) == "automatic1111"
+
+    def draw(self, context):
+        layout = self.layout
+        scene = context.scene
+        props = scene.air_props
+
+        width_guess = 220
+
+        # ControlNet Help
+        if not props.controlnet_close_help:
+            box = layout.box()
+            row = box.row()
+            row.label(text="ControlNet Help:", icon="INFO")
+            split = row.split(align=True)
+            split.prop(props, "controlnet_close_help", text="", icon="X", emboss=False)
+
+            utils.label_multiline(box, text="ControlNet is an extension for Automatic1111 that can greatly improve the ability to match your scene's layout, structure, or character poses. It can also create much more stable animations than standard Stable Diffusion.", width=width_guess)
+
+            row = box.row()
+            row.operator("wm.url_open", text="Learn More", icon="URL").url = config.HELP_WITH_CONTROLNET_URL
+
+            layout.separator()
+
+        # Enable
+        row = layout.row()
+        row.prop(props, 'controlnet_is_enabled', text="Enable")
+
+        # ControlNet Load Models and Modules
+        models = utils.get_addon_preferences(context).automatic1111_controlnet_available_models
+        if not models:
+            row = layout.row()
+            row.operator(operators.AIR_OT_automatic1111_load_controlnet_models_and_modules.bl_idname, text="Load Models from Automatic1111", icon="FILE_REFRESH")
+        else:
+            # ControlNet Model
+            row = layout.row()
+            row.prop(props, 'controlnet_available_models', text="Model")
+
+            split = row.split(align=True)
+            split.operator(operators.AIR_OT_automatic1111_load_controlnet_models.bl_idname, text="", icon="FILE_REFRESH")
+
+            # ControlNet Module
+            row = layout.row()
+            row.prop(props, 'controlnet_available_modules', text="Preprocessor")
+
+            split = row.split(align=True)
+            split.operator(operators.AIR_OT_automatic1111_load_controlnet_modules.bl_idname, text="", icon="FILE_REFRESH")
+
+
 class AIR_PT_operation(bpy.types.Panel):
     bl_label = "Operation"
     bl_idname = "AIR_PT_operation"
@@ -388,6 +448,7 @@ classes = [
     AIR_PT_setup,
     AIR_PT_prompt,
     AIR_PT_advanced_options,
+    AIR_PT_controlnet,
     AIR_PT_operation,
     AIR_PT_animation,
 ]

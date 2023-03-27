@@ -10,7 +10,7 @@ from .. import (
 
 # CORE FUNCTIONS:
 
-def send_to_api(params, img_file, filename_prefix, sd_model):
+def send_to_api(params, img_file, filename_prefix, props):
 
     # map the generic params to the specific ones for the Stability API
     map_params(params)
@@ -30,6 +30,8 @@ def send_to_api(params, img_file, filename_prefix, sd_model):
     }
 
     # prepare the URL
+    sd_model = props.sd_model
+
     if 'v2' in sd_model:
         if params["width"] >= 768 and params["height"] >= 768:
             engine = f"stable-diffusion-768-{sd_model}"

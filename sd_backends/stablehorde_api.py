@@ -15,7 +15,7 @@ API_GET_URL = config.STABLE_HORDE_API_URL_BASE + "/generate/status"
 
 # CORE FUNCTIONS:
 
-def send_to_api(params, img_file, filename_prefix, sd_model):
+def send_to_api(params, img_file, filename_prefix, props):
 
     # map the generic params to the specific ones for the Stable Horde API
     stablehorde_params = map_params(params)

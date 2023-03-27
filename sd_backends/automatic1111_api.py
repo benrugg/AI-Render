@@ -1,7 +1,5 @@
 import bpy
-import json
 import base64
-import re
 import requests
 from .. import (
     config,
@@ -12,7 +10,7 @@ from .. import (
 
 # CORE FUNCTIONS:
 
-def send_to_api(params, img_file, filename_prefix, sd_model):
+def send_to_api(params, img_file, filename_prefix, props):
 
     # map the generic params to the specific ones for the Automatic1111 API
     map_params(params)
@@ -20,6 +18,19 @@ def send_to_api(params, img_file, filename_prefix, sd_model):
     # add a base 64 encoded image to the params
     params["init_images"] = ["data:image/png;base64," + base64.b64encode(img_file.read()).decode()]
     img_file.close()
+
+    # add args for ControlNet if it's enabled
+    if props.controlnet_is_enabled:
+        params["alwayson_scripts"] = {
+            "controlnet": {
+                "args": [
+                    {
+                    "module": "depth",
+                    "model": "control_sd15_depth [fef5e48e]"
+                    }
+                ]
+            }
+        }
 
     # create the headers
     headers = {
@@ -29,11 +40,10 @@ def send_to_api(params, img_file, filename_prefix, sd_model):
     }
 
     # prepare the server url
-    server_url = utils.local_sd_url().rstrip("/").strip()
-    if not server_url:
+    try:
+        server_url = get_server_url("/sdapi/v1/img2img")
+    except:
         return operators.handle_error(f"You need to specify a location for the local Stable Diffusion server in the add-on preferences. [Get help]({config.HELP_WITH_LOCAL_INSTALLATION_URL})", "local_server_url_missing")
-    else:
-        server_url = server_url + "/sdapi/v1/img2img"
 
     # send the API request
     try:
@@ -108,9 +118,51 @@ def handle_api_error(response):
 
 # PRIVATE SUPPORT FUNCTIONS:
 
+def get_server_url(path):
+    base_url = utils.local_sd_url().rstrip("/").strip()
+    if not base_url:
+        raise Exception("Couldn't get the Automatic1111 server url")
+    else:
+        return base_url + path
+
+
 def map_params(params):
     params["denoising_strength"] = round(1 - params["image_similarity"], 2)
     params["sampler_index"] = params["sampler"]
+
+
+def load_controlnet_models(context):
+    try:
+        # get the list of available models from the Automatic1111 api
+        server_url = get_server_url("/controlnet/model_list")
+        headers = { "Accept": "application/json" }
+        response = requests.get(server_url, headers=headers, timeout=5)
+        response_obj = response.json()
+        print("ControlNet models returned from Automatic1111 API:")
+        print(response_obj)
+
+        # store the list of models in the preferences
+        models = response_obj["model_list"]
+        utils.get_addon_preferences(context).automatic1111_controlnet_available_models = "||||".join(models)
+    except:
+        operators.handle_error("Couldn't get the list of available ControlNet models from the Automatic1111 server.")
+
+
+def load_controlnet_modules(context):
+    try:
+        # get the list of available modules from the Automatic1111 api
+        server_url = get_server_url("/controlnet/module_list")
+        headers = { "Accept": "application/json" }
+        response = requests.get(server_url, headers=headers, timeout=5)
+        response_obj = response.json()
+        print("ControlNet modules returned from Automatic1111 API:")
+        print(response_obj)
+
+        # store the list of modules in the preferences
+        modules = response_obj["module_list"]
+        utils.get_addon_preferences(context).automatic1111_controlnet_available_modules = "||||".join(modules)
+    except:
+        operators.handle_error("Couldn't get the list of available ControlNet modules from the Automatic1111 server.")
 
 
 # PUBLIC SUPPORT FUNCTIONS:
@@ -155,3 +207,26 @@ def supports_choosing_model():
 
 def max_image_size():
     return 2048 * 2048
+
+
+def get_available_controlnet_models(context):
+    models = utils.get_addon_preferences(context).automatic1111_controlnet_available_models
+
+    if (not models):
+        return [("Please Load Models", "Please Load Models", "")]
+    else:
+        enum_list = []
+        for item in models.split("||||"):
+            enum_list.append((item, item, ""))
+        return enum_list
+
+def get_available_controlnet_modules(context):
+    modules = utils.get_addon_preferences(context).automatic1111_controlnet_available_modules
+
+    if (not modules):
+        return [("Please Load Modules", "Please Load Modules", "")]
+    else:
+        enum_list = []
+        for item in modules.split("||||"):
+            enum_list.append((item, item, ""))
+        return enum_list
