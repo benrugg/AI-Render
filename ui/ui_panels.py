@@ -302,24 +302,24 @@ class AIR_PT_controlnet(bpy.types.Panel):
         row.prop(props, 'controlnet_is_enabled', text="Enable")
 
         # ControlNet Load Models and Modules
-        models = utils.get_addon_preferences(context).automatic1111_controlnet_available_models
-        if not models:
+        if not props.controlnet_available_models:
             row = layout.row()
             row.operator(operators.AIR_OT_automatic1111_load_controlnet_models_and_modules.bl_idname, text="Load Models from Automatic1111", icon="FILE_REFRESH")
         else:
+            # ControlNet Module (Preprocessor)
+            row = layout.row()
+            row.prop(props, 'controlnet_module', text="Preprocessor")
+
+            split = row.split(align=True)
+            split.operator(operators.AIR_OT_automatic1111_load_controlnet_modules.bl_idname, text="", icon="FILE_REFRESH")
+
             # ControlNet Model
             row = layout.row()
-            row.prop(props, 'controlnet_available_models', text="Model")
+            row.prop(props, 'controlnet_model', text="Model")
 
             split = row.split(align=True)
             split.operator(operators.AIR_OT_automatic1111_load_controlnet_models.bl_idname, text="", icon="FILE_REFRESH")
 
-            # ControlNet Module
-            row = layout.row()
-            row.prop(props, 'controlnet_available_modules', text="Preprocessor")
-
-            split = row.split(align=True)
-            split.operator(operators.AIR_OT_automatic1111_load_controlnet_modules.bl_idname, text="", icon="FILE_REFRESH")
 
 
 class AIR_PT_operation(bpy.types.Panel):

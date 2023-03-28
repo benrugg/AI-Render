@@ -193,15 +193,25 @@ class AIRProperties(bpy.types.PropertyGroup):
         name="Close ControlNet Help",
         default=False,
     )
-    controlnet_available_models: bpy.props.EnumProperty(
+    controlnet_available_models: bpy.props.StringProperty(
         name="ControlNet Models",
+        default="",
+        description="A list of the available ControlNet models (loaded from the Automatic1111 API)",
+    )
+    controlnet_available_modules: bpy.props.StringProperty(
+        name="ControlNet Modules (Preprocessors)",
+        default="",
+        description="A list of the available ControlNet modules (preprocessors) (loaded from the Automatic1111 API)",
+    )
+    controlnet_model: bpy.props.EnumProperty(
+        name="ControlNet Model",
         items=get_available_controlnet_models,
         description="Which ControlNet model to use (these must be downloaded and installed locally)",
     )
-    controlnet_available_modules: bpy.props.EnumProperty(
-        name="ControlNet Models",
+    controlnet_module: bpy.props.EnumProperty(
+        name="ControlNet Module",
         items=get_available_controlnet_modules,
-        description="Which ControlNet model to use (these must be downloaded and installed locally)",
+        description="Which ControlNet module (preprocessor) to use (these come with the ControlNet extension)",
     )
 
 

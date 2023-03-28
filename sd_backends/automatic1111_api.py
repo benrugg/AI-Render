@@ -21,12 +21,18 @@ def send_to_api(params, img_file, filename_prefix, props):
 
     # add args for ControlNet if it's enabled
     if props.controlnet_is_enabled:
+        controlnet_model = props.controlnet_model
+        controlnet_module = props.controlnet_module
+
+        if not controlnet_model:
+            return operators.handle_error("No ContolNet model selected. Either choose a new model or disable ControlNet. [Get help]({config.HELP_WITH_CONTROLNET_URL})", "controlnet_model_missing")
+
         params["alwayson_scripts"] = {
             "controlnet": {
                 "args": [
                     {
-                    "module": "depth",
-                    "model": "control_sd15_depth [fef5e48e]"
+                    "module": controlnet_module,
+                    "model": controlnet_model
                     }
                 ]
             }
@@ -141,9 +147,9 @@ def load_controlnet_models(context):
         print("ControlNet models returned from Automatic1111 API:")
         print(response_obj)
 
-        # store the list of models in the preferences
+        # store the list of models in the scene properties
         models = response_obj["model_list"]
-        utils.get_addon_preferences(context).automatic1111_controlnet_available_models = "||||".join(models)
+        context.scene.air_props.controlnet_available_models = "||||".join(models)
     except:
         operators.handle_error("Couldn't get the list of available ControlNet models from the Automatic1111 server.")
 
@@ -158,9 +164,9 @@ def load_controlnet_modules(context):
         print("ControlNet modules returned from Automatic1111 API:")
         print(response_obj)
 
-        # store the list of modules in the preferences
+        # store the list of models in the scene properties
         modules = response_obj["module_list"]
-        utils.get_addon_preferences(context).automatic1111_controlnet_available_modules = "||||".join(modules)
+        context.scene.air_props.controlnet_available_modules = "||||".join(modules)
     except:
         operators.handle_error("Couldn't get the list of available ControlNet modules from the Automatic1111 server.")
 
@@ -210,10 +216,10 @@ def max_image_size():
 
 
 def get_available_controlnet_models(context):
-    models = utils.get_addon_preferences(context).automatic1111_controlnet_available_models
+    models = context.scene.air_props.controlnet_available_models
 
     if (not models):
-        return [("Please Load Models", "Please Load Models", "")]
+        return []
     else:
         enum_list = []
         for item in models.split("||||"):
@@ -221,12 +227,42 @@ def get_available_controlnet_models(context):
         return enum_list
 
 def get_available_controlnet_modules(context):
-    modules = utils.get_addon_preferences(context).automatic1111_controlnet_available_modules
+    modules = context.scene.air_props.controlnet_available_modules
 
     if (not modules):
-        return [("Please Load Modules", "Please Load Modules", "")]
+        return []
     else:
         enum_list = []
         for item in modules.split("||||"):
             enum_list.append((item, item, ""))
         return enum_list
+
+def choose_controlnet_defaults(context):
+    models = get_available_controlnet_models(context)
+    modules = get_available_controlnet_modules(context)
+
+    if (not models) or (not modules):
+        return
+
+    # priority order for models and modules
+    priority_order = ['depth', 'openpose', 'normal', 'canny', 'scribble']
+
+    # choose a matching model and module in the priority order:
+    for item in priority_order:
+        model_selection = None
+        module_selection = None
+
+        for model in models:
+            if item in model[0]:
+                model_selection = model[0]
+                break
+
+        for module in modules:
+            if item in module[0]:
+                module_selection = module[0]
+                break
+
+        if model_selection and module_selection:
+            context.scene.air_props.controlnet_model = model_selection
+            context.scene.air_props.controlnet_module = module_selection
+            return
