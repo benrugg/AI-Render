@@ -306,6 +306,12 @@ class AIR_PT_controlnet(bpy.types.Panel):
             row = layout.row()
             row.operator(operators.AIR_OT_automatic1111_load_controlnet_models_and_modules.bl_idname, text="Load Models from Automatic1111", icon="FILE_REFRESH")
         else:
+            # Heads up box
+            if props.controlnet_is_enabled:
+                box = layout.box()
+                row = box.row()
+                row.label(text="ControlNet will be used for each render")
+
             # ControlNet Module (Preprocessor)
             row = layout.row()
             row.prop(props, 'controlnet_module', text="Preprocessor")

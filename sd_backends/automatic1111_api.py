@@ -25,7 +25,7 @@ def send_to_api(params, img_file, filename_prefix, props):
         controlnet_module = props.controlnet_module
 
         if not controlnet_model:
-            return operators.handle_error("No ContolNet model selected. Either choose a new model or disable ControlNet. [Get help]({config.HELP_WITH_CONTROLNET_URL})", "controlnet_model_missing")
+            return operators.handle_error(f"No ContolNet model selected. Either choose a new model or disable ControlNet. [Get help]({config.HELP_WITH_CONTROLNET_URL})", "controlnet_model_missing")
 
         params["alwayson_scripts"] = {
             "controlnet": {
@@ -149,9 +149,13 @@ def load_controlnet_models(context):
 
         # store the list of models in the scene properties
         models = response_obj["model_list"]
-        context.scene.air_props.controlnet_available_models = "||||".join(models)
+        if not models:
+            return operators.handle_error(f"You don't have any ControlNet models installed. You will need to download them from Hugging Face. [Get help]({config.HELP_WITH_CONTROLNET_URL})")
+        else:
+            context.scene.air_props.controlnet_available_models = "||||".join(models)
+            return True
     except:
-        operators.handle_error("Couldn't get the list of available ControlNet models from the Automatic1111 server.")
+        return operators.handle_error(f"Couldn't get the list of available ControlNet models from the Automatic1111 server. Make sure ControlNet is installed and activated. [Get help]({config.HELP_WITH_CONTROLNET_URL})")
 
 
 def load_controlnet_modules(context):
@@ -167,8 +171,9 @@ def load_controlnet_modules(context):
         # store the list of models in the scene properties
         modules = response_obj["module_list"]
         context.scene.air_props.controlnet_available_modules = "||||".join(modules)
+        return True
     except:
-        operators.handle_error("Couldn't get the list of available ControlNet modules from the Automatic1111 server.")
+        return operators.handle_error(f"Couldn't get the list of available ControlNet modules from the Automatic1111 server. Make sure ControlNet is installed and activated. [Get help]({config.HELP_WITH_CONTROLNET_URL})")
 
 
 # PUBLIC SUPPORT FUNCTIONS:
