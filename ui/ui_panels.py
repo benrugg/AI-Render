@@ -290,7 +290,7 @@ class AIR_PT_controlnet(bpy.types.Panel):
             split = row.split(align=True)
             split.prop(props, "controlnet_close_help", text="", icon="X", emboss=False)
 
-            utils.label_multiline(box, text="ControlNet is an extension for Automatic1111 that can greatly improve the ability to match your scene's layout, structure, or character poses. It can also create much more stable animations than standard Stable Diffusion.", width=width_guess)
+            utils.label_multiline(box, text="ControlNet is an extension for Automatic1111 that provides a spectacular ability to match scene details - layout, objects, poses - while recreating the scene in Stable Diffusion. It can also create much more stable animations than standard Stable Diffusion.", width=width_guess)
 
             row = box.row()
             row.operator("wm.url_open", text="Learn More", icon="URL").url = config.HELP_WITH_CONTROLNET_URL
