@@ -55,9 +55,9 @@ def frame_change_pre_handler(scene):
     if not utils.is_installation_valid():
         return
 
-    # if we are rendering, track that we are rendering an animation
-    if scene.air_props.is_rendering and int(scene.air_props.animation_init_frame) != int(scene.frame_current):
-        scene.air_props.is_rendering_animation = True
+    # if we are rendering, track if we are rendering an animation
+    if scene.air_props.is_rendering:
+        scene.air_props.is_rendering_animation = int(scene.air_props.animation_init_frame) != int(scene.frame_current)
 
 
 @persistent
