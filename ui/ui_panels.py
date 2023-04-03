@@ -443,7 +443,7 @@ class AIR_PT_animation(bpy.types.Panel):
             split = row.split(align=True)
             split.prop(props, "close_animation_tips", text="", icon="X", emboss=False)
 
-            utils.label_multiline(box, text="For more stable animations, consider increasing \"Image Similarity\" to at least 0.7", width=width_guess)
+            utils.label_multiline(box, text="For more stable animations, consider using ControlNet (locally) or increasing \"Image Similarity\" to at least 0.7", width=width_guess)
 
             row = box.row()
             row.operator("wm.url_open", text="Get Animation Tips", icon="URL").url = config.ANIMATION_TIPS_URL
