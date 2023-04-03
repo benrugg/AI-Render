@@ -118,8 +118,15 @@ def _track_event(event_name, event_params):
 # 2. track_event(event_name, value=value) - single value
 # 3. track_event(event_name) - no additional value
 def track_event(event_name, event_params=None, value=None):
+    # don't track events if opted out. (NOTE: can't use utils.get_addon_preferences() here because of circular import)
+    if bpy.context.preferences.addons[__package__].preferences.is_opted_out_of_analytics:
+        return
+
+    # prepare the event params if not provided
     if event_params is None:
         event_params = prepare_event(event_name, value=value)
+
+    # add the event to the task queue
     task_queue.add(functools.partial(_track_event, event_name, event_params))
 
 

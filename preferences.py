@@ -61,6 +61,12 @@ class AIRPreferences(bpy.types.AddonPreferences):
         max=3600,
     )
 
+    is_opted_out_of_analytics: bpy.props.BoolProperty(
+        name="Opt out of analytics",
+        description="If this is checked, the add-on will not send or store any analytics data",
+        default=False,
+    )
+
     # Add-on Updater Preferences
     updater_expanded_in_preferences_panel: bpy.props.BoolProperty(
         name="Show the updater preferences",
@@ -171,10 +177,12 @@ class AIRPreferences(bpy.types.AddonPreferences):
                 col.prop(self, "local_sd_timeout", text="")
 
                 box.separator()
-                utils.label_multiline(box, text="AI Render will use your local Stable Diffusion installation. Please make sure the Web UI is launched and running in a terminal.", icon="KEYTYPE_BREAKDOWN_VEC", width=width_guess)
+                utils.label_multiline(box, text=f"AI Render will use your local Stable Diffusion installation. Please make sure the Web UI is launched and running in a terminal.", icon="KEYTYPE_BREAKDOWN_VEC", width=width_guess)
 
                 box.separator()
-                utils.label_multiline(box, text=f"Currently, only Automatic1111's Web UI is supported. Collaboration to support more installations is welcome! [Help with local installation]({config.HELP_WITH_LOCAL_INSTALLATION_URL}) [Help add support for other local installations]({config.CONTRIBUTING_URL}) ", width=width_guess)
+                row = box.row()
+                row.operator("wm.url_open", text="Help with local installation", icon="URL").url \
+                    = config.HELP_WITH_LOCAL_INSTALLATION_URL
 
             # Notes
             box = layout.box()
@@ -182,8 +190,11 @@ class AIRPreferences(bpy.types.AddonPreferences):
 
             utils.label_multiline(box, text="AI image generation is an incredible technology, and it's only in its infancy. Please use it responsibly and ethically.", width=width_guess)
 
-            box.separator()
+            box = layout.box()
+            box.label(text="Analytics:")
             utils.label_multiline(box, text="AI Render sends anonymous meta information to Google Analytics, to help improve the add-on. No prompt text or images are sent or stored in any way.", width=width_guess)
+            row = box.row()
+            row.prop(self, "is_opted_out_of_analytics")
 
             # Add-on Updater
             box = layout.box()
