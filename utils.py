@@ -29,7 +29,7 @@ from .sd_backends import (
     stablehorde_api,
 )
 
-min_dimension_size = 512
+min_dimension_size = 128
 max_dimension_size = 2048
 valid_dimension_step_size = 64
 

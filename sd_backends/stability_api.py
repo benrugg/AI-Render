@@ -1,5 +1,5 @@
 import bpy
-import json
+import base64
 import requests
 from .. import (
     config,
@@ -13,20 +13,13 @@ from .. import (
 def send_to_api(params, img_file, filename_prefix, props):
 
     # map the generic params to the specific ones for the Stability API
-    map_params(params)
+    mapped_params = map_params(params)
 
     # create the headers
     headers = {
         "User-Agent": "Blender/" + bpy.app.version_string,
-        "Accept": "image/png",
-        "Accept-Encoding": "gzip, deflate, br",
-        "Authorization": utils.get_dream_studio_api_key()
-    }
-
-    # prepare the file input
-    files = {
-        'init_image': img_file,
-        'options': (None, json.dumps(params)),
+        "Accept": "application/json",
+        "Authorization": f"Bearer {utils.get_dream_studio_api_key()}"
     }
 
     # prepare the URL
@@ -42,9 +35,14 @@ def send_to_api(params, img_file, filename_prefix, props):
 
     api_url = f"{config.STABILITY_API_URL}{engine}/image-to-image"
 
+    # prepare the file input
+    files = {
+        'init_image': img_file,
+    }
+
     # send the API request
     try:
-        response = requests.post(api_url, headers=headers, files=files, timeout=request_timeout())
+        response = requests.post(api_url, headers=headers, files=files, data=mapped_params, timeout=request_timeout())
         img_file.close()
     except requests.exceptions.ReadTimeout:
         img_file.close()
@@ -70,11 +68,12 @@ def send_to_api(params, img_file, filename_prefix, props):
 
 def handle_api_success(response, filename_prefix):
     try:
+        data = response.json()
         output_file = utils.create_temp_file(filename_prefix + "-")
 
-        with open(output_file, 'wb') as file:
-            for chunk in response:
-                file.write(chunk)
+        for i, image in enumerate(data["artifacts"]):
+            with open(output_file, 'wb') as file:
+                file.write(base64.b64decode(image["base64"]))
 
         return output_file
     except:
@@ -114,13 +113,25 @@ def handle_api_error(response):
 # PRIVATE SUPPORT FUNCTIONS:
 
 def map_params(params):
-    params["step_schedule_start"] = round(1 - params["image_similarity"], 2)
-    params["sampler"] = params["sampler"].upper()
-    params["text_prompts"] = [
-        {"text": params["prompt"], "weight": 1},
-    ]
+    # create a new dict so we don't overwrite the original
+    mapped_params = {}
+
+    # copy the params
+    mapped_params["seed"] = params["seed"]
+    mapped_params["cfg_scale"] = params["cfg_scale"]
+    mapped_params["steps"] = params["steps"]
+
+    # convert the params to the Stability API format
+    mapped_params["image_strength"] = round(params["image_similarity"], 2)
+    mapped_params["sampler"] = params["sampler"].upper()
+    mapped_params["text_prompts[0][text]"] = params["prompt"]
+    mapped_params["text_prompts[0][weight]"] = 1.0
+
     if params["negative_prompt"]:
-        params["text_prompts"].append({"text": params["negative_prompt"], "weight": -1})
+        mapped_params["text_prompts[1][text]"] = params["negative_prompt"]
+        mapped_params["text_prompts[1][weight]"] = -1.0
+
+    return mapped_params
 
 
 def parse_message_for_error(message):
