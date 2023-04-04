@@ -343,6 +343,8 @@ def validate_params(scene, prompt=None):
         return handle_error("You must enter an API Key to render with DreamStudio", "api_key")
     if not utils.are_dimensions_valid(scene):
         return handle_error("Please set width and height to valid values", "invalid_dimensions")
+    if utils.are_dimensions_too_small(scene):
+        return handle_error("Image dimensions are too small. Please increase width and/or height", "dimensions_too_small")
     if utils.are_dimensions_too_large(scene):
         return handle_error("Image dimensions are too large. Please decrease width and/or height", "dimensions_too_large")
     if prompt == "":

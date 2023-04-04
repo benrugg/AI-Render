@@ -216,6 +216,10 @@ def supports_choosing_model():
     return False
 
 
+def min_image_size():
+    return 128 * 128
+
+
 def max_image_size():
     return 2048 * 2048
 

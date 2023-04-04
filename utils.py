@@ -200,6 +200,10 @@ def are_dimensions_too_large(scene):
     return get_output_width(scene) * get_output_height(scene) > get_active_backend().max_image_size()
 
 
+def are_dimensions_too_small(scene):
+    return get_output_width(scene) * get_output_height(scene) < get_active_backend().min_image_size()
+
+
 def generate_example_dimensions_tuple_list():
     return_tuple = lambda num: (str(num), str(num) + " px", str(num))
     return list(map(return_tuple, example_dimensions))
