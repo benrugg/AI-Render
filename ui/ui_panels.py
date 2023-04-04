@@ -135,11 +135,16 @@ class AIR_PT_setup(bpy.types.Panel):
             col = row.column()
             col.operator(operators.AIR_OT_show_other_dimension_options.bl_idname, text="Other")
 
-        # else, show the ready / getting started message
+        # else, show the ready / getting started message and disable and change image size buttons
         else:
             utils.label_multiline(layout, text="You're ready to start rendering!", width=width_guess, alignment="CENTER")
             row = layout.row()
             row.operator("wm.url_open", text="Help Getting Started", icon="URL").url = config.VIDEO_TUTORIAL_URL
+
+            row = layout.row(align=True)
+            row.operator(operators.AIR_OT_show_other_dimension_options.bl_idname, text="Change Image Size")
+            row.separator()
+            row.operator(operators.AIR_OT_disable.bl_idname, text="Disable AI Render")
 
 
 class AIR_PT_prompt(bpy.types.Panel):

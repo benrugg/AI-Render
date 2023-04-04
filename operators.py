@@ -37,6 +37,13 @@ def enable_air(scene):
     clear_error(scene)
 
 
+def disable_air(scene):
+    try:
+        mute_compositor_node_group(scene)
+    except:
+        pass
+
+
 def mute_compositor_node_group(scene):
     compositor_nodes = scene.node_tree.nodes
     compositor_nodes.get('AIR').mute = True
@@ -584,6 +591,18 @@ class AIR_OT_enable(bpy.types.Operator):
         return {'FINISHED'}
 
 
+class AIR_OT_disable(bpy.types.Operator):
+    "Disable AI Render in this scene"
+    bl_idname = "ai_render.disable"
+    bl_label = "Disable AI Render"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):
+        disable_air(context.scene)
+        context.scene.air_props.is_enabled = False
+        return {'FINISHED'}
+
+
 class AIR_OT_set_image_size_to_512x512(bpy.types.Operator):
     "Set render width and height to 512 x 512"
     bl_idname = "ai_render.set_image_size_to_512x512"
@@ -968,6 +987,7 @@ class AIR_OT_automatic1111_load_controlnet_models_and_modules(bpy.types.Operator
 
 classes = [
     AIR_OT_enable,
+    AIR_OT_disable,
     AIR_OT_set_image_size_to_512x512,
     AIR_OT_set_image_size_to_768x768,
     AIR_OT_show_other_dimension_options,
