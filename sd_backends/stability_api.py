@@ -170,6 +170,7 @@ def get_samplers():
         ('K_DPMPP_2S_ANCESTRAL', 'DPM++ 2S a', '', 110),
         ('K_DPMPP_2M', 'DPM++ 2M', '', 120),
         ('ddim', 'DDIM', '', 210),
+        ('ddpm', 'DDPM', '', 220),
     ]
 
 
