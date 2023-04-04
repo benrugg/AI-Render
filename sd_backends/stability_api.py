@@ -173,7 +173,17 @@ def get_samplers():
 
 
 def default_sampler():
-    return 'k_lms'
+    return 'K_DPMPP_2M'
+
+
+def get_upscaler_models():
+    return [
+        ('esrgan-v1-x2plus', 'ESRGAN X2+', ''),
+    ]
+
+
+def default_upscaler_model():
+    return 'esrgan-v1-x2plus'
 
 
 def request_timeout():
@@ -198,3 +208,7 @@ def min_image_size():
 
 def max_image_size():
     return 1024 * 1024
+
+
+def max_upscaled_image_size():
+    return 2048 * 2048

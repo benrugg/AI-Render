@@ -204,6 +204,17 @@ def default_sampler():
     return 'LMS'
 
 
+def get_upscaler_models():
+    # TODO: Put the real models here
+    return [
+        ('ESRGAN_4x', 'ESRGAN_4x', ''),
+    ]
+
+
+def default_upscaler_model():
+    return 'ESRGAN_4x'
+
+
 def get_image_format():
     return 'PNG'
 
@@ -222,6 +233,10 @@ def min_image_size():
 
 def max_image_size():
     return 2048 * 2048
+
+
+def max_upscaled_image_size():
+    return 4096 * 4096
 
 
 def get_available_controlnet_models(context):

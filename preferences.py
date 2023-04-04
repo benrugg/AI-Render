@@ -32,7 +32,7 @@ class AIRPreferences(bpy.types.AddonPreferences):
         name="Enable Rendering with Local Stable Diffusion",
         description="NOTE: This is now legacy, but is used to set sd_backend for anyone who was previously using Automatic1111",
         default=False,
-        update=properties.ensure_sampler,
+        update=properties.ensure_properties,
     )
 
     sd_backend: bpy.props.EnumProperty(
@@ -43,7 +43,7 @@ class AIRPreferences(bpy.types.AddonPreferences):
             ('stablehorde', 'Stable Horde (cloud)', ''),
             ('automatic1111', 'Automatic1111 (local)', ''),
         ],
-        update=properties.ensure_sampler,
+        update=properties.ensure_properties,
         description="Choose a Stable Diffusion backend to use. DreamStudio is the default, and is the quickest to run. Stable Horde is a community-run backend that is completely free. Automatic1111 is a local installation of Stable Diffusion.",
     )
 

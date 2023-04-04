@@ -181,6 +181,16 @@ def get_output_height(scene):
     return round(scene.render.resolution_y * scene.render.resolution_percentage / 100)
 
 
+def get_upscaled_width(scene):
+    upscale_factor = scene.air_props.upscale_factor
+    return round(get_output_width(scene) * upscale_factor)
+
+
+def get_upscaled_height(scene):
+    upscale_factor = scene.air_props.upscale_factor
+    return round(get_output_height(scene) * upscale_factor)
+
+
 def are_dimensions_valid(scene):
     return (
         get_output_width(scene) in range(
@@ -202,6 +212,10 @@ def are_dimensions_too_large(scene):
 
 def are_dimensions_too_small(scene):
     return get_output_width(scene) * get_output_height(scene) < get_active_backend().min_image_size()
+
+
+def are_upscaled_dimensions_too_large(scene):
+    return get_upscaled_width(scene) * get_upscaled_height(scene) > get_active_backend().max_upscaled_image_size()
 
 
 def generate_example_dimensions_tuple_list():

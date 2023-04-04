@@ -162,12 +162,24 @@ def get_samplers():
         ('k_dpm_2', 'DPM2', '', 40),
         ('k_dpm_2_a', 'DPM2 a', '', 50),
         ('k_lms', 'LMS', '', 60),
-        # TODO: Stable horde does have karras support, but it's a separate boolean
+        # TODO: Stable Horde does have karras support, but it's a separate boolean
     ]
 
 
 def default_sampler():
     return 'k_euler_a'
+
+
+def get_upscaler_models():
+    # NOTE: Stable Horde does not support upscaling (at least as of the time of this writing),
+    # but adding this here to keep the API consistent with other backends.
+    return [
+        ('esrgan-v1-x2plus', 'ESRGAN X2+', ''),
+    ]
+
+
+def default_upscaler_model():
+    return 'esrgan-v1-x2plus'
 
 
 def request_timeout():
@@ -192,3 +204,9 @@ def min_image_size():
 
 def max_image_size():
     return 1024 * 1024
+
+
+def max_upscaled_image_size():
+    # NOTE: Stable Horde does not support upscaling (at least as of the time of this writing),
+    # but adding this here to keep the API consistent with other backends.
+    return 2048 * 2048

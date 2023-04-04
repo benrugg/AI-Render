@@ -21,9 +21,10 @@ def load_post_handler(context):
     if context.scene.air_props.is_enabled:
         operators.enable_air(context.scene)
 
-    # ensure that the sampler is set to a valid value (it could be wrong
-    # from an existing file with an older version of AI Render)
-    properties.ensure_sampler(None, context)
+    # ensure that the sampler and upscale model are set to valid values
+    # (the available options change when the user changes the SD backend, which could
+    # have happened since this file was last saved)
+    properties.ensure_properties(None, context)
 
     # update the sd backend to migrate a possible old value from a previous installation
     preferences.update_sd_backend_from_previous_installation(context)

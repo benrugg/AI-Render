@@ -404,6 +404,53 @@ class AIR_PT_operation(bpy.types.Panel):
             utils.label_multiline(layout, text="Please specify a path", icon="ERROR", width=width_guess)
 
 
+class AIR_PT_upscale(bpy.types.Panel):
+    bl_label = "Upscale"
+    bl_idname = "AIR_PT_upscale"
+    bl_parent_id = "AIR_PT_main"
+    bl_space_type = "PROPERTIES"
+    bl_region_type = "WINDOW"
+    bl_context = "render"
+    bl_options = {'DEFAULT_CLOSED'}
+
+    @classmethod
+    def poll(cls, context):
+        return utils.is_installation_valid() and context.scene.air_props.is_enabled
+
+    @classmethod
+    def are_upscaled_dimensions_small_enough(cls, context):
+        return not utils.are_upscaled_dimensions_too_large(context.scene)
+
+    def draw(self, context):
+        layout = self.layout
+        scene = context.scene
+        props = scene.air_props
+
+        width_guess = 220
+
+        row = layout.row()
+        row.prop(props, "do_upscale_automatically")
+
+        row = layout.row()
+        sub = row.column()
+        sub.label(text="Upscale Factor")
+        sub = row.column()
+        sub.prop(props, "upscale_factor", text="", slider=False)
+
+        row = layout.row()
+        sub = row.column()
+        sub.label(text="Upscaler Model")
+        sub = row.column()
+        sub.prop(props, "upscaler_model", text="")
+
+        box = layout.box()
+        row = box.row()
+        row.label(text=f"Resulting image size: {utils.get_upscaled_width(scene)} x {utils.get_upscaled_height(scene)}")
+
+        if not AIR_PT_upscale.are_upscaled_dimensions_small_enough(context):
+            utils.label_multiline(layout, text="Upscaled dimensions are too large. Please decrease the scale factor.", icon="ERROR", width=width_guess)
+
+
 class AIR_PT_animation(bpy.types.Panel):
     bl_label = "Animation"
     bl_idname = "AIR_PT_animation"
@@ -474,6 +521,7 @@ classes = [
     AIR_PT_advanced_options,
     AIR_PT_controlnet,
     AIR_PT_operation,
+    AIR_PT_upscale,
     AIR_PT_animation,
 ]
 
