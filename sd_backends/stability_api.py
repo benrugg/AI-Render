@@ -81,33 +81,27 @@ def handle_api_success(response, filename_prefix):
 
 
 def handle_api_error(response):
-    # handle 404
-    if response.status_code in [403, 404]:
-        return operators.handle_error("It looks like the web server this add-on relies on is missing. It's possible this is temporary, and you can try again later.", "server_missing")
+    import json
+    error_key = ''
 
-    # handle all other errors
-    else:
-        import json
-        error_key = ''
+    try:
+        # convert the response to JSON (hopefully)
+        response_obj = response.json()
 
-        try:
-            # convert the response to JSON (hopefully)
-            response_obj = response.json()
+        # get the message key from the response, if it exists
+        message = response_obj.get('message', str(response.content))
 
-            # get the message key from the response, if it exists
-            message = response_obj.get('message', str(response.content))
+        # handle the different types of errors
+        if response_obj.get('timeout', False):
+            error_message = f"The server timed out. Try again in a moment, or get help. [Get help with timeouts]({config.HELP_WITH_TIMEOUTS_URL})"
+            error_key = "timeout"
+        else:
+            error_message, error_key = parse_message_for_error(message)
+    except:
+        error_message = f"(Server Error) An unknown error occurred in the Stability API. Full server response: {str(response.content)}"
+        error_key = "unknown_error_response"
 
-            # handle the different types of errors
-            if response_obj.get('timeout', False):
-                error_message = f"The server timed out. Try again in a moment, or get help. [Get help with timeouts]({config.HELP_WITH_TIMEOUTS_URL})"
-                error_key = "timeout"
-            else:
-                error_message, error_key = parse_message_for_error(message)
-        except:
-            error_message = f"(Server Error) An unknown error occurred in the Stability API. Full server response: {str(response.content)}"
-            error_key = "unknown_error_response"
-
-        return operators.handle_error(error_message, error_key)
+    return operators.handle_error(error_message, error_key)
 
 
 # PRIVATE SUPPORT FUNCTIONS:
@@ -139,10 +133,14 @@ def parse_message_for_error(message):
         return "Your DreamStudio API key is missing. Please enter it above.", "api_key"
     elif "Incorrect API key" in message or "Unauthenticated" in message or "Unable to find corresponding account" in message:
         return f"Your DreamStudio API key is incorrect. Please find it on the DreamStudio website, and re-enter it above. [DreamStudio website]({config.DREAM_STUDIO_URL})", "api_key"
+    elif "not have enough balance" in message:
+        return f"You don't have enough DreamStudio credits. Please purchase credits on the DreamStudio website or switch to a different backend in the AI Render add-on preferences. [DreamStudio website]({config.DREAM_STUDIO_URL})", "credits"
+    elif "invalid_prompts" in message:
+        return "Invalid prompt. Your prompt includes filtered words. Please change your prompt and try again.", "prompt"
     elif "image too large" in message:
         return "Image size is too large. Please decrease width/height.", "dimensions_too_large"
-    elif "body.width must be" in message or "body.height must be" in message or "image dimensions must be" in message:
-        return "Invalid width or height. They must be in the range 512-2048 in multiples of 64.", "invalid_dimensions"
+    elif "invalid_height_or_width" in message:
+        return "Invalid width or height. They must be in the range 128-2048 in multiples of 64.", "invalid_dimensions"
     elif "body.sampler must be" in message:
         return "Invalid sampler. Please choose a new Sampler under 'Advanced Options'.", "sampler"
     elif "body.cfg_scale must be" in message:
