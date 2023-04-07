@@ -512,71 +512,72 @@ def send_to_api(scene, prompts=None):
         "sampler": props.sampler,
     }
 
+    # get the backend we're using
+    sd_backend = utils.get_active_backend()
+
     # send to whichever API we're using
     start_time = time.time()
-    output_file = utils.get_active_backend().send_to_api(params, img_file, after_output_filename_prefix, props)
+    generated_image_file = sd_backend.generate(params, img_file, after_output_filename_prefix, props)
 
-    # if we got a successful image created, handle it
-    if output_file:
-
-        # init var
-        new_output_file = None
-
-        # autosave the after image, if we want that, and we're not rendering an animation
-        if (
-            props.do_autosave_after_images
-            and props.autosave_image_path
-            and not props.is_rendering_animation
-            and not props.is_rendering_animation_manually
-        ):
-            new_output_file = save_after_image(scene, after_output_filename_prefix, output_file)
-
-        # if we're rendering an animation manually, save the image to the animation output path
-        if props.is_rendering_animation_manually:
-            new_output_file = save_animation_image(scene, animation_output_filename_prefix, output_file)
-
-        # if we saved a new output image, use it
-        if new_output_file:
-            output_file = new_output_file
-
-        # load the image into our scene
-        try:
-            img = bpy.data.images.load(output_file, check_existing=False)
-        except:
-            return handle_error("Couldn't load the image from Stable Diffusion", "load_sd_image")
-
-        # load the image into the compositor
-        try:
-            update_compositor_node_with_image(scene, img)
-        except:
-            return handle_error("Couldn't load the image into the compositor", "update_compositor")
-
-        # unmute the compositor node group
-        try:
-            unmute_compositor_node_group(scene)
-        except:
-            return handle_error("Couldn't unmute the compositor node", "unmute_compositor")
-
-        # track an analytics event
-        additional_params = {
-            "backend": utils.sd_backend(),
-            "model": props.sd_model if utils.get_active_backend().supports_choosing_model() else "none",
-            "preset_style": props.preset_style if props.use_preset else "none",
-            "is_animation_frame": "yes" if prompts else "no",
-            "has_animated_prompt": "yes" if props.use_animated_prompts else "no",
-            "duration": round(time.time() - start_time),
-        }
-        event_params = analytics.prepare_event('generate_image', generation_params=params, additional_params=additional_params)
-        analytics.track_event('generate_image', event_params=event_params)
-
-        # return success status
-        return True
-
-    # else, an error should have been created by the api function
-    else:
-
-        # return error status
+    # if we didn't get a successful image, stop here (an error will have been handled by the api function)
+    if not generated_image_file:
         return False
+
+    # autosave the after image, if we should
+    if utils.should_autosave_after_image(props):
+        generated_image_file = save_after_image(scene, after_output_filename_prefix, generated_image_file)
+
+    # if we want to automatically upscale (and the backend supports it), do it now
+    if props.do_upscale_automatically and sd_backend.supports_upscaling():
+        after_output_filename_prefix = after_output_filename_prefix + "-upscaled"
+
+        opened_image_file = open(generated_image_file, 'rb')
+        generated_image_file = sd_backend.upscale(opened_image_file, after_output_filename_prefix, props)
+
+        # if the upscale failed, stop here (an error will have been handled by the api function)
+        if not generated_image_file:
+            return False
+
+        # autosave the upscaled after image, if we should
+        if utils.should_autosave_after_image(props):
+            generated_image_file = save_after_image(scene, after_output_filename_prefix, generated_image_file)
+
+    # if we're rendering an animation manually, save the image to the animation output path
+    if props.is_rendering_animation_manually:
+        generated_image_file = save_animation_image(scene, animation_output_filename_prefix, generated_image_file)
+
+    # load the image into our scene
+    try:
+        img = bpy.data.images.load(generated_image_file, check_existing=False)
+    except:
+        return handle_error("Couldn't load the image from Stable Diffusion", "load_sd_image")
+
+    # load the image into the compositor
+    try:
+        update_compositor_node_with_image(scene, img)
+    except:
+        return handle_error("Couldn't load the image into the compositor", "update_compositor")
+
+    # unmute the compositor node group
+    try:
+        unmute_compositor_node_group(scene)
+    except:
+        return handle_error("Couldn't unmute the compositor node", "unmute_compositor")
+
+    # track an analytics event
+    additional_params = {
+        "backend": utils.sd_backend(),
+        "model": props.sd_model if sd_backend.supports_choosing_model() else "none",
+        "preset_style": props.preset_style if props.use_preset else "none",
+        "is_animation_frame": "yes" if prompts else "no",
+        "has_animated_prompt": "yes" if props.use_animated_prompts else "no",
+        "duration": round(time.time() - start_time),
+    }
+    event_params = analytics.prepare_event('generate_image', generation_params=params, additional_params=additional_params)
+    analytics.track_event('generate_image', event_params=event_params)
+
+    # return success status
+    return True
 
 
 class AIR_OT_enable(bpy.types.Operator):

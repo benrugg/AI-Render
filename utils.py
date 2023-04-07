@@ -21,6 +21,7 @@ import bpy
 import re
 import os
 import shutil
+import math
 import tempfile
 from . import config
 from .sd_backends import (
@@ -45,6 +46,16 @@ def get_addon_preferences(context=None):
 
 def create_temp_file(prefix, suffix=".png"):
     return tempfile.NamedTemporaryFile(prefix=prefix, suffix=suffix).name
+
+
+def should_autosave_after_image(props):
+    # return true to signify we should autosave the after image, if that setting is on,
+    # and the path is valid, and we're not rendering an animation
+    return \
+        props.do_autosave_after_images \
+        and props.autosave_image_path \
+        and not props.is_rendering_animation \
+        and not props.is_rendering_animation_manually
 
 
 def get_filepath_in_package(path, filename="", starting_dir=__file__):
@@ -182,13 +193,32 @@ def get_output_height(scene):
 
 
 def get_upscaled_width(scene):
+    if not scene:
+        scene = bpy.context.scene
+
     upscale_factor = scene.air_props.upscale_factor
     return round(get_output_width(scene) * upscale_factor)
 
 
 def get_upscaled_height(scene):
+    if not scene:
+        scene = bpy.context.scene
+
     upscale_factor = scene.air_props.upscale_factor
     return round(get_output_height(scene) * upscale_factor)
+
+
+def sanitized_upscaled_width(max_upscaled_image_size, scene=None):
+    if not scene:
+        scene = bpy.context.scene
+
+    upscaled_width = get_upscaled_width(scene)
+    upscaled_height = get_upscaled_height(scene)
+
+    if upscaled_width * upscaled_height > max_upscaled_image_size:
+        return round(math.sqrt(max_upscaled_image_size * (upscaled_width / upscaled_height)))
+    else:
+        return upscaled_width
 
 
 def are_dimensions_valid(scene):

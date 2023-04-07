@@ -10,17 +10,13 @@ from .. import (
 
 # CORE FUNCTIONS:
 
-def send_to_api(params, img_file, filename_prefix, props):
+def generate(params, img_file, filename_prefix, props):
 
     # map the generic params to the specific ones for the Stability API
     mapped_params = map_params(params)
 
     # create the headers
-    headers = {
-        "User-Agent": "Blender/" + bpy.app.version_string,
-        "Accept": "application/json",
-        "Authorization": f"Bearer {utils.get_dream_studio_api_key()}"
-    }
+    headers = create_headers()
 
     # prepare the URL
     sd_model = props.sd_model
@@ -48,25 +44,53 @@ def send_to_api(params, img_file, filename_prefix, props):
         img_file.close()
         return operators.handle_error(f"The server timed out. Try again in a moment, or get help. [Get help with timeouts]({config.HELP_WITH_TIMEOUTS_URL})", "timeout")
 
-    # NOTE: For debugging:
-    # print("request body:")
-    # print(response.request.body)
-    # print("\n")
-    # print("response body:")
-    # print(response.content)
-    # try:
-    #     print(response.json())
-    # except:
-    #     print("body not json")
+    # print log info for debugging
+    # debug_log(response)
 
     # handle the response
     if response.status_code == 200:
-        return handle_api_success(response, filename_prefix)
+        return handle_success(response, filename_prefix)
     else:
-        return handle_api_error(response)
+        return handle_error(response)
 
 
-def handle_api_success(response, filename_prefix):
+def upscale(img_file, filename_prefix, props):
+
+    # create the headers
+    headers = create_headers()
+
+    # prepare the URL
+    api_url = f"{config.STABILITY_API_URL}{props.upscaler_model}/image-to-image/upscale"
+
+    # prepare the file input
+    files = {
+        'image': img_file,
+    }
+
+    # prepare the params
+    data = {
+        'width': utils.sanitized_upscaled_width(max_upscaled_image_size())
+    }
+
+    # send the API request
+    try:
+        response = requests.post(api_url, headers=headers, files=files, data=data, timeout=request_timeout())
+        img_file.close()
+    except requests.exceptions.ReadTimeout:
+        img_file.close()
+        return operators.handle_error(f"The server timed out during upscaling. Try again in a moment, or turn off upscaling.", "timeout")
+
+    # print log info for debugging
+    # debug_log(response)
+
+    # handle the response
+    if response.status_code == 200:
+        return handle_success(response, filename_prefix)
+    else:
+        return handle_error(response)
+
+
+def handle_success(response, filename_prefix):
     try:
         data = response.json()
         output_file = utils.create_temp_file(filename_prefix + "-")
@@ -80,7 +104,7 @@ def handle_api_success(response, filename_prefix):
         return operators.handle_error(f"Couldn't create a temp file to save image", "temp_file")
 
 
-def handle_api_error(response):
+def handle_error(response):
     import json
     error_key = ''
 
@@ -105,6 +129,14 @@ def handle_api_error(response):
 
 
 # PRIVATE SUPPORT FUNCTIONS:
+
+def create_headers():
+    return {
+        "User-Agent": "Blender/" + bpy.app.version_string,
+        "Accept": "application/json",
+        "Authorization": f"Bearer {utils.get_dream_studio_api_key()}"
+    }
+
 
 def map_params(params):
     # create a new dict so we don't overwrite the original
@@ -150,6 +182,20 @@ def parse_message_for_error(message):
     elif "body.steps must be" in message:
         return "Invalid number of steps. 'Steps' must be in the range 10-150.", "steps"
     return f"(Server Error) An error occurred in the Stability API. Full server response: {message}", "unknown_error"
+
+
+def debug_log(response):
+    print("request body:")
+    print(response.request.body)
+    print("\n")
+
+    print("response body:")
+    print(response.content)
+
+    try:
+        print(response.json())
+    except:
+        print("body not json")
 
 
 # PUBLIC SUPPORT FUNCTIONS:
@@ -199,6 +245,10 @@ def supports_negative_prompts():
 
 
 def supports_choosing_model():
+    return True
+
+
+def supports_upscaling():
     return True
 
 

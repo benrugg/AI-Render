@@ -10,7 +10,7 @@ from .. import (
 
 # CORE FUNCTIONS:
 
-def send_to_api(params, img_file, filename_prefix, props):
+def generate(params, img_file, filename_prefix, props):
 
     # map the generic params to the specific ones for the Automatic1111 API
     map_params(params)
@@ -39,11 +39,7 @@ def send_to_api(params, img_file, filename_prefix, props):
         }
 
     # create the headers
-    headers = {
-        "User-Agent": "Blender/" + bpy.app.version_string,
-        "Accept": "*/*",
-        "Accept-Encoding": "gzip, deflate, br",
-    }
+    headers = create_headers()
 
     # prepare the server url
     try:
@@ -63,12 +59,12 @@ def send_to_api(params, img_file, filename_prefix, props):
 
     # handle the response
     if response.status_code == 200:
-        return handle_api_success(response, filename_prefix)
+        return handle_success(response, filename_prefix)
     else:
-        return handle_api_error(response)
+        return handle_error(response)
 
 
-def handle_api_success(response, filename_prefix):
+def handle_success(response, filename_prefix):
 
     # ensure we have the type of response we are expecting
     try:
@@ -103,7 +99,7 @@ def handle_api_success(response, filename_prefix):
     return output_file
 
 
-def handle_api_error(response):
+def handle_error(response):
     if response.status_code == 404:
         import json
 
@@ -123,6 +119,14 @@ def handle_api_error(response):
 
 
 # PRIVATE SUPPORT FUNCTIONS:
+
+def create_headers():
+    return {
+        "User-Agent": "Blender/" + bpy.app.version_string,
+        "Accept": "*/*",
+        "Accept-Encoding": "gzip, deflate, br",
+    }
+
 
 def get_server_url(path):
     base_url = utils.local_sd_url().rstrip("/").strip()
@@ -225,6 +229,10 @@ def supports_negative_prompts():
 
 def supports_choosing_model():
     return False
+
+
+def supports_upscaling():
+    return True
 
 
 def min_image_size():

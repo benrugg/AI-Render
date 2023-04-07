@@ -15,7 +15,7 @@ API_GET_URL = config.STABLE_HORDE_API_URL_BASE + "/generate/status"
 
 # CORE FUNCTIONS:
 
-def send_to_api(params, img_file, filename_prefix, props):
+def generate(params, img_file, filename_prefix, props):
 
     # map the generic params to the specific ones for the Stable Horde API
     stablehorde_params = map_params(params)
@@ -26,16 +26,8 @@ def send_to_api(params, img_file, filename_prefix, props):
     # close the image file
     img_file.close()
 
-    # if no api-key specified, use the default non-authenticated api-key
-    apikey = utils.get_stable_horde_api_key() if not utils.get_stable_horde_api_key().strip() == "" else "0000000000"
-
     # create the headers
-    headers = {
-        "User-Agent": "Blender/" + bpy.app.version_string,
-        "Accept": "*/*",
-        "Accept-Encoding": "gzip, deflate, br",
-        "apikey": apikey
-    }
+    headers = create_headers()
 
     # send the API request
     start_time = time.monotonic()
@@ -77,9 +69,9 @@ def send_to_api(params, img_file, filename_prefix, props):
         response = requests.get(URL, headers=headers, timeout=20)
         # handle the response
         if response.status_code == 200:
-            return handle_api_success(response, filename_prefix)
+            return handle_success(response, filename_prefix)
         else:
-            return handle_api_error(response)
+            return handle_error(response)
 
     except requests.exceptions.ReadTimeout:
         return operators.handle_error(f"Timeout getting image from Stable Horde. Try again in a moment, or get help. [Get help with timeouts]({config.HELP_WITH_TIMEOUTS_URL})", "timeout")
@@ -87,8 +79,7 @@ def send_to_api(params, img_file, filename_prefix, props):
         return operators.handle_error(f"Error with Stable Horde. Full error message: {e}", "unknown_error")
 
 
-
-def handle_api_success(response, filename_prefix):
+def handle_success(response, filename_prefix):
 
     # ensure we have the type of response we are expecting
     try:
@@ -127,11 +118,24 @@ def handle_api_success(response, filename_prefix):
     return output_file
 
 
-def handle_api_error(response):
+def handle_error(response):
     return operators.handle_error("The Stable Horde server returned an error: " + str(response.content), "unknown_error")
 
 
 # PRIVATE SUPPORT FUNCTIONS:
+
+def create_headers():
+    # if no api-key specified, use the default non-authenticated api-key
+    apikey = utils.get_stable_horde_api_key() if not utils.get_stable_horde_api_key().strip() == "" else "0000000000"
+
+    # create the headers
+    return {
+        "User-Agent": "Blender/" + bpy.app.version_string,
+        "Accept": "*/*",
+        "Accept-Encoding": "gzip, deflate, br",
+        "apikey": apikey
+    }
+
 
 def map_params(params):
     return {
@@ -195,6 +199,10 @@ def supports_negative_prompts():
 
 
 def supports_choosing_model():
+    return False
+
+
+def supports_upscaling():
     return False
 
 
