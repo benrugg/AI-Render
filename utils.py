@@ -150,11 +150,11 @@ def split_area(context, area, direction='HORIZONTAL', factor=0.5):
         bpy.ops.screen.area_split(override, direction=direction, factor=factor)
 
 
-def view_render_result_in_air_image_editor():
+def view_sd_result_in_air_image_editor(img):
     image_editor_area = get_area_by_type('IMAGE_EDITOR', config.workspace_id)
 
     if image_editor_area:
-        image_editor_area.spaces.active.image = bpy.data.images['Render Result']
+        image_editor_area.spaces.active.image = img
 
 
 def get_animated_prompt_text_data_block():

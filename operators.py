@@ -24,12 +24,9 @@ def enable_air(scene):
     # because app timers get stopped when loading a new blender file)
     task_queue.register()
 
-    # ensure that we have our AI Render workspace with a compositor and image viewer,
-    # so the new rendered image will actually appear
+    # ensure that we have our AI Render workspace with an image viewer,
+    # so the new rendered image will be shown after the render is complete
     ensure_air_workspace()
-
-    # create the ai render compositor nodes
-    ensure_compositor_node_group(scene)
 
     # clear any possible past errors in the file (this would happen if ai render
     # was enabled in a file that we just opened, and it had been saved with
@@ -37,120 +34,14 @@ def enable_air(scene):
     clear_error(scene)
 
 
-def disable_air(scene):
-    try:
-        mute_compositor_node_group(scene)
-    except:
-        pass
-
-
-def mute_compositor_node_group(scene):
-    compositor_nodes = scene.node_tree.nodes
-    compositor_nodes.get('AIR').mute = True
-
-
-def unmute_compositor_node_group(scene):
-    compositor_nodes = scene.node_tree.nodes
-    compositor_nodes.get('AIR').mute = False
-
-
-def update_compositor_node_with_image(scene, img):
-    compositor_nodes = scene.node_tree.nodes
-    image_node = compositor_nodes.get('AIR').node_tree.nodes.get('AIR_image_node')
-    image_node.image = img
-
-
-def get_or_create_composite_node(compositor_nodes):
-    """Get the existing Composite node, or create one"""
-    if compositor_nodes.get('Composite'):
-        return compositor_nodes.get('Composite')
-
-    for node in compositor_nodes:
-        if node.type == 'COMPOSITE':
-            return node
-
-    return compositor_nodes.new('CompositorNodeComposite')
-
-
-def get_or_create_render_layers_node(compositor_nodes):
-    """Get the existing Render Layers node, or create one"""
-    if compositor_nodes.get('Render Layers'):
-        return compositor_nodes.get('Render Layers')
-
-    for node in compositor_nodes:
-        if node.type == 'R_LAYERS':
-            return node
-
-    return compositor_nodes.new('CompositorNodeRLayers')
-
-
-def ensure_compositor_node_group(scene):
-    """Ensure that the compositor node group is created"""
-    scene.use_nodes = True
-    compositor_nodes = scene.node_tree.nodes
-
-    # if our image node already exists, just quit
-    if 'AIR' in compositor_nodes:
-        return {'FINISHED'}
-
-    # otherwise, create a new node group
-    node_tree = bpy.data.node_groups.new('AIR_node_group_v1', 'CompositorNodeTree')
-    node_tree.inputs.new('NodeSocketColor', 'Image')
-    node_tree.outputs.new('NodeSocketColor', 'Image')
-
-    node_group = compositor_nodes.new('CompositorNodeGroup')
-    node_group.node_tree = node_tree
-    node_group.location = (400, 500)
-    node_group.name = 'AIR'
-    node_group.label = 'AI Render'
-
-    group_input = node_tree.nodes.new(type='NodeGroupInput')
-    group_input.location = (0, 30)
-
-    group_output = node_tree.nodes.new(type='NodeGroupOutput')
-    group_output.location = (620, 0)
-
-    # create a new image node and mix rgb node in the group
-    image_node = node_tree.nodes.new(type='CompositorNodeImage')
-    image_node.name = 'AIR_image_node'
-    image_node.location = (60, -100)
-    image_node.label = 'AI Render Result'
-
-    mix_node = node_tree.nodes.new(type='CompositorNodeMixRGB')
-    mix_node.name = 'AIR_mix_node'
-    mix_node.location = (350, 75)
-
-    # get a reference to the new link functions, for convenience
-    create_link_in_group = node_tree.links.new
-    create_link_in_compositor = scene.node_tree.links.new
-
-    # create all the links within the group (group input node and image node to
-    # the mix node, and mix node to the group output node)
-    create_link_in_group(group_input.outputs[0], mix_node.inputs[1])
-    create_link_in_group(image_node.outputs.get('Image'), mix_node.inputs[2])
-    create_link_in_group(mix_node.outputs.get('Image'), group_output.inputs[0])
-
-    # get the socket that's currently linked to the compositor, or as a
-    # fallback, get the rendered image output
-    composite_node = get_or_create_composite_node(compositor_nodes)
-    render_layers_node = get_or_create_render_layers_node(compositor_nodes)
-
-    if composite_node.inputs.get('Image').is_linked:
-        original_socket = composite_node.inputs.get('Image').links[0].from_socket
-    else:
-        original_socket = render_layers_node.outputs.get('Image')
-
-    # link the original socket to the input of the group
-    create_link_in_compositor(original_socket, node_group.inputs[0])
-
-    # link the output of the group to the compositor node
-    create_link_in_compositor(node_group.outputs[0], composite_node.inputs.get('Image'))
-
-    return {'FINISHED'}
+def mute_legacy_compositor_node_group(scene):
+    legacy_node_group = scene.node_tree.nodes.get('AIR')
+    if legacy_node_group:
+        legacy_node_group.mute = True
 
 
 def ensure_air_workspace():
-    """Ensure we have a compositor window and an image viewer"""
+    """Ensure we have an AIR workspace with an image viewer"""
 
     # if the workspace isn't in our file, add it from our own included blend file
     if config.workspace_id not in bpy.data.workspaces:
@@ -166,10 +57,9 @@ def ensure_air_workspace():
 
 
 def activate_air_workspace(scene):
-    """Activate the special compositor workspace, and make sure it's viewing the render result"""
+    """Activate the special AIR workspace"""
     try:
         utils.activate_workspace(workspace_id=config.workspace_id)
-        utils.view_render_result_in_air_image_editor()
     except:
         scene.air_props.is_enabled = False
         handle_error("Couldn't find the AI Render workspace. Please re-enable AI Render, or deactivate the AI Render add-on.", "no_workspace")
@@ -320,7 +210,7 @@ def save_animation_image(scene, filename_prefix, img_file):
         return handle_error(f"Couldn't save animation image to {bpy.path.abspath(full_path_and_filename)}", "save_image")
 
 
-def do_pre_render_setup(scene, do_mute_node_group=True):
+def do_pre_render_setup(scene):
     # Lock the user interface when rendering, so that we can change
     # compositor nodes in the render_init handler without causing a crash!
     # See: https://docs.blender.org/api/current/bpy.app.handlers.html#note-on-altering-data
@@ -329,19 +219,12 @@ def do_pre_render_setup(scene, do_mute_node_group=True):
     # clear any previous errors
     clear_error(scene)
 
-    # when the render is starting, ensure we have the right compositor nodes
-    ensure_compositor_node_group(scene)
-
-    # then mute the compositor node group, so we get the result of the original render,
-    # if that's what we want
-    if do_mute_node_group:
-        mute_compositor_node_group(scene)
-    else:
-        unmute_compositor_node_group(scene)
+    # mute the legacy compositor node group, if it exists
+    mute_legacy_compositor_node_group(scene)
 
 
 def do_pre_api_setup(scene):
-    # switch the workspace to our ai render compositor, so the new rendered image will actually appear
+    # switch the workspace to our AI Render workspace, so we can show the output when it's done
     activate_air_workspace(scene)
 
 
@@ -552,17 +435,11 @@ def send_to_api(scene, prompts=None):
     except:
         return handle_error("Couldn't load the image from Stable Diffusion", "load_sd_image")
 
-    # load the image into the compositor
+    # view the image in the AIR workspace
     try:
-        update_compositor_node_with_image(scene, img)
+        utils.view_sd_result_in_air_image_editor(img)
     except:
-        return handle_error("Couldn't load the image into the compositor", "update_compositor")
-
-    # unmute the compositor node group
-    try:
-        unmute_compositor_node_group(scene)
-    except:
-        return handle_error("Couldn't unmute the compositor node", "unmute_compositor")
+        return handle_error("Couldn't switch the view to the image from Stable Diffusion", "view_sd_image")
 
     # track an analytics event
     additional_params = {
@@ -576,7 +453,7 @@ def send_to_api(scene, prompts=None):
     event_params = analytics.prepare_event('generate_image', generation_params=params, additional_params=additional_params)
     analytics.track_event('generate_image', event_params=event_params)
 
-    # return success status
+    # return success
     return True
 
 
@@ -599,7 +476,6 @@ class AIR_OT_disable(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
-        disable_air(context.scene)
         context.scene.air_props.is_enabled = False
         return {'FINISHED'}
 
@@ -723,7 +599,7 @@ class AIR_OT_generate_new_image_from_current(bpy.types.Operator):
     bl_label = "New Image From Last AI Image"
 
     def execute(self, context):
-        do_pre_render_setup(context.scene, do_mute_node_group=False)
+        do_pre_render_setup(context.scene)
         do_pre_api_setup(context.scene)
 
         # post to the api (on a different thread, outside the operator)
