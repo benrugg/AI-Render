@@ -18,7 +18,7 @@ def get_default_sampler():
 
 
 def get_available_upscaler_models(self, context):
-    return utils.get_active_backend().get_upscaler_models()
+    return utils.get_active_backend().get_upscaler_models(context)
 
 
 def get_default_upscaler_model():
@@ -29,14 +29,14 @@ def get_available_controlnet_models(self, context):
     if utils.sd_backend() == "automatic1111":
         return automatic1111_api.get_available_controlnet_models(context)
     else:
-        return[]
+        return []
 
 
 def get_available_controlnet_modules(self, context):
     if utils.sd_backend() == "automatic1111":
         return automatic1111_api.get_available_controlnet_modules(context)
     else:
-        return[]
+        return []
 
 
 def ensure_sampler(context):
@@ -49,7 +49,7 @@ def ensure_sampler(context):
 def ensure_upscaler_model(context):
     # """Ensure that the upscale model is set to a valid value"""
     scene = context.scene
-    if not scene.air_props.upscaler_model:
+    if utils.get_active_backend().is_upscaler_model_list_loaded(context) and not scene.air_props.upscaler_model:
         scene.air_props.upscaler_model = get_default_upscaler_model()
 
 
@@ -195,6 +195,11 @@ class AIRProperties(bpy.types.PropertyGroup):
         name="Upscaler Model",
         items=get_available_upscaler_models,
         description="Which upscaler model to use",
+    )
+    automatic1111_available_upscaler_models: bpy.props.StringProperty(
+        name="Automatic1111 Upscaler Models",
+        default="",
+        description="A list of the available upscaler models (loaded from the Automatic1111 API)",
     )
     animation_output_path: bpy.props.StringProperty(
         name="Animation Output Path",

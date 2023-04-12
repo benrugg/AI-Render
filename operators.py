@@ -841,6 +841,16 @@ class AIR_OT_show_error_popup(bpy.types.Operator):
         return {'FINISHED'}
 
 
+class AIR_OT_automatic1111_load_upscaler_models(bpy.types.Operator):
+    "Load the available upscaler models from Automatic1111"
+    bl_idname = "ai_render.automatic1111_load_upscaler_models"
+    bl_label = "Load ControlNet Models"
+
+    def execute(self, context):
+        automatic1111_api.load_upscaler_models(context)
+        return {'FINISHED'}
+
+
 class AIR_OT_automatic1111_load_controlnet_models(bpy.types.Operator):
     "Load the available ControlNet models from Automatic1111"
     bl_idname = "ai_render.automatic1111_load_controlnet_models"
@@ -889,6 +899,7 @@ classes = [
     AIR_OT_render_animation,
     AIR_OT_setup_instructions_popup,
     AIR_OT_show_error_popup,
+    AIR_OT_automatic1111_load_upscaler_models,
     AIR_OT_automatic1111_load_controlnet_models,
     AIR_OT_automatic1111_load_controlnet_modules,
     AIR_OT_automatic1111_load_controlnet_models_and_modules,

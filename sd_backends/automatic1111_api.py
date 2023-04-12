@@ -141,45 +141,6 @@ def map_params(params):
     params["sampler_index"] = params["sampler"]
 
 
-def load_controlnet_models(context):
-    try:
-        # get the list of available models from the Automatic1111 api
-        server_url = get_server_url("/controlnet/model_list")
-        headers = { "Accept": "application/json" }
-        response = requests.get(server_url, headers=headers, timeout=5)
-        response_obj = response.json()
-        print("ControlNet models returned from Automatic1111 API:")
-        print(response_obj)
-
-        # store the list of models in the scene properties
-        models = response_obj["model_list"]
-        if not models:
-            return operators.handle_error(f"You don't have any ControlNet models installed. You will need to download them from Hugging Face. [Get help]({config.HELP_WITH_CONTROLNET_URL})")
-        else:
-            context.scene.air_props.controlnet_available_models = "||||".join(models)
-            return True
-    except:
-        return operators.handle_error(f"Couldn't get the list of available ControlNet models from the Automatic1111 server. Make sure ControlNet is installed and activated. [Get help]({config.HELP_WITH_CONTROLNET_URL})")
-
-
-def load_controlnet_modules(context):
-    try:
-        # get the list of available modules from the Automatic1111 api
-        server_url = get_server_url("/controlnet/module_list")
-        headers = { "Accept": "application/json" }
-        response = requests.get(server_url, headers=headers, timeout=5)
-        response_obj = response.json()
-        print("ControlNet modules returned from Automatic1111 API:")
-        print(response_obj)
-
-        # store the list of models in the scene properties
-        modules = response_obj["module_list"]
-        context.scene.air_props.controlnet_available_modules = "||||".join(modules)
-        return True
-    except:
-        return operators.handle_error(f"Couldn't get the list of available ControlNet modules from the Automatic1111 server. Make sure ControlNet is installed and activated. [Get help]({config.HELP_WITH_CONTROLNET_URL})")
-
-
 # PUBLIC SUPPORT FUNCTIONS:
 
 def get_samplers():
@@ -208,11 +169,20 @@ def default_sampler():
     return 'LMS'
 
 
-def get_upscaler_models():
-    # TODO: Put the real models here
-    return [
-        ('ESRGAN_4x', 'ESRGAN_4x', ''),
-    ]
+def get_upscaler_models(context):
+    models = context.scene.air_props.automatic1111_available_upscaler_models
+
+    if (not models):
+        return []
+    else:
+        enum_list = []
+        for item in models.split("||||"):
+            enum_list.append((item, item, ""))
+        return enum_list
+
+
+def is_upscaler_model_list_loaded(context):
+    return context.scene.air_props.automatic1111_available_upscaler_models != ""
 
 
 def default_upscaler_model():
@@ -232,6 +202,10 @@ def supports_choosing_model():
 
 
 def supports_upscaling():
+    return True
+
+
+def supports_reloading_upscaler_models():
     return True
 
 
@@ -258,6 +232,7 @@ def get_available_controlnet_models(context):
             enum_list.append((item, item, ""))
         return enum_list
 
+
 def get_available_controlnet_modules(context):
     modules = context.scene.air_props.controlnet_available_modules
 
@@ -268,6 +243,7 @@ def get_available_controlnet_modules(context):
         for item in modules.split("||||"):
             enum_list.append((item, item, ""))
         return enum_list
+
 
 def choose_controlnet_defaults(context):
     models = get_available_controlnet_models(context)
@@ -298,3 +274,76 @@ def choose_controlnet_defaults(context):
             context.scene.air_props.controlnet_model = model_selection
             context.scene.air_props.controlnet_module = module_selection
             return
+
+
+def load_upscaler_models(context):
+    try:
+        # set a flag to indicate whether the list of models has already been loaded
+        was_already_loaded = is_upscaler_model_list_loaded(context)
+
+        # get the list of available upscaler models from the Automatic1111 api
+        server_url = get_server_url("/sdapi/v1/upscalers")
+        headers = { "Accept": "application/json" }
+        response = requests.get(server_url, headers=headers, timeout=5)
+        response_obj = response.json()
+        print("Upscaler models returned from Automatic1111 API:")
+        print(response_obj)
+
+        # store the list of models in the scene properties
+        if not response_obj:
+            return operators.handle_error(f"No upscaler models are installed in Automatic1111. [Get help]({config.HELP_WITH_AUTOMATIC1111_UPSCALING_URL})")
+        else:
+            # map the response object to a list of model names
+            upscaler_models = []
+            for model in response_obj:
+                if (model["name"] != "None"):
+                    upscaler_models.append(model["name"])
+            context.scene.air_props.automatic1111_available_upscaler_models = "||||".join(upscaler_models)
+
+            # if the list of models was not already loaded, set the default model
+            if not was_already_loaded:
+                context.scene.air_props.upscaler_model = default_upscaler_model()
+
+            # return success
+            return True
+    except:
+        return operators.handle_error(f"Couldn't get the list of available upscaler models from the Automatic1111 server. [Get help]({config.HELP_WITH_AUTOMATIC1111_UPSCALING_URL})")
+
+
+def load_controlnet_models(context):
+    try:
+        # get the list of available controlnet models from the Automatic1111 api
+        server_url = get_server_url("/controlnet/model_list")
+        headers = { "Accept": "application/json" }
+        response = requests.get(server_url, headers=headers, timeout=5)
+        response_obj = response.json()
+        print("ControlNet models returned from Automatic1111 API:")
+        print(response_obj)
+
+        # store the list of models in the scene properties
+        models = response_obj["model_list"]
+        if not models:
+            return operators.handle_error(f"You don't have any ControlNet models installed. You will need to download them from Hugging Face. [Get help]({config.HELP_WITH_CONTROLNET_URL})")
+        else:
+            context.scene.air_props.controlnet_available_models = "||||".join(models)
+            return True
+    except:
+        return operators.handle_error(f"Couldn't get the list of available ControlNet models from the Automatic1111 server. Make sure ControlNet is installed and activated. [Get help]({config.HELP_WITH_CONTROLNET_URL})")
+
+
+def load_controlnet_modules(context):
+    try:
+        # get the list of available controlnet modules from the Automatic1111 api
+        server_url = get_server_url("/controlnet/module_list")
+        headers = { "Accept": "application/json" }
+        response = requests.get(server_url, headers=headers, timeout=5)
+        response_obj = response.json()
+        print("ControlNet modules returned from Automatic1111 API:")
+        print(response_obj)
+
+        # store the list of modules in the scene properties
+        modules = response_obj["module_list"]
+        context.scene.air_props.controlnet_available_modules = "||||".join(modules)
+        return True
+    except:
+        return operators.handle_error(f"Couldn't get the list of available ControlNet modules from the Automatic1111 server. Make sure ControlNet is installed and activated. [Get help]({config.HELP_WITH_CONTROLNET_URL})")

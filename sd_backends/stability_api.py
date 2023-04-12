@@ -222,10 +222,14 @@ def default_sampler():
     return 'K_DPMPP_2M'
 
 
-def get_upscaler_models():
+def get_upscaler_models(context):
     return [
         ('esrgan-v1-x2plus', 'ESRGAN X2+', ''),
     ]
+
+
+def is_upscaler_model_list_loaded(context):
+    return True
 
 
 def default_upscaler_model():
@@ -250,6 +254,10 @@ def supports_choosing_model():
 
 def supports_upscaling():
     return True
+
+
+def supports_reloading_upscaler_models():
+    return False
 
 
 def min_image_size():

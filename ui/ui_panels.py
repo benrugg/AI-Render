@@ -420,6 +420,14 @@ class AIR_PT_upscale(bpy.types.Panel):
         return utils.get_active_backend().supports_upscaling()
 
     @classmethod
+    def is_upscaler_model_list_loaded(cls, context):
+        return utils.get_active_backend().is_upscaler_model_list_loaded(context)
+
+    @classmethod
+    def does_backend_support_reloading_upscaler_model_list(cls, context):
+        return utils.get_active_backend().supports_reloading_upscaler_models()
+
+    @classmethod
     def are_upscaled_dimensions_small_enough(cls, context):
         return not utils.are_upscaled_dimensions_too_large(context.scene)
 
@@ -430,11 +438,19 @@ class AIR_PT_upscale(bpy.types.Panel):
 
         width_guess = 220
 
-        # Message if backend does not support upscaling
+        # if backend does not support upscaling, show message
         if not AIR_PT_upscale.does_backend_support_upscaling(context):
             box = layout.box()
             utils.label_multiline(box, text=f"Upscaling is not supported by {utils.sd_backend_formatted_name()}. If you'd like to upscale your image, switch to DreamStudio or Automatic1111 in AI Render's preferences.", icon="ERROR", width=width_guess)
             return
+
+
+        # if the upscaler model list hasn't been loaded, show message and button
+        if not AIR_PT_upscale.is_upscaler_model_list_loaded(context):
+            utils.label_multiline(layout, text="To get started upscaling, load the available upscaler models", icon="ERROR", width=width_guess)
+            layout.operator(operators.AIR_OT_automatic1111_load_upscaler_models.bl_idname, text="Load Upscaler Models", icon="FILE_REFRESH")
+            return
+
 
         # Upscale
         row = layout.row()
@@ -458,6 +474,11 @@ class AIR_PT_upscale(bpy.types.Panel):
 
         if not AIR_PT_upscale.are_upscaled_dimensions_small_enough(context):
             utils.label_multiline(layout, text="Upscaled dimensions are too large. Please decrease the scale factor.", icon="ERROR", width=width_guess)
+
+        if AIR_PT_upscale.does_backend_support_reloading_upscaler_model_list(context):
+            row = layout.row()
+            row.operator(operators.AIR_OT_automatic1111_load_upscaler_models.bl_idname, text="Reload Upscaler Models", icon="FILE_REFRESH")
+
 
 
 class AIR_PT_animation(bpy.types.Panel):

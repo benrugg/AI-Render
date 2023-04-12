@@ -174,12 +174,18 @@ def default_sampler():
     return 'k_euler_a'
 
 
-def get_upscaler_models():
+def get_upscaler_models(context):
     # NOTE: Stable Horde does not support upscaling (at least as of the time of this writing),
     # but adding this here to keep the API consistent with other backends.
     return [
         ('esrgan-v1-x2plus', 'ESRGAN X2+', ''),
     ]
+
+
+def is_upscaler_model_list_loaded(context):
+    # NOTE: Stable Horde does not support upscaling (at least as of the time of this writing),
+    # but adding this here to keep the API consistent with other backends.
+    return True
 
 
 def default_upscaler_model():
@@ -203,6 +209,10 @@ def supports_choosing_model():
 
 
 def supports_upscaling():
+    return False
+
+
+def supports_reloading_upscaler_models():
     return False
 
 
