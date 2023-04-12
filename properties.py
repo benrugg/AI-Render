@@ -188,7 +188,7 @@ class AIRProperties(bpy.types.PropertyGroup):
     )
     do_upscale_automatically: bpy.props.BoolProperty(
         name="Upscale Automatically",
-        default=False,
+        default=True,
         description="When true, will automatically upscale the image after each render",
     )
     upscaler_model: bpy.props.EnumProperty(
