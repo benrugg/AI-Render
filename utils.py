@@ -232,6 +232,19 @@ def sanitized_upscaled_width(max_upscaled_image_size, scene=None):
         return upscaled_width
 
 
+def sanitized_upscaled_height(max_upscaled_image_size, scene=None):
+    if not scene:
+        scene = bpy.context.scene
+
+    upscaled_width = get_upscaled_width(scene)
+    upscaled_height = get_upscaled_height(scene)
+
+    if upscaled_width * upscaled_height > max_upscaled_image_size:
+        return round(math.sqrt(max_upscaled_image_size * (upscaled_height / upscaled_width)))
+    else:
+        return upscaled_height
+
+
 def are_dimensions_valid(scene):
     return (
         get_output_width(scene) in range(

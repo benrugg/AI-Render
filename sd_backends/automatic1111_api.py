@@ -38,9 +38,6 @@ def generate(params, img_file, filename_prefix, props):
             }
         }
 
-    # create the headers
-    headers = create_headers()
-
     # prepare the server url
     try:
         server_url = get_server_url("/sdapi/v1/img2img")
@@ -48,14 +45,54 @@ def generate(params, img_file, filename_prefix, props):
         return operators.handle_error(f"You need to specify a location for the local Stable Diffusion server in the add-on preferences. [Get help]({config.HELP_WITH_LOCAL_INSTALLATION_URL})", "local_server_url_missing")
 
     # send the API request
+    response = do_post(server_url, params)
+    if not response:
+        return False
+
+    # handle the response
+    if response.status_code == 200:
+        return handle_success(response, filename_prefix)
+    else:
+        return handle_error(response)
+
+
+def upscale(img_file, filename_prefix, props):
+
+    # prepare the params
+    data = {
+        "resize_mode": 0,
+        "show_extras_results": True,
+        "gfpgan_visibility": 0,
+        "codeformer_visibility": 0,
+        "codeformer_weight": 0,
+        "upscaling_resize": props.upscale_factor,
+        "upscaling_resize_w": utils.sanitized_upscaled_width(max_upscaled_image_size()),
+        "upscaling_resize_h": utils.sanitized_upscaled_height(max_upscaled_image_size()),
+        "upscaling_crop": True,
+        "upscaler_1": props.upscaler_model,
+        "upscaler_2": "None",
+        "extras_upscaler_2_visibility": 0,
+        "upscale_first": True,
+    }
+
+    # add a base 64 encoded image to the params
+    data["image"] = "data:image/png;base64," + base64.b64encode(img_file.read()).decode()
+    img_file.close()
+
+    # prepare the server url
     try:
-        response = requests.post(server_url, json=params, headers=headers, timeout=utils.local_sd_timeout())
-    except requests.exceptions.ConnectionError:
-        return operators.handle_error(f"The local Stable Diffusion server couldn't be found. It's either not running, or it's running at a different location than what you specified in the add-on preferences. [Get help]({config.HELP_WITH_LOCAL_INSTALLATION_URL})", "local_server_not_found")
-    except requests.exceptions.MissingSchema:
-        return operators.handle_error(f"The url for your local Stable Diffusion server is invalid. Please set it correctly in the add-on preferences. [Get help]({config.HELP_WITH_LOCAL_INSTALLATION_URL})", "local_server_url_invalid")
-    except requests.exceptions.ReadTimeout:
-        return operators.handle_error("The local Stable Diffusion server timed out. Set a longer timeout in AI Render preferences, or use a smaller image size.", "timeout")
+        server_url = get_server_url("/sdapi/v1/extra-single-image")
+    except:
+        return operators.handle_error(f"You need to specify a location for the local Stable Diffusion server in the add-on preferences. [Get help]({config.HELP_WITH_LOCAL_INSTALLATION_URL})", "local_server_url_missing")
+
+    # send the API request
+    response = do_post(server_url, data)
+
+    # print log info for debugging
+    # debug_log(response)
+
+    if not response:
+        return False
 
     # handle the response
     if response.status_code == 200:
@@ -69,7 +106,7 @@ def handle_success(response, filename_prefix):
     # ensure we have the type of response we are expecting
     try:
         response_obj = response.json()
-        base64_img = response_obj["images"][0]
+        base64_img = response_obj.get("images", [False])[0] or response_obj.get("image")
     except:
         print("Automatic1111 response content: ")
         print(response.content)
@@ -141,6 +178,32 @@ def map_params(params):
     params["sampler_index"] = params["sampler"]
 
 
+def do_post(url, data):
+    # send the API request
+    try:
+        return requests.post(url, json=data, headers=create_headers(), timeout=utils.local_sd_timeout())
+    except requests.exceptions.ConnectionError:
+        return operators.handle_error(f"The local Stable Diffusion server couldn't be found. It's either not running, or it's running at a different location than what you specified in the add-on preferences. [Get help]({config.HELP_WITH_LOCAL_INSTALLATION_URL})", "local_server_not_found")
+    except requests.exceptions.MissingSchema:
+        return operators.handle_error(f"The url for your local Stable Diffusion server is invalid. Please set it correctly in the add-on preferences. [Get help]({config.HELP_WITH_LOCAL_INSTALLATION_URL})", "local_server_url_invalid")
+    except requests.exceptions.ReadTimeout:
+        return operators.handle_error("The local Stable Diffusion server timed out. Set a longer timeout in AI Render preferences, or use a smaller image size.", "timeout")
+
+
+def debug_log(response):
+    # print("request body:")
+    # print(response.request.body)
+    # print("\n")
+
+    print("response body:")
+    print(response.content)
+
+    try:
+        print(response.json())
+    except:
+        print("body not json")
+
+
 # PUBLIC SUPPORT FUNCTIONS:
 
 def get_samplers():
@@ -181,7 +244,9 @@ def get_upscaler_models(context):
         return enum_list
 
 
-def is_upscaler_model_list_loaded(context):
+def is_upscaler_model_list_loaded(context=None):
+    if context is None:
+        context = bpy.context
     return context.scene.air_props.automatic1111_available_upscaler_models != ""
 
 

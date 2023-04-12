@@ -425,7 +425,7 @@ def send_to_api(scene, prompts=None, use_last_sd_image=False):
     props.last_generated_image_filename = generated_image_file
 
     # if we want to automatically upscale (and the backend supports it), do it now
-    if props.do_upscale_automatically and sd_backend.supports_upscaling():
+    if props.do_upscale_automatically and sd_backend.supports_upscaling() and sd_backend.is_upscaler_model_list_loaded():
         after_output_filename_prefix = after_output_filename_prefix + "-upscaled"
 
         opened_image_file = open(generated_image_file, 'rb')
