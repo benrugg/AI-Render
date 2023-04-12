@@ -337,7 +337,7 @@ def validate_and_process_animated_prompt_text_for_single_frame(scene, frame):
         return get_prompt_at_frame(positive_lines, frame), get_prompt_at_frame(negative_lines, frame)
 
 
-def send_to_api(scene, prompts=None):
+def send_to_api(scene, prompts=None, use_last_sd_image=False):
     """Post to the API and process the resulting image"""
     props = scene.air_props
 
@@ -367,20 +367,31 @@ def send_to_api(scene, prompts=None):
     after_output_filename_prefix = f"ai-render-{timestamp}-2-after"
     animation_output_filename_prefix = "ai-render-"
 
-    # save the rendered image and then read it back in
-    temp_input_file = save_render_to_file(scene, before_output_filename_prefix)
-    if not temp_input_file:
-        return False
-    img_file = open(temp_input_file, 'rb')
+    # if we want to use the last SD image, try loading it now
+    if use_last_sd_image:
+        if not props.last_generated_image_filename:
+            return handle_error("Couldn't find the last Stable Diffusion image", "last_generated_image_filename")
+        try:
+            img_file = open(props.last_generated_image_filename, 'rb')
+        except:
+            return handle_error("Couldn't load the last Stable Diffusion image. It's probably been deleted or moved. You'll need to restore it or render a new image.", "load_last_generated_image")
+    else:
+        # else, use the rendered image...
 
-    # autosave the before image, if we want that, and we're not rendering an animation
-    if (
-        props.do_autosave_before_images
-        and props.autosave_image_path
-        and not props.is_rendering_animation
-        and not props.is_rendering_animation_manually
-    ):
-        save_before_image(scene, before_output_filename_prefix)
+        # save the rendered image and then read it back in
+        temp_input_file = save_render_to_file(scene, before_output_filename_prefix)
+        if not temp_input_file:
+            return False
+        img_file = open(temp_input_file, 'rb')
+
+        # autosave the before image, if we want that, and we're not rendering an animation
+        if (
+            props.do_autosave_before_images
+            and props.autosave_image_path
+            and not props.is_rendering_animation
+            and not props.is_rendering_animation_manually
+        ):
+            save_before_image(scene, before_output_filename_prefix)
 
     # prepare data for the API request
     params = {
@@ -409,6 +420,9 @@ def send_to_api(scene, prompts=None):
     # autosave the after image, if we should
     if utils.should_autosave_after_image(props):
         generated_image_file = save_after_image(scene, after_output_filename_prefix, generated_image_file)
+
+    # store this image filename as the last generated image
+    props.last_generated_image_filename = generated_image_file
 
     # if we want to automatically upscale (and the backend supports it), do it now
     if props.do_upscale_automatically and sd_backend.supports_upscaling():
@@ -593,8 +607,8 @@ class AIR_OT_generate_new_image_from_render(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class AIR_OT_generate_new_image_from_current(bpy.types.Operator):
-    "Generate a new Stable Diffusion image - without re-rendering - using the latest Stable Diffusion image as the starting point"
+class AIR_OT_generate_new_image_from_last_sd_image(bpy.types.Operator):
+    "Generate a new Stable Diffusion image - without re-rendering - using the most recent Stable Diffusion image as the starting point"
     bl_idname = "ai_render.generate_new_image_from_current"
     bl_label = "New Image From Last AI Image"
 
@@ -603,7 +617,7 @@ class AIR_OT_generate_new_image_from_current(bpy.types.Operator):
         do_pre_api_setup(context.scene)
 
         # post to the api (on a different thread, outside the operator)
-        task_queue.add(functools.partial(send_to_api, context.scene))
+        task_queue.add(functools.partial(send_to_api, context.scene, None, True))
 
         return {'FINISHED'}
 
@@ -871,7 +885,7 @@ classes = [
     AIR_OT_copy_preset_text,
     AIR_OT_edit_animated_prompts,
     AIR_OT_generate_new_image_from_render,
-    AIR_OT_generate_new_image_from_current,
+    AIR_OT_generate_new_image_from_last_sd_image,
     AIR_OT_render_animation,
     AIR_OT_setup_instructions_popup,
     AIR_OT_show_error_popup,

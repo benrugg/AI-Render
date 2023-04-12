@@ -170,6 +170,11 @@ class AIRProperties(bpy.types.PropertyGroup):
         description="The path to save before/after images, if autosave is enabled (above)",
         subtype="DIR_PATH",
     )
+    last_generated_image_filename: bpy.props.StringProperty(
+        name="Last Stable Diffusion Image",
+        default="",
+        description="The full path and filename of the last image generated from Stable Diffusion (before any upscaling)",
+    )
     upscale_factor: bpy.props.FloatProperty(
         name="Upscale Factor",
         default=4.0,

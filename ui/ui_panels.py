@@ -371,20 +371,18 @@ class AIR_PT_operation(bpy.types.Panel):
         row.prop(props, 'auto_run')
 
         # Generate Image
-        manual_buttons_enabled = 'Render Result' in bpy.data.images and bpy.data.images['Render Result'].has_data
-
         layout.separator()
 
         row = layout.row()
         row.label(text="Run Manually:")
 
         row = layout.row()
-        row.enabled = manual_buttons_enabled
+        row.enabled = 'Render Result' in bpy.data.images and bpy.data.images['Render Result'].has_data
         row.operator(operators.AIR_OT_generate_new_image_from_render.bl_idname)
 
         row = layout.row()
-        row.enabled = manual_buttons_enabled
-        row.operator(operators.AIR_OT_generate_new_image_from_current.bl_idname)
+        row.enabled = props.last_generated_image_filename != ""
+        row.operator(operators.AIR_OT_generate_new_image_from_last_sd_image.bl_idname)
 
         layout.separator()
 
