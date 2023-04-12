@@ -176,6 +176,17 @@ def sd_backend(context=None):
     return get_addon_preferences(context).sd_backend
 
 
+def sd_backend_formatted_name(context=None):
+    backend = sd_backend(context)
+
+    if backend == 'dreamstudio':
+        return 'DreamStudio'
+    elif backend == 'stablehorde':
+        return 'Stable Horde'
+    elif backend == 'automatic1111':
+        return 'Automatic1111'
+
+
 def local_sd_url(context=None):
     return get_addon_preferences(context).local_sd_url
 
@@ -375,11 +386,13 @@ def label_multiline(layout, text='', icon='NONE', width=-1, max_lines=12, use_ur
 
 
 def get_active_backend():
-    if sd_backend() == "dreamstudio":
+    backend = sd_backend()
+
+    if backend == "dreamstudio":
         return stability_api
-    elif sd_backend() == "stablehorde":
+    elif backend == "stablehorde":
         return stablehorde_api
-    elif sd_backend() == "automatic1111":
+    elif backend == "automatic1111":
         return automatic1111_api
 
 

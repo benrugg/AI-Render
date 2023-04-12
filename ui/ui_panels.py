@@ -416,6 +416,10 @@ class AIR_PT_upscale(bpy.types.Panel):
         return utils.is_installation_valid() and context.scene.air_props.is_enabled
 
     @classmethod
+    def does_backend_support_upscaling(cls, context):
+        return utils.get_active_backend().supports_upscaling()
+
+    @classmethod
     def are_upscaled_dimensions_small_enough(cls, context):
         return not utils.are_upscaled_dimensions_too_large(context.scene)
 
@@ -426,6 +430,13 @@ class AIR_PT_upscale(bpy.types.Panel):
 
         width_guess = 220
 
+        # Message if backend does not support upscaling
+        if not AIR_PT_upscale.does_backend_support_upscaling(context):
+            box = layout.box()
+            utils.label_multiline(box, text=f"Upscaling is not supported by {utils.sd_backend_formatted_name()}. If you'd like to upscale your image, switch to DreamStudio or Automatic1111 in AI Render's preferences.", icon="ERROR", width=width_guess)
+            return
+
+        # Upscale
         row = layout.row()
         row.prop(props, "do_upscale_automatically")
 
