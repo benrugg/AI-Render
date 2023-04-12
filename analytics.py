@@ -172,6 +172,12 @@ def prepare_event(event_name, generation_params=None, additional_params=None, va
             "duration": additional_params['duration'],
         }
 
+    elif event_name == 'upscale_image':
+        return {
+            **shared_params,
+            **additional_params,
+        }
+
     # raise an error if this event is not recognized
     raise ValueError("Unknown analytics event name: " + event_name)
 

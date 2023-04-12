@@ -74,6 +74,14 @@ def does_path_exist(path):
     return os.path.exists(os.path.abspath(bpy.path.abspath(path)))
 
 
+def get_filename_from_path(file_path, include_extension=True):
+    filename_and_extension = os.path.splitext(os.path.basename(file_path))
+    if include_extension:
+        return filename_and_extension[0] + filename_and_extension[1]
+    else:
+        return filename_and_extension[0]
+
+
 def copy_file(src, dest):
     shutil.copy2(src, dest)
 

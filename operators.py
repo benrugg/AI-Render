@@ -149,7 +149,7 @@ def render_frame(context, current_frame, prompts):
     bpy.ops.render.render()
 
     # post to the api
-    return send_to_api(context.scene, prompts)
+    return sd_generate(context.scene, prompts)
 
 
 def save_render_to_file(scene, filename_prefix):
@@ -337,8 +337,8 @@ def validate_and_process_animated_prompt_text_for_single_frame(scene, frame):
         return get_prompt_at_frame(positive_lines, frame), get_prompt_at_frame(negative_lines, frame)
 
 
-def send_to_api(scene, prompts=None, use_last_sd_image=False):
-    """Post to the API and process the resulting image"""
+def sd_generate(scene, prompts=None, use_last_sd_image=False):
+    """Post to the API to generate a Stable Diffusion image and then process it"""
     props = scene.air_props
 
     # get the prompt if we haven't been given one
@@ -469,6 +469,64 @@ def send_to_api(scene, prompts=None, use_last_sd_image=False):
 
     # return success
     return True
+
+
+def sd_upscale(scene):
+    """Post to the API to upscale the most recent Stable Diffusion image and then process it"""
+    props = scene.air_props
+
+    # try loading the last SD image
+    if not props.last_generated_image_filename:
+        return handle_error("Couldn't find the last Stable Diffusion image", "last_generated_image_filename")
+    try:
+        img_file = open(props.last_generated_image_filename, 'rb')
+    except:
+        return handle_error("Couldn't load the last Stable Diffusion image. It's probably been deleted or moved. You'll need to restore it or render a new image.", "load_last_generated_image")
+
+    # create a filename for the after image, based on the before image
+    # get the filename from the full path and filename
+    after_output_filename_prefix = utils.get_filename_from_path(props.last_generated_image_filename, False) + "-upscaled"
+
+    # get the backend we're using
+    sd_backend = utils.get_active_backend()
+
+    # send to whichever API we're using
+    start_time = time.time()
+    generated_image_file = sd_backend.upscale(img_file, after_output_filename_prefix, props)
+
+    # if we didn't get a successful image, stop here (an error will have been handled by the api function)
+    if not generated_image_file:
+        return False
+
+    # autosave the image, if we should
+    if utils.should_autosave_after_image(props):
+        generated_image_file = save_after_image(scene, after_output_filename_prefix, generated_image_file)
+
+    # load the image into our scene
+    try:
+        img = bpy.data.images.load(generated_image_file, check_existing=False)
+    except:
+        return handle_error("Couldn't load the image from Stable Diffusion", "load_sd_image")
+
+    # view the image in the AIR workspace
+    try:
+        utils.view_sd_result_in_air_image_editor(img)
+    except:
+        return handle_error("Couldn't switch the view to the image from Stable Diffusion", "view_sd_image")
+
+    # track an analytics event
+    additional_params = {
+        "backend": utils.sd_backend(),
+        "upscaler_model": props.upscaler_model,
+        "upscale_factor": props.upscale_factor,
+        "duration": round(time.time() - start_time),
+    }
+    event_params = analytics.prepare_event('upscale_image', additional_params=additional_params)
+    analytics.track_event('upscale_image', event_params=event_params)
+
+    # return success
+    return True
+
 
 
 class AIR_OT_enable(bpy.types.Operator):
@@ -602,7 +660,7 @@ class AIR_OT_generate_new_image_from_render(bpy.types.Operator):
         do_pre_api_setup(context.scene)
 
         # post to the api (on a different thread, outside the operator)
-        task_queue.add(functools.partial(send_to_api, context.scene))
+        task_queue.add(functools.partial(sd_generate, context.scene))
 
         return {'FINISHED'}
 
@@ -617,7 +675,22 @@ class AIR_OT_generate_new_image_from_last_sd_image(bpy.types.Operator):
         do_pre_api_setup(context.scene)
 
         # post to the api (on a different thread, outside the operator)
-        task_queue.add(functools.partial(send_to_api, context.scene, None, True))
+        task_queue.add(functools.partial(sd_generate, context.scene, None, True))
+
+        return {'FINISHED'}
+
+
+class AIR_OT_upscale_last_sd_image(bpy.types.Operator):
+    "Upscale the most recent Stable Diffusion image"
+    bl_idname = "ai_render.upscale_last_sd_image"
+    bl_label = "Upscale Last AI Image"
+
+    def execute(self, context):
+        do_pre_render_setup(context.scene)
+        do_pre_api_setup(context.scene)
+
+        # post to the api (on a different thread, outside the operator)
+        task_queue.add(functools.partial(sd_upscale, context.scene))
 
         return {'FINISHED'}
 
@@ -896,6 +969,7 @@ classes = [
     AIR_OT_edit_animated_prompts,
     AIR_OT_generate_new_image_from_render,
     AIR_OT_generate_new_image_from_last_sd_image,
+    AIR_OT_upscale_last_sd_image,
     AIR_OT_render_animation,
     AIR_OT_setup_instructions_popup,
     AIR_OT_show_error_popup,

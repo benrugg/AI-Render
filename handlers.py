@@ -101,7 +101,7 @@ def render_complete_handler(scene):
         operators.do_pre_api_setup(scene)
 
         # post to the api (on a different thread, outside the handler)
-        task_queue.add(functools.partial(operators.send_to_api, scene))
+        task_queue.add(functools.partial(operators.sd_generate, scene))
     else:
         operators.handle_error("Rendered image is not ready. Try generating a new image manually under AI Render > Operation", "image_not_ready")
 

@@ -444,15 +444,13 @@ class AIR_PT_upscale(bpy.types.Panel):
             utils.label_multiline(box, text=f"Upscaling is not supported by {utils.sd_backend_formatted_name()}. If you'd like to upscale your image, switch to DreamStudio or Automatic1111 in AI Render's preferences.", icon="ERROR", width=width_guess)
             return
 
-
         # if the upscaler model list hasn't been loaded, show message and button
         if not AIR_PT_upscale.is_upscaler_model_list_loaded(context):
             utils.label_multiline(layout, text="To get started upscaling, load the available upscaler models", icon="ERROR", width=width_guess)
             layout.operator(operators.AIR_OT_automatic1111_load_upscaler_models.bl_idname, text="Load Upscaler Models", icon="FILE_REFRESH")
             return
 
-
-        # Upscale
+        # upscale settings
         row = layout.row()
         row.prop(props, "do_upscale_automatically")
 
@@ -472,13 +470,19 @@ class AIR_PT_upscale(bpy.types.Panel):
         row = box.row()
         row.label(text=f"Resulting image size: {utils.get_upscaled_width(scene)} x {utils.get_upscaled_height(scene)}")
 
+        # if the dimensions are too large, show message
         if not AIR_PT_upscale.are_upscaled_dimensions_small_enough(context):
             utils.label_multiline(layout, text="Upscaled dimensions are too large. Please decrease the scale factor.", icon="ERROR", width=width_guess)
 
+        # if the backend supports reloading the upscaler model list, show button
         if AIR_PT_upscale.does_backend_support_reloading_upscaler_model_list(context):
             row = layout.row()
             row.operator(operators.AIR_OT_automatic1111_load_upscaler_models.bl_idname, text="Reload Upscaler Models", icon="FILE_REFRESH")
 
+        # show button to manually upscale
+        row = layout.row()
+        row.enabled = props.last_generated_image_filename != ""
+        row.operator(operators.AIR_OT_upscale_last_sd_image.bl_idname, icon="FULLSCREEN_ENTER")
 
 
 class AIR_PT_animation(bpy.types.Panel):
