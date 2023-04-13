@@ -182,7 +182,7 @@ def get_upscaler_models(context):
     ]
 
 
-def is_upscaler_model_list_loaded(context):
+def is_upscaler_model_list_loaded(context=None):
     # NOTE: Stable Horde does not support upscaling (at least as of the time of this writing),
     # but adding this here to keep the API consistent with other backends.
     return True

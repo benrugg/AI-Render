@@ -228,7 +228,7 @@ def get_upscaler_models(context):
     ]
 
 
-def is_upscaler_model_list_loaded(context):
+def is_upscaler_model_list_loaded(context=None):
     return True
 
 
