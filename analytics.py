@@ -119,7 +119,9 @@ def _track_event(event_name, event_params):
 # 3. track_event(event_name) - no additional value
 def track_event(event_name, event_params=None, value=None):
     # don't track events if opted out. (NOTE: can't use utils.get_addon_preferences() here because of circular import)
-    if bpy.context.preferences.addons[__package__].preferences.is_opted_out_of_analytics:
+    if \
+        not bpy.context.preferences.addons[__package__].preferences or \
+        bpy.context.preferences.addons[__package__].preferences.is_opted_out_of_analytics:
         return
 
     # prepare the event params if not provided
