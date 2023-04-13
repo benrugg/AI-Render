@@ -169,6 +169,12 @@ def prepare_event(event_name, generation_params=None, additional_params=None, va
             "sampler": generation_params['sampler'],
             "is_animation_frame": additional_params['is_animation_frame'],
             "has_animated_prompt": additional_params['has_animated_prompt'],
+            "upscale_enabled": additional_params['upscale_enabled'],
+            "upscale_factor": additional_params['upscale_factor'],
+            "upscaler_model": additional_params['upscaler_model'],
+            "controlnet_enabled": additional_params['controlnet_enabled'],
+            "controlnet_model": additional_params['controlnet_model'],
+            "controlnet_module": additional_params['controlnet_module'],
             "duration": additional_params['duration'],
         }
 

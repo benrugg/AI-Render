@@ -462,8 +462,19 @@ def sd_generate(scene, prompts=None, use_last_sd_image=False):
         "preset_style": props.preset_style if props.use_preset else "none",
         "is_animation_frame": "yes" if prompts else "no",
         "has_animated_prompt": "yes" if props.use_animated_prompts else "no",
+        "upscale_enabled": "yes" if props.do_upscale_automatically else "no",
+        "upscale_factor": props.upscale_factor,
+        "upscaler_model": props.upscaler_model,
         "duration": round(time.time() - start_time),
     }
+    if props.controlnet_is_enabled and utils.sd_backend() == "automatic1111":
+        additional_params["controlnet_enabled"] = "yes"
+        additional_params["controlnet_model"] = props.controlnet_model
+        additional_params["controlnet_module"] = props.controlnet_module
+    else:
+        additional_params["controlnet_enabled"] = "no"
+        additional_params["controlnet_model"] = "none"
+        additional_params["controlnet_module"] = "none"
     event_params = analytics.prepare_event('generate_image', generation_params=params, additional_params=additional_params)
     analytics.track_event('generate_image', event_params=event_params)
 
@@ -517,8 +528,8 @@ def sd_upscale(scene):
     # track an analytics event
     additional_params = {
         "backend": utils.sd_backend(),
-        "upscaler_model": props.upscaler_model,
         "upscale_factor": props.upscale_factor,
+        "upscaler_model": props.upscaler_model,
         "duration": round(time.time() - start_time),
     }
     event_params = analytics.prepare_event('upscale_image', additional_params=additional_params)
