@@ -64,16 +64,6 @@ If you have ideas for prompts that could become preset styles, or if you have an
 
 ## Future Enhancements
 
-Here the highest priority new features and enhancements that are in the works:
-
-- Upscaling
-- Viewing/copying history of images and prompts
-- A panel with prompt modifiers and keyword ideas
-- Ability to generate textures with Stable Diffusion
-- Asynchronous rendering
-
-_(There are no guarantees that these will happen. But my hope is to focus on each one of these in the very near future!)_
-
 Feel free to [request new features or enhancements](https://github.com/benrugg/AI-Render/issues/new?assignees=&labels=&template=feature-request.yaml).
 
 
