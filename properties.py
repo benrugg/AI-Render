@@ -199,7 +199,7 @@ class AIRProperties(bpy.types.PropertyGroup):
     )
     automatic1111_available_upscaler_models: bpy.props.StringProperty(
         name="Automatic1111 Upscaler Models",
-        default="",
+        default="Lanczos||||Nearest||||ESRGAN_4x||||LDSR||||ScuNET GAN||||ScuNET PSNR||||SwinIR 4x",
         description="A list of the available upscaler models (loaded from the Automatic1111 API)",
     )
     animation_output_path: bpy.props.StringProperty(
