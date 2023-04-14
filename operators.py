@@ -35,9 +35,10 @@ def enable_air(scene):
 
 
 def mute_legacy_compositor_node_group(scene):
-    legacy_node_group = scene.node_tree.nodes.get('AIR')
-    if legacy_node_group:
-        legacy_node_group.mute = True
+    if scene.node_tree and scene.node_tree.nodes:
+        legacy_node_group = scene.node_tree.nodes.get('AIR')
+        if legacy_node_group:
+            legacy_node_group.mute = True
 
 
 def ensure_air_workspace():
