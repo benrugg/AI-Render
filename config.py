@@ -6,7 +6,7 @@ animated_prompts_text_name = 'AI Render Animated Prompts'
 
 ADDON_DOWNLOAD_URL = "https://blendermarket.com/products/ai-render"
 STABILITY_API_URL = "https://api.stability.ai/v1/generation/"
-DREAM_STUDIO_URL = "https://beta.dreamstudio.ai/account"
+DREAM_STUDIO_URL = "https://dreamstudio.ai/account"
 STABLE_HORDE_API_URL_BASE = "https://stablehorde.net/api/v2"
 STABLE_HORDE_URL = "https://stablehorde.net/"
 VIDEO_TUTORIAL_URL = "https://www.youtube.com/watch?v=tmyln5bwnO8"
