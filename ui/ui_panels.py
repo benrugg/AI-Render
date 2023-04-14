@@ -124,6 +124,8 @@ class AIR_PT_setup(bpy.types.Panel):
             else:
                 utils.label_multiline(layout, text=f"Adjust Image Size: \nImage dimensions are too small. Please increase width and/or height. Total pixel area must be at least {round(utils.get_active_backend().min_image_size() / (1024*1024), 1)} megapixels.", icon="INFO", width=width_guess)
 
+            layout.separator()
+
             row = layout.row()
             row.label(text="Set Image Size:")
 
@@ -134,6 +136,11 @@ class AIR_PT_setup(bpy.types.Panel):
             col.operator(operators.AIR_OT_set_image_size_to_768x768.bl_idname)
             col = row.column()
             col.operator(operators.AIR_OT_show_other_dimension_options.bl_idname, text="Other")
+
+            if utils.get_active_backend().supports_upscaling() and props.do_upscale_automatically:
+                layout.separator()
+                box = layout.box()
+                utils.label_multiline(box, text=f"Final image will be upscaled {round(props.upscale_factor)}x larger than these initial dimensions.", width=width_guess-20)
 
         # else, show the ready / getting started message and disable and change image size buttons
         else:
