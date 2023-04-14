@@ -12,16 +12,22 @@ from .. import (
 
 def generate(params, img_file, filename_prefix, props):
 
+    # validate the params, specifically for the Stability API
+    if not validate_params(params, props):
+        return False
+
     # map the generic params to the specific ones for the Stability API
     mapped_params = map_params(params)
 
     # create the headers
     headers = create_headers()
 
-    # prepare the URL
+    # prepare the URL (specifically setting the engine id)
     sd_model = props.sd_model
 
-    if 'v2' in sd_model:
+    if 'xl' in sd_model:
+        engine = sd_model
+    elif 'v2' in sd_model:
         if params["width"] >= 768 and params["height"] >= 768:
             engine = f"stable-diffusion-768-{sd_model}"
         else:
@@ -158,6 +164,20 @@ def map_params(params):
         mapped_params["text_prompts[1][weight]"] = -1.0
 
     return mapped_params
+
+
+def validate_params(params, props):
+    if 'xl' in props.sd_model:
+        # for the sdxl model, only 512x512, 512x768, and 768x512 are supported
+        if \
+            params["width"] == 512 and params["height"] == 512 or \
+            params["width"] == 512 and params["height"] == 768 or \
+            params["width"] == 768 and params["height"] == 512:
+                return True
+        else:
+            return operators.handle_error(f"The SDXL model only supports 512x512, 512x768 and 768x512 images. Please change your image size and try again.", "invalid_dimensions")
+    else:
+        return True
 
 
 def parse_message_for_error(message):

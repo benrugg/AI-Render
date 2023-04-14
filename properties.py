@@ -121,8 +121,9 @@ class AIRProperties(bpy.types.PropertyGroup):
             ('v1-5', 'SD 1.5', '', 20),
             ('v2-0', 'SD 2.0', '', 30),
             ('v2-1', 'SD 2.1', '', 40),
+            ('stable-diffusion-xl-beta-v2-2-2', 'SDXL Beta', '', 100),
         ],
-        description="The Stable Diffusion model to use. 2.0 is more accurate with some types of images, and prompts differently from earlier versions. 1.5 is better for using artist names and art styles in prompts",
+        description="The Stable Diffusion model to use. SDXL is optimized for photorealism and detailed portraits (comparable to Midjourney). 2.x is more accurate than 1.5 with some types of images, and prompts differently from earlier versions. 1.5 is best for using artist names and art styles in prompts",
     )
     sampler: bpy.props.EnumProperty(
         name="Sampler",
