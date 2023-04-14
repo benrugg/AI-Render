@@ -351,6 +351,14 @@ class AIR_PT_controlnet(bpy.types.Panel):
             split = row.split(align=True)
             split.operator(operators.AIR_OT_automatic1111_load_controlnet_models.bl_idname, text="", icon="FILE_REFRESH")
 
+        # Weight
+        row = layout.row()
+        sub = row.column()
+        sub.label(text="Weight")
+        sub = row.column()
+        sub.prop(props, 'controlnet_weight', text="", slider=False)
+
+
 
 
 class AIR_PT_operation(bpy.types.Panel):
