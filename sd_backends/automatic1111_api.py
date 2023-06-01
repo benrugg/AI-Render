@@ -46,7 +46,8 @@ def generate(params, img_file, filename_prefix, props):
 
     # send the API request
     response = do_post(server_url, params)
-    if not response:
+
+    if response == False:
         return False
 
     # handle the response
@@ -91,7 +92,7 @@ def upscale(img_file, filename_prefix, props):
     # print log info for debugging
     # debug_log(response)
 
-    if not response:
+    if response == False:
         return False
 
     # handle the response
