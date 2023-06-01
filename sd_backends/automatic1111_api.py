@@ -23,6 +23,7 @@ def generate(params, img_file, filename_prefix, props):
     if props.controlnet_is_enabled:
         controlnet_model = props.controlnet_model
         controlnet_module = props.controlnet_module
+        controlnet_weight = props.controlnet_weight
 
         if not controlnet_model:
             return operators.handle_error(f"No ContolNet model selected. Either choose a new model or disable ControlNet. [Get help]({config.HELP_WITH_CONTROLNET_URL})", "controlnet_model_missing")
@@ -31,6 +32,7 @@ def generate(params, img_file, filename_prefix, props):
             "controlnet": {
                 "args": [
                     {
+                    "weight": controlnet_weight,
                     "module": controlnet_module,
                     "model": controlnet_model
                     }

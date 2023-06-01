@@ -242,6 +242,15 @@ class AIRProperties(bpy.types.PropertyGroup):
         default=False,
         description="When true, will use ControlNet for each rendered image",
     )
+    controlnet_weight: bpy.props.FloatProperty(
+        name="ControlNet Weight",
+        default=1.0,
+        soft_min=0.0,
+        soft_max=1.0,
+        min=0.0,
+        max=2.0,
+        description="How much influence ControlNet will have on guiding the rendered image output",
+    )
     controlnet_close_help: bpy.props.BoolProperty(
         name="Close ControlNet Help",
         default=False,
