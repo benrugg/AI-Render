@@ -224,8 +224,10 @@ def get_samplers():
         ('DPM adaptive', 'DPM adaptive', '', 80),
         ('DPM++ 2S a Karras', 'DPM++ 2S a Karras', '', 90),
         ('DPM++ 2M Karras', 'DPM++ 2M Karras', '', 100),
+        ('DPM++ SDE Karras', 'DPM++ SDE Karras', '', 105),
         ('DPM++ 2S a', 'DPM++ 2S a', '', 110),
         ('DPM++ 2M', 'DPM++ 2M', '', 120),
+        ('DPM++ SDE', 'DPM++ SDE', '', 125),
         ('PLMS', 'PLMS', '', 200),
         ('DDIM', 'DDIM', '', 210),
     ]
