@@ -160,7 +160,7 @@ def handle_error(response):
 
 def create_headers():
     return {
-        "User-Agent": "Blender/" + bpy.app.version_string,
+        "User-Agent": f"Blender/{bpy.app.version_string}",
         "Accept": "*/*",
         "Accept-Encoding": "gzip, deflate, br",
     }
