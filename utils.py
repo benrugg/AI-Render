@@ -28,14 +28,17 @@ from .sd_backends import (
     automatic1111_api,
     stability_api,
     stablehorde_api,
+    shark_api,
 )
 
 min_dimension_size = 128
 max_dimension_size = 2048
 valid_dimension_step_size = 64
 
-example_dimensions = [512, 640, 768, 896, 960, 1024, 1280, 1344, 1600, 1920, 2048]
-file_formats = {"JPEG": "jpg", "BMP": "bmp", "IRIS": "rgb", "PNG": "png", "JPEG2000": "jp2", "TARGA": "tga", "TARGA_RAW": "tga", "CINEON": "cin", "DPX": "dpx", "OPEN_EXR_MULTILAYER": "exr", "OPEN_EXR": "exr", "HDR": "hdr", "TIFF": "tif", "WEBP": "webp"}
+example_dimensions = [512, 640, 768, 896,
+                      960, 1024, 1280, 1344, 1600, 1920, 2048]
+file_formats = {"JPEG": "jpg", "BMP": "bmp", "IRIS": "rgb", "PNG": "png", "JPEG2000": "jp2", "TARGA": "tga", "TARGA_RAW": "tga",
+                "CINEON": "cin", "DPX": "dpx", "OPEN_EXR_MULTILAYER": "exr", "OPEN_EXR": "exr", "HDR": "hdr", "TIFF": "tif", "WEBP": "webp"}
 
 
 def get_addon_preferences(context=None):
@@ -142,7 +145,8 @@ def get_smallest_area_by_type(area_type, workspace_id=None):
     areas = []
     for area in workspace.screens[0].areas:
         if area.type == area_type:
-            areas.append({ 'area': area, 'screen_size': area.width * area.height })
+            areas.append(
+                {'area': area, 'screen_size': area.width * area.height})
 
     areas.sort(key=lambda x: x['screen_size'])
     return areas[0]['area']
@@ -193,6 +197,8 @@ def sd_backend_formatted_name(context=None):
         return 'Stable Horde'
     elif backend == 'automatic1111':
         return 'Automatic1111'
+    elif backend == 'shark':
+        return 'SHARK by nod.ai'
 
 
 def local_sd_url(context=None):
@@ -257,12 +263,14 @@ def are_dimensions_valid(scene):
     return (
         get_output_width(scene) in range(
             min_dimension_size,
-            max_dimension_size + valid_dimension_step_size, # range is exclusive of the last value
+            # range is exclusive of the last value
+            max_dimension_size + valid_dimension_step_size,
             valid_dimension_step_size
         ) and
         get_output_height(scene) in range(
             min_dimension_size,
-            max_dimension_size + valid_dimension_step_size, # range is exclusive of the last value
+            # range is exclusive of the last value
+            max_dimension_size + valid_dimension_step_size,
             valid_dimension_step_size
         )
     )
@@ -281,13 +289,13 @@ def are_upscaled_dimensions_too_large(scene):
 
 
 def generate_example_dimensions_tuple_list():
-    return_tuple = lambda num: (str(num), str(num) + " px", str(num))
+    def return_tuple(num): return (str(num), str(num) + " px", str(num))
     return list(map(return_tuple, example_dimensions))
 
 
 def has_url(text, strict_match_protocol=False):
     # remove markdown *
-    text = text.replace('*','')
+    text = text.replace('*', '')
 
     # Anything that isn't a square closing bracket
     name_regex = "[^]]+"
@@ -363,15 +371,16 @@ def label_multiline(layout, text='', icon='NONE', width=-1, max_lines=12, use_ur
 
         line_index += 1
         while len(line) > char_threshold:
-            #find line split close to the end of line
+            # find line split close to the end of line
             i = line.rfind(" ", 0, char_threshold)
-            #split long words
+            # split long words
             if i < 1:
                 i = char_threshold
             l1 = line[:i]
 
             row = layout.row()
-            if alert: row.alert = True
+            if alert:
+                row.alert = True
             row.alignment = alignment
             row.label(text=l1, icon=icon)
             rows.append(row)
@@ -388,7 +397,8 @@ def label_multiline(layout, text='', icon='NONE', width=-1, max_lines=12, use_ur
             break
 
         row = layout.row()
-        if alert: row.alert = True
+        if alert:
+            row.alert = True
         row.alignment = alignment
         row.label(text=line, icon=icon)
         rows.append(row)
@@ -415,6 +425,8 @@ def get_active_backend():
         return stablehorde_api
     elif backend == "automatic1111":
         return automatic1111_api
+    elif backend == "shark":
+        return shark_api
 
 
 def is_installation_valid():
@@ -425,5 +437,5 @@ def show_invalid_installation_message(layout, width):
     box = layout.box()
     box.label(text="Installation Error:")
 
-    label_multiline(box, text=f"It looks like this add-on wasn't installed correctly. Please remove it and get a new copy. [Get AI Render]({config.ADDON_DOWNLOAD_URL})", icon="ERROR", alert=True, width=width)
-
+    label_multiline(
+        box, text=f"It looks like this add-on wasn't installed correctly. Please remove it and get a new copy. [Get AI Render]({config.ADDON_DOWNLOAD_URL})", icon="ERROR", alert=True, width=width)

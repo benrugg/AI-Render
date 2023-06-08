@@ -42,6 +42,7 @@ class AIRPreferences(bpy.types.AddonPreferences):
             ('dreamstudio', 'DreamStudio (cloud)', ''),
             ('stablehorde', 'Stable Horde (cloud)', ''),
             ('automatic1111', 'Automatic1111 (local)', ''),
+            ('shark', 'SHARK by nod.ai (local)', ''),
         ],
         update=properties.ensure_properties,
         description="Choose a Stable Diffusion backend to use. DreamStudio is the default, and is the quickest to run. Stable Horde is a community-run backend that is completely free. Automatic1111 is a local installation of Stable Diffusion.",
@@ -105,7 +106,6 @@ class AIRPreferences(bpy.types.AddonPreferences):
         min=0,
         max=59)
 
-
     def draw(self, context):
         layout = self.layout
 
@@ -125,9 +125,11 @@ class AIRPreferences(bpy.types.AddonPreferences):
             col = row.column()
             col.label(text="Setup is quick and easy!")
             col = row.column()
-            col.operator(operators.AIR_OT_setup_instructions_popup.bl_idname, text="Setup Instructions", icon="HELP")
+            col.operator(operators.AIR_OT_setup_instructions_popup.bl_idname,
+                         text="Setup Instructions", icon="HELP")
             col = row.column()
-            col.operator("wm.url_open", text="Watch Tutorial", icon="HELP").url = config.VIDEO_TUTORIAL_URL
+            col.operator("wm.url_open", text="Watch Tutorial",
+                         icon="HELP").url = config.VIDEO_TUTORIAL_URL
 
             row = box.row()
             col = row.column()
@@ -139,7 +141,8 @@ class AIRPreferences(bpy.types.AddonPreferences):
                 box.separator()
 
                 row = box.row()
-                row.operator("wm.url_open", text="Sign Up For DreamStudio (free)", icon="URL").url = config.DREAM_STUDIO_URL
+                row.operator("wm.url_open", text="Sign Up For DreamStudio (free)",
+                             icon="URL").url = config.DREAM_STUDIO_URL
 
                 row = box.row()
                 row.prop(self, "dream_studio_api_key")
@@ -155,10 +158,11 @@ class AIRPreferences(bpy.types.AddonPreferences):
                 row.prop(self, "stable_horde_api_key")
 
             # Local Installation with Automatic1111
-            if self.sd_backend == "automatic1111":
+            if self.sd_backend == "automatic1111" or self.sd_backend == "shark":
                 box = layout.box()
                 row = box.row()
-                row.label(text="Local Installation with Automatic1111:", icon="INFO")
+                row.label(
+                    text="Local Installation with Automatic1111:", icon="INFO")
 
                 utils.label_multiline(box, text="Instead of running in the cloud with DreamStudio, AI Render can hook into an existing local installation of Stable Diffusion. This allows for unlimited, free rendering on your own machine. It requires some advanced setup steps.", width=width_guess)
 
@@ -177,7 +181,8 @@ class AIRPreferences(bpy.types.AddonPreferences):
                 col.prop(self, "local_sd_timeout", text="")
 
                 box.separator()
-                utils.label_multiline(box, text=f"AI Render will use your local Stable Diffusion installation. Please make sure the Web UI is launched and running in a terminal.", icon="KEYTYPE_BREAKDOWN_VEC", width=width_guess)
+                utils.label_multiline(box, text=f"AI Render will use your local Stable Diffusion installation. Please make sure the Web UI is launched and running in a terminal.",
+                                      icon="KEYTYPE_BREAKDOWN_VEC", width=width_guess)
 
                 box.separator()
                 row = box.row()
@@ -188,11 +193,13 @@ class AIRPreferences(bpy.types.AddonPreferences):
             box = layout.box()
             box.label(text="Note:")
 
-            utils.label_multiline(box, text="AI image generation is an incredible technology, and it's only in its infancy. Please use it responsibly and ethically.", width=width_guess)
+            utils.label_multiline(
+                box, text="AI image generation is an incredible technology, and it's only in its infancy. Please use it responsibly and ethically.", width=width_guess)
 
             box = layout.box()
             box.label(text="Analytics:")
-            utils.label_multiline(box, text="AI Render sends anonymous meta information to Google Analytics, to help improve the add-on. No prompt text or images are sent or stored in any way.", width=width_guess)
+            utils.label_multiline(
+                box, text="AI Render sends anonymous meta information to Google Analytics, to help improve the add-on. No prompt text or images are sent or stored in any way.", width=width_guess)
             row = box.row()
             row.prop(self, "is_opted_out_of_analytics")
 
