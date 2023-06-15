@@ -135,7 +135,7 @@ def max_image_size():
 
 
 def supports_upscaling():
-    return True
+    return False
 
 
 def get_image_format():
@@ -144,3 +144,7 @@ def get_image_format():
 
 def supports_negative_prompts():
     return True
+
+
+def supports_choosing_model():
+    return False
