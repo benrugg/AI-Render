@@ -143,7 +143,7 @@ def get_smallest_area_by_type(area_type, workspace_id=None):
     areas = []
     for area in workspace.screens[0].areas:
         if area.type == area_type:
-            areas.append({'area': area, 'screen_size': area.width * area.height})
+            areas.append({ 'area': area, 'screen_size': area.width * area.height })
 
     areas.sort(key=lambda x: x['screen_size'])
     return areas[0]['area']
@@ -284,7 +284,7 @@ def are_upscaled_dimensions_too_large(scene):
 
 
 def generate_example_dimensions_tuple_list():
-    def return_tuple(num): return (str(num), str(num) + " px", str(num))
+    return_tuple = lambda num: (str(num), str(num) + " px", str(num))
     return list(map(return_tuple, example_dimensions))
 
 
