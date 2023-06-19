@@ -82,7 +82,7 @@ def handle_success(response, filename_prefix):
         base64_img = response_obj.get("images", [False])[
             0] or response_obj.get("image")
     except:
-        print("Automatic1111 response content: ")
+        print("SHARK response content: ")
         print(response.content)
         return operators.handle_error("Received an unexpected response from the Shark Stable Diffusion server.", "unexpected_response")
 
@@ -117,16 +117,16 @@ def handle_error(response):
         try:
             response_obj = response.json()
             if response_obj.get('detail') and response_obj['detail'] == "Not Found":
-                return operators.handle_error(f"It looks like the Automatic1111 server is running, but it's not in API mode. [Get help]({config.HELP_WITH_AUTOMATIC1111_NOT_IN_API_MODE_URL})", "automatic1111_not_in_api_mode")
+                return operators.handle_error(f"It looks like the SHARK server is running, but it's not in API mode. [Get help]({config.HELP_WITH_AUTOMATIC1111_NOT_IN_API_MODE_URL})", "automatic1111_not_in_api_mode")
             elif response_obj.get('detail') and response_obj['detail'] == "Sampler not found":
-                return operators.handle_error("The sampler you selected is not available on the Automatic1111 Stable Diffusion server. Please select a different sampler.", "invalid_sampler")
+                return operators.handle_error("The sampler you selected is not available on the SHARK Stable Diffusion server. Please select a different sampler.", "invalid_sampler")
             else:
-                return operators.handle_error(f"An error occurred in the Automatic1111 Stable Diffusion server. Full server response: {json.dumps(response_obj)}", "unknown_error")
+                return operators.handle_error(f"An error occurred in the SHARK Stable Diffusion server. Full server response: {json.dumps(response_obj)}", "unknown_error")
         except:
-            return operators.handle_error(f"It looks like the Automatic1111 server is running, but it's not in API mode. [Get help]({config.HELP_WITH_AUTOMATIC1111_NOT_IN_API_MODE_URL})", "automatic1111_not_in_api_mode")
+            return operators.handle_error(f"It looks like the SHARK server is running, but it's not in API mode. [Get help]({config.HELP_WITH_AUTOMATIC1111_NOT_IN_API_MODE_URL})", "automatic1111_not_in_api_mode")
 
     else:
-        return operators.handle_error("An error occurred in the Automatic1111 Stable Diffusion server. Check the server logs for more info.", "unknown_error_response")
+        return operators.handle_error("An error occurred in the SHARK Stable Diffusion server. Check the server logs for more info.", "unknown_error_response")
 
 
 def create_headers():
