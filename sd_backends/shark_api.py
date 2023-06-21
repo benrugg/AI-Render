@@ -47,8 +47,8 @@ def upscale(img_file, filename_prefix, props):
         "prompt": "",
         "negative_prompt": "",
         "seed": random.randint(1000000000, 2147483647),
-        "height": utils.sanitized_upscaled_height(max_image_size()),
-        "width": utils.sanitized_upscaled_width(max_image_size()),
+        "height": utils.sanitized_upscaled_height(max_upscaled_image_size()),
+        "width": utils.sanitized_upscaled_width(max_upscaled_image_size()),
         "steps": 50,
         "noise_level": 20,
         "cfg_scale": 7
@@ -158,11 +158,15 @@ def get_server_url(path):
 
 
 def min_image_size():
-    return 128 * 128
+    return 384 * 384
 
 
 def max_image_size():
-    return 2048 * 2048
+    return 768 * 768
+
+
+def max_upscaled_image_size():
+    return 512 * 512
 
 
 def supports_upscaling():
@@ -183,3 +187,32 @@ def supports_choosing_model():
 
 def is_upscaler_model_list_loaded(context=None):
     return True
+
+
+def supports_reloading_upscaler_models():
+    return False
+
+
+def get_upscaler_models(context):
+    # NOTE: Shark does not look at model in API Req and defaults to stabilityai
+    return [
+        ('stabilityai/stable-diffusion-2-1-base', 'stabilityai', ''),
+    ]
+
+
+def default_upscaler_model():
+    return 'stabilityai/stable-diffusion-2-1-base'
+
+
+def get_samplers():
+    # NOTE: Keep the number values (fourth item in the tuples) in sync with the other
+    # backends, like Automatic1111. These act like an internal unique ID for Blender
+    # to use when switching between the lists.
+    # NOTE: Shark does not look at sampler in API Req and defaults to EulerDiscrete
+    return [
+        ('k_euler', 'Euler', '', 10),
+    ]
+
+
+def default_sampler():
+    return 'k_euler'
