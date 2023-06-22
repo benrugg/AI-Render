@@ -155,7 +155,7 @@ class AIRPreferences(bpy.types.AddonPreferences):
                 row.prop(self, "stable_horde_api_key")
 
             # Local Installation with Automatic1111
-            if self.sd_backend == "automatic1111" or self.sd_backend == "shark":
+            if self.sd_backend == "automatic1111":
                 box = layout.box()
                 row = box.row()
                 row.label(text="Local Installation with Automatic1111:", icon="INFO")
@@ -183,7 +183,37 @@ class AIRPreferences(bpy.types.AddonPreferences):
                 row = box.row()
                 row.operator("wm.url_open", text="Help with local installation", icon="URL").url \
                     = config.HELP_WITH_LOCAL_INSTALLATION_URL
+            
+            # Local Installation with SHARK
+            if self.sd_backend == "shark":
+                box = layout.box()
+                row = box.row()
+                row.label(text="Local Installation with SHARK", icon="INFO")
 
+                utils.label_multiline(box, text="Instead of running in the cloud with DreamStudio, AI Render can hook into an existing local installation of Stable Diffusion. This allows for unlimited, free rendering on your own machine. It requires some advanced setup steps.", width=width_guess)
+
+                box.separator()
+
+                row = box.row()
+                col = row.column()
+                col.label(text="Local Web Server URL:")
+                col = row.column()
+                col.prop(self, "local_sd_url", text="")
+
+                row = box.row()
+                col = row.column()
+                col.label(text="Timeout (in seconds):")
+                col = row.column()
+                col.prop(self, "local_sd_timeout", text="")
+
+                box.separator()
+                utils.label_multiline(box, text=f"AI Render will use your local Stable Diffusion installation. Please make sure the Web UI is launched and running in a terminal.", icon="KEYTYPE_BREAKDOWN_VEC", width=width_guess)
+
+                box.separator()
+                row = box.row()
+                row.operator("wm.url_open", text="Help with local installation", icon="URL").url \
+                    = config.HELP_WITH_SHARK_INSTALLATION_URL
+            
             # Notes
             box = layout.box()
             box.label(text="Note:")
