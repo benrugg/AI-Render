@@ -19,4 +19,5 @@ HELP_WITH_NEGATIVE_PROMPTS_URL = "https://github.com/benrugg/AI-Render/wiki/Anim
 HELP_WITH_CONTROLNET_URL = "https://github.com/benrugg/AI-Render/wiki/ControlNet"
 ANIMATION_TIPS_URL = "https://github.com/benrugg/AI-Render/wiki/Animation#animation-tips"
 CONTRIBUTING_URL = "https://github.com/benrugg/AI-Render/blob/main/CONTRIBUTING.md"
-HELP_WITH_SHARK_INSTALLATION_URL = "https://github.com/benrugg/AI-Render/wiki/Shark"
+HELP_WITH_SHARK_INSTALLATION_URL = "https://github.com/AyaanShah2204/AI-Render/wiki/SHARK-by-nod.ai#running-shark-locally"
+HELP_WITH_SHARK_TROUBLESHOOTING_URL = "https://github.com/AyaanShah2204/AI-Render/wiki/SHARK-by-nod.ai#troubleshooting"

@@ -26,7 +26,7 @@ def generate(params, img_file, filename_prefix, props):
     try:
         server_url = get_server_url("/sdapi/v1/img2img")
     except:
-        return operators.handle_error(f"You need to specify a location for the local Stable Diffusion server in the add-on preferences. [Get help]({config.HELP_WITH_LOCAL_INSTALLATION_URL})", "local_server_url_missing")
+        return operators.handle_error(f"You need to specify a location for the local Stable Diffusion server in the add-on preferences. [Get help]({config.HELP_WITH_SHARK_INSTALLATION_URL})", "local_server_url_missing")
 
     # send the API request
     response = do_post(server_url, params)
@@ -61,7 +61,7 @@ def upscale(img_file, filename_prefix, props):
     try:
         server_url = get_server_url("/sdapi/v1/upscaler")
     except:
-        return operators.handle_error(f"You need to specify a location for the local Stable Diffusion server in the add-on preferences. [Get help]({config.HELP_WITH_LOCAL_INSTALLATION_URL})", "local_server_url_missing")
+        return operators.handle_error(f"You need to specify a location for the local Stable Diffusion server in the add-on preferences. [Get help]({config.HELP_WITH_SHARK_INSTALLATION_URL})", "local_server_url_missing")
 
     response = do_post(server_url, data)
 
@@ -117,13 +117,13 @@ def handle_error(response):
         try:
             response_obj = response.json()
             if response_obj.get('detail') and response_obj['detail'] == "Not Found":
-                return operators.handle_error(f"It looks like the SHARK server is running, but it's not in API mode. [Get help]({config.HELP_WITH_AUTOMATIC1111_NOT_IN_API_MODE_URL})", "automatic1111_not_in_api_mode")
+                return operators.handle_error(f"It looks like the SHARK server is running, but it's not in API mode. [Get help]({config.HELP_WITH_SHARK_TROUBLESHOOTING_URL})", "automatic1111_not_in_api_mode")
             elif response_obj.get('detail') and response_obj['detail'] == "Sampler not found":
                 return operators.handle_error("The sampler you selected is not available on the SHARK Stable Diffusion server. Please select a different sampler.", "invalid_sampler")
             else:
                 return operators.handle_error(f"An error occurred in the SHARK Stable Diffusion server. Full server response: {json.dumps(response_obj)}", "unknown_error")
         except:
-            return operators.handle_error(f"It looks like the SHARK server is running, but it's not in API mode. [Get help]({config.HELP_WITH_AUTOMATIC1111_NOT_IN_API_MODE_URL})", "automatic1111_not_in_api_mode")
+            return operators.handle_error(f"It looks like the SHARK server is running, but it's not in API mode. [Get help]({config.HELP_WITH_SHARK_TROUBLESHOOTING_URL})", "automatic1111_not_in_api_mode")
 
     else:
         return operators.handle_error("An error occurred in the SHARK Stable Diffusion server. Check the server logs for more info.", "unknown_error_response")
@@ -142,9 +142,9 @@ def do_post(url, data):
     try:
         return requests.post(url, json=data, headers=create_headers(), timeout=utils.local_sd_timeout())
     except requests.exceptions.ConnectionError:
-        return operators.handle_error(f"The local Stable Diffusion server couldn't be found. It's either not running, or it's running at a different location than what you specified in the add-on preferences. [Get help]({config.HELP_WITH_LOCAL_INSTALLATION_URL})", "local_server_not_found")
+        return operators.handle_error(f"The local Stable Diffusion server couldn't be found. It's either not running, or it's running at a different location than what you specified in the add-on preferences. [Get help]({config.HELP_WITH_SHARK_INSTALLATION_URL})", "local_server_not_found")
     except requests.exceptions.MissingSchema:
-        return operators.handle_error(f"The url for your local Stable Diffusion server is invalid. Please set it correctly in the add-on preferences. [Get help]({config.HELP_WITH_LOCAL_INSTALLATION_URL})", "local_server_url_invalid")
+        return operators.handle_error(f"The url for your local Stable Diffusion server is invalid. Please set it correctly in the add-on preferences. [Get help]({config.HELP_WITH_SHARK_INSTALLATION_URL})", "local_server_url_invalid")
     except requests.exceptions.ReadTimeout:
         return operators.handle_error("The local Stable Diffusion server timed out. Set a longer timeout in AI Render preferences, or use a smaller image size.", "timeout")
 
