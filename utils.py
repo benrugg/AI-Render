@@ -28,6 +28,7 @@ from .sd_backends import (
     automatic1111_api,
     stability_api,
     stablehorde_api,
+    shark_api,
 )
 
 min_dimension_size = 128
@@ -193,6 +194,8 @@ def sd_backend_formatted_name(context=None):
         return 'Stable Horde'
     elif backend == 'automatic1111':
         return 'Automatic1111'
+    elif backend == 'shark':
+        return 'SHARK by nod.ai'
 
 
 def local_sd_url(context=None):
@@ -415,6 +418,8 @@ def get_active_backend():
         return stablehorde_api
     elif backend == "automatic1111":
         return automatic1111_api
+    elif backend == "shark":
+        return shark_api
 
 
 def is_installation_valid():
@@ -426,4 +431,3 @@ def show_invalid_installation_message(layout, width):
     box.label(text="Installation Error:")
 
     label_multiline(box, text=f"It looks like this add-on wasn't installed correctly. Please remove it and get a new copy. [Get AI Render]({config.ADDON_DOWNLOAD_URL})", icon="ERROR", alert=True, width=width)
-
