@@ -126,7 +126,7 @@ def handle_error(response):
             return operators.handle_error(f"It looks like the SHARK server is running, but it's not in API mode. [Get help]({config.HELP_WITH_SHARK_TROUBLESHOOTING_URL})", "automatic1111_not_in_api_mode")
 
     else:
-        return operators.handle_error("An error occurred in the SHARK Stable Diffusion server. Check the server logs for more info.", "unknown_error_response")
+        return operators.handle_error(f"An error occurred in the SHARK Stable Diffusion server. Check the server logs for more info, or check out the SHARK Troubleshooting guide. [Get help]({config.HELP_WITH_SHARK_TROUBLESHOOTING_URL})", "unknown_error_response")
 
 
 def create_headers():
