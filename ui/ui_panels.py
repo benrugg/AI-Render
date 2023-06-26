@@ -498,6 +498,62 @@ class AIR_PT_upscale(bpy.types.Panel):
         row.operator(operators.AIR_OT_upscale_last_sd_image.bl_idname, icon="FULLSCREEN_ENTER")
 
 
+# Inpainting
+class AIR_PT_inpaint(bpy.types.Panel):
+    bl_label = "Inpaint"
+    bl_idname = "AIR_PT_inpaint"
+    bl_parent_id = "AIR_PT_main"
+    bl_space_type = "PROPERTIES"
+    bl_region_type = "WINDOW"
+    bl_context = "render"
+    bl_options = {'DEFAULT_CLOSED'}
+
+    @classmethod
+    def poll(cls, context):
+        return utils.is_installation_valid() and context.scene.air_props.is_enabled
+
+    def draw(self, context):
+        layout = self.layout
+        scene = context.scene
+        props = scene.air_props
+
+        width_guess = 220
+
+        # Auto Run
+        row = layout.row()
+        row.prop(props, 'auto_run')
+
+        # Generate Image
+        layout.separator()
+
+        row = layout.row()
+        row.label(text="Run Manually:")
+
+        row = layout.row()
+        row.enabled = 'Render Result' in bpy.data.images and bpy.data.images['Render Result'].has_data
+        row.operator(operators.AIR_OT_generate_new_image_from_render.bl_idname)
+
+        row = layout.row()
+        row.enabled = props.last_generated_image_filename != ""
+        row.operator(operators.AIR_OT_generate_new_image_from_last_sd_image.bl_idname)
+
+        layout.separator()
+
+        row = layout.row()
+        row.label(text="Automatically Save Images:")
+
+        row = layout.row()
+        row.prop(props, "do_autosave_before_images")
+
+        row = layout.row()
+        row.prop(props, "do_autosave_after_images")
+
+        row = layout.row()
+        row.prop(props, "autosave_image_path", text="Path")
+
+        if (props.do_autosave_before_images or props.do_autosave_after_images) and not props.autosave_image_path:
+            utils.label_multiline(layout, text="Please specify a path", icon="ERROR", width=width_guess)
+
 class AIR_PT_animation(bpy.types.Panel):
     bl_label = "Animation"
     bl_idname = "AIR_PT_animation"
