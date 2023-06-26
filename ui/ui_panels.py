@@ -624,6 +624,7 @@ classes = [
     AIR_PT_advanced_options,
     AIR_PT_controlnet,
     AIR_PT_operation,
+    AIR_PT_inpaint,
     AIR_PT_upscale,
     AIR_PT_animation,
 ]
