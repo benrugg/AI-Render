@@ -282,7 +282,7 @@ class AIRProperties(bpy.types.PropertyGroup):
     )
     inpaint_mask: bpy.props.EnumProperty(
         name="Inpaint Mask",
-        items=get_available_masks,
+        items=[('A','B','C'), ('A','B','C'), ('A','B','C'), ('A','B','C'), ('A','B','C')],
         description="Which Inpaint Mask to use"
     )
 
