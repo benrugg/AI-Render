@@ -275,6 +275,12 @@ class AIRProperties(bpy.types.PropertyGroup):
         items=get_available_controlnet_modules,
         description="Which ControlNet module (preprocessor) to use (these come with the ControlNet extension)",
     )
+    inpaint_mask_path: bpy.props.StringProperty(
+        name="Inpaint Mask Path",
+        default="",
+        description="Mask file for Stable Diffusion Inpaint"
+        subtype="FILE_PATH"
+    )
 
 
 classes = [

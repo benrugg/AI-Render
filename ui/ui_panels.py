@@ -510,7 +510,7 @@ class AIR_PT_inpaint(bpy.types.Panel):
 
     @classmethod
     def poll(cls, context):
-        return utils.is_installation_valid() and context.scene.air_props.is_enabled
+        return utils.is_installation_valid() and context.scene.air_props.is_enabled and utils.sd_backend(context) == "shark"
 
     def draw(self, context):
         layout = self.layout
@@ -519,40 +519,9 @@ class AIR_PT_inpaint(bpy.types.Panel):
 
         width_guess = 220
 
-        # Auto Run
         row = layout.row()
-        row.prop(props, 'auto_run')
+        row.prop(props, "inpaint_mask_path", text="Mask")
 
-        # Generate Image
-        layout.separator()
-
-        row = layout.row()
-        row.label(text="Run Manually:")
-
-        row = layout.row()
-        row.enabled = 'Render Result' in bpy.data.images and bpy.data.images['Render Result'].has_data
-        row.operator(operators.AIR_OT_generate_new_image_from_render.bl_idname)
-
-        row = layout.row()
-        row.enabled = props.last_generated_image_filename != ""
-        row.operator(operators.AIR_OT_generate_new_image_from_last_sd_image.bl_idname)
-
-        layout.separator()
-
-        row = layout.row()
-        row.label(text="Automatically Save Images:")
-
-        row = layout.row()
-        row.prop(props, "do_autosave_before_images")
-
-        row = layout.row()
-        row.prop(props, "do_autosave_after_images")
-
-        row = layout.row()
-        row.prop(props, "autosave_image_path", text="Path")
-
-        if (props.do_autosave_before_images or props.do_autosave_after_images) and not props.autosave_image_path:
-            utils.label_multiline(layout, text="Please specify a path", icon="ERROR", width=width_guess)
 
 class AIR_PT_animation(bpy.types.Panel):
     bl_label = "Animation"
@@ -624,8 +593,8 @@ classes = [
     AIR_PT_advanced_options,
     AIR_PT_controlnet,
     AIR_PT_operation,
-    AIR_PT_inpaint,
     AIR_PT_upscale,
+    AIR_PT_inpaint,
     AIR_PT_animation,
 ]
 
