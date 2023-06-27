@@ -40,8 +40,8 @@ def get_available_controlnet_modules(self, context):
 
 def get_available_masks(self, context):
     mask_list = []
-    for k in bpy.data.masks:
-        mask_list.append((k,k,""))
+    for k, v in bpy.data.masks.items():
+        mask_list.append((str(k),str(k),""))
     return mask_list
 
 def ensure_sampler(context):
@@ -282,7 +282,7 @@ class AIRProperties(bpy.types.PropertyGroup):
     )
     inpaint_mask: bpy.props.EnumProperty(
         name="Inpaint Mask",
-        items=[('A','B','C'), ('A','B','C'), ('A','B','C'), ('A','B','C'), ('A','B','C')],
+        items=get_available_masks,
         description="Which Inpaint Mask to use"
     )
 
