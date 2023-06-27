@@ -39,7 +39,7 @@ def get_available_controlnet_modules(self, context):
         return []
 
 def get_available_masks(self, context):
-    return bpy.data.masks.items()
+    return list(bpy.data.masks.items())
 
 def ensure_sampler(context):
     # """Ensure that the sampler is set to a valid value"""
