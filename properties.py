@@ -40,9 +40,8 @@ def get_available_controlnet_modules(self, context):
 
 def get_available_masks(self, context):
     mask_list = []
-    for k in bpy.data.masks:
-        mask_list += (bpy.data.masks[k], k, '')
-    print(mask_list)
+    for k, v in bpy.data.masks.items():
+        mask_list += [(v, k, '')]
     return mask_list
 
 def ensure_sampler(context):
