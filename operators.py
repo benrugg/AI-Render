@@ -977,6 +977,7 @@ class AIR_OT_info(bpy.types.Operator):
         msg = dir(context.scene)
         msg = str(msg)
         print(msg)
+        print(dir(bpy.data))
 
         return {'FINISHED'}
 
