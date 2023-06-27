@@ -520,8 +520,9 @@ class AIR_PT_inpaint(bpy.types.Panel):
         width_guess = 220
 
         row = layout.row()
-        row.prop(props, "inpaint_mask_path", text="Mask")
+        row.prop(props, "inpaint_mask", text="Mask")
 
+        row = layout.row()
         row.operator(operators.AIR_OT_info.bl_idname, icon="FULLSCREEN_ENTER")
 
 

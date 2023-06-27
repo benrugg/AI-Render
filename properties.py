@@ -38,6 +38,8 @@ def get_available_controlnet_modules(self, context):
     else:
         return []
 
+def get_available_masks(self, context):
+    return bpy.data.masks.keys()
 
 def ensure_sampler(context):
     # """Ensure that the sampler is set to a valid value"""
@@ -275,11 +277,10 @@ class AIRProperties(bpy.types.PropertyGroup):
         items=get_available_controlnet_modules,
         description="Which ControlNet module (preprocessor) to use (these come with the ControlNet extension)",
     )
-    inpaint_mask_path: bpy.props.StringProperty(
-        name="Inpaint Mask Path",
-        default="",
-        description="Mask file for Stable Diffusion Inpaint",
-        subtype="FILE_PATH",
+    inpaint_mask: bpy.props.EnumProperty(
+        name="Inpaint Mask",
+        items=get_available_masks,
+        description="Which Inpaint Mask to use"
     )
 
 
