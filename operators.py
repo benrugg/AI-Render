@@ -976,7 +976,7 @@ class AIR_OT_info(bpy.types.Operator):
     def execute(self, context):
         msg = dir(context.scene)
         msg = str(msg)
-        handle_error(msg)
+        print(msg)
 
         return {'FINISHED'}
 
