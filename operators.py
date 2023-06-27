@@ -969,12 +969,18 @@ class AIR_OT_automatic1111_load_controlnet_models_and_modules(bpy.types.Operator
         automatic1111_api.choose_controlnet_defaults(context)
         return {'FINISHED'}
 
+def get_available_masks(self, context):
+    mask_list = []
+    for k in bpy.data.masks:
+        mask_list += (bpy.data.masks[k], k, '')
+    print(mask_list)
+    return mask_list
+
 class AIR_OT_info(bpy.types.Operator):
     bl_idname = "ai_render.info"
     bl_label = "print info"
 
     def execute(self, context):
-        from properties import get_available_masks
         handle_error(str(get_available_masks(self, context)))
 
         return {'FINISHED'}
