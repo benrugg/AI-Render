@@ -974,9 +974,10 @@ class AIR_OT_info(bpy.types.Operator):
     bl_label = "print info"
 
     def execute(self, context):
-        msg = type(context.scene.keys())
+        msg = (context.scene.keys())
         msg = str(msg)
         handle_error(msg)
+
         return {'FINISHED'}
 
 classes = [
