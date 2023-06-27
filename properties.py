@@ -42,6 +42,7 @@ def get_available_masks(self, context):
     mask_list = []
     for k, v in bpy.data.masks.items():
         mask_list += (v, k, '')
+    print(mask_list)
     return mask_list
 
 def ensure_sampler(context):
