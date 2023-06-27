@@ -972,7 +972,7 @@ class AIR_OT_automatic1111_load_controlnet_models_and_modules(bpy.types.Operator
 def get_available_masks(self, context):
     mask_list = []
     for k, v in bpy.data.masks.items():
-        mask_list += (v, k, '')
+        mask_list += [(v, k, '')]
     print(mask_list)
     return mask_list
 
