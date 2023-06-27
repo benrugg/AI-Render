@@ -522,6 +522,8 @@ class AIR_PT_inpaint(bpy.types.Panel):
         row = layout.row()
         row.prop(props, "inpaint_mask_path", text="Mask")
 
+        row.operator(operators.AIR_OT_info.bl_idname, icon="FULLSCREEN_ENTER")
+
 
 class AIR_PT_animation(bpy.types.Panel):
     bl_label = "Animation"

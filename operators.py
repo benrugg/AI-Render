@@ -969,7 +969,15 @@ class AIR_OT_automatic1111_load_controlnet_models_and_modules(bpy.types.Operator
         automatic1111_api.choose_controlnet_defaults(context)
         return {'FINISHED'}
 
+class AIR_OT_info(bpy.types.Operator):
+    bl_idname = "ai_render.info"
+    bl_label = "print info"
 
+    def execute(self, context):
+        msg = type(context.scene)
+        msg = str(msg)
+        handle_error(msg)
+        return {'FINISHED'}
 
 classes = [
     AIR_OT_enable,
@@ -989,6 +997,7 @@ classes = [
     AIR_OT_automatic1111_load_controlnet_models,
     AIR_OT_automatic1111_load_controlnet_modules,
     AIR_OT_automatic1111_load_controlnet_models_and_modules,
+    AIR_OT_info,
 ]
 
 
