@@ -278,8 +278,8 @@ class AIRProperties(bpy.types.PropertyGroup):
     inpaint_mask_path: bpy.props.StringProperty(
         name="Inpaint Mask Path",
         default="",
-        description="Mask file for Stable Diffusion Inpaint"
-        subtype="FILE_PATH"
+        description="Mask file for Stable Diffusion Inpaint",
+        subtype="FILE_PATH",
     )
 
 
