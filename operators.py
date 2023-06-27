@@ -974,7 +974,7 @@ class AIR_OT_info(bpy.types.Operator):
     bl_label = "print info"
 
     def execute(self, context):
-        handle_error(str(dir(bpy.data)))
+        handle_error(str(dir(bpy.data.masks)))
 
         return {'FINISHED'}
 
