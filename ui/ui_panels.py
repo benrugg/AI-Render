@@ -560,7 +560,7 @@ class AIR_PT_outpaint(bpy.types.Panel):
         sub = row.column()
         sub.label("Pixels to Expand:")
         sub = row.column()
-        sub.prop(props, "outpaint_pixels_to_expand", text="", slider=False)
+        # sub.prop(props, "outpaint_pixels_to_expand", text="", slider=False)
 
         # row = layout.row()
         # sub = row.column()
