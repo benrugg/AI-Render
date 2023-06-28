@@ -576,21 +576,24 @@ def sd_inpaint(scene):
         return handle_error("Couldn't load the last Stable Diffusion image. It's probably been deleted or moved. You'll need to restore it or render a new image.", "load_last_generated_image")
     
     # load mask here
-    if props.inpaint_mask == "":
+    if props.inpaint_mask_path == "":
         return handle_error("Couldn't find the Inpaint Mask", "inpaint_mask")
+    try:
+        mask_file = open(props.mask_file_path, 'rb')
+    except:
+        return handle_error("Couldn't load the uploaded inpaint mask file", "inpaint_mask_path")
     
-    temp_mask_file = None
     # prepare data for the API request
     params = {
         "prompt": prompt,
         "negative_prompt": negative_prompt,
         "width": utils.get_output_width(scene),
         "height": utils.get_output_height(scene),
-        "image_similarity": props.image_similarity,
         "seed": props.seed,
         "cfg_scale": props.cfg_scale,
         "steps": props.steps,
-        "sampler": props.sampler,
+        "is_full_res" : props.inpaint_full_res,
+        "full_res_padding" : props.inpaint_padding,
     }
 
     # get the backend we're using
@@ -599,7 +602,7 @@ def sd_inpaint(scene):
     # TODO:
     # send to whichever API we're using
     start_time = time.time()
-    generated_image_file = sd_backend.generate(params, img_file, after_output_filename_prefix, props)
+    generated_image_file = sd_backend.inpaint(params, img_file, after_output_filename_prefix, props)
 
     # if we didn't get a successful image, stop here (an error will have been handled by the api function)
     if not generated_image_file:
@@ -1070,7 +1073,7 @@ class AIR_OT_inpaint_from_last_sd_image(bpy.types.Operator):
         do_pre_api_setup(context.scene)
 
         # post to the api (on a different thread, outside the operator)
-        task_queue.add(functools.partial(sd_generate, context.scene))
+        task_queue.add(functools.partial(sd_inpaint, context.scene))
 
         return {'FINISHED'}
 
