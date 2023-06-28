@@ -520,7 +520,7 @@ class AIR_PT_inpaint(bpy.types.Panel):
         width_guess = 220
 
         row = layout.row()
-        row.props(props, "inpaint_full_res", text="Bla")
+        row.props(props, "do_autosave_after_images", text="Bla")
 
         row = layout.row()
         row.prop(props, "inpaint_mask_path", text="Mask")
