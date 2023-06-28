@@ -523,7 +523,7 @@ class AIR_PT_inpaint(bpy.types.Panel):
         # row.props(props, "inpaint_padding")
 
         row = layout.row()
-        row.props(props, "inpaint_full_res", text="Inpaint at Full Resolution")
+        row.props(props, "inpaint_full_res", text="")
 
         row = layout.row()
         row.prop(props, "inpaint_mask_path", text="Mask")
