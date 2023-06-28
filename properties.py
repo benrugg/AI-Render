@@ -286,11 +286,11 @@ class AIRProperties(bpy.types.PropertyGroup):
         description="Upload Inpaint Mask",
         subtype="FILE_PATH",
     )
-    inpaint_full_res : bpy.props.BoolProperty(
+    inpaint_full_res: bpy.props.BoolProperty(
         name="Inpaint Full Res",
         default=True,
     )
-    inpaint_padding : bpy.props.IntProperty(
+    inpaint_padding: bpy.props.IntProperty(
         name="Inpaint Padding",
         max=256,
         min=0,
