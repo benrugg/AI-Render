@@ -96,6 +96,27 @@ def inpaint(params, img_file, mask_file, filename_prefix, props):
         return handle_success(response, filename_prefix)
     else:
         return handle_error(response)
+    
+
+def outpaint(params, img_file, filename_prefix, props):
+    
+    params["init_images"] = ["data:image/png;base64," + base64.b64encode(img_file.read()).decode()]
+    img_file.close()
+
+    try:
+        server_url = get_server_url("/sdapi/v1/outpaint")
+    except:
+        return operators.handle_error(f"You need to specify a location for the local Stable Diffusion server in the add-on preferences. [Get help]({config.HELP_WITH_SHARK_INSTALLATION_URL})", "local_server_url_missing")
+
+    response = do_post(server_url, params)
+
+    if response is False:
+        return False
+
+    if response.status_code == 200:
+        return handle_success(response, filename_prefix)
+    else:
+        return handle_error(response)
 
 
 def handle_success(response, filename_prefix):
