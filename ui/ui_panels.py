@@ -519,8 +519,8 @@ class AIR_PT_inpaint(bpy.types.Panel):
 
         width_guess = 220
 
-        # row = layout.row()
-        # row.props(props, "inpaint_padding", text="Padding")
+        row = layout.row()
+        row.props(props, "inpaint_padding")
 
         # row = layout.row()
         # row.props(props, "inpaint_full_res", text="Inpaint at Full Resolution")
