@@ -546,7 +546,8 @@ class AIR_PT_outpaint(bpy.types.Panel):
 
     @classmethod
     def poll(cls, context):
-        return utils.is_installation_valid() and context.scene.air_props.is_enabled and utils.sd_backend(context) == "shark"
+        # return utils.is_installation_valid() and context.scene.air_props.is_enabled and utils.sd_backend(context) == "shark"
+        return True
     
     def draw(self, context):
         layout = self.layout
@@ -579,7 +580,7 @@ class AIR_PT_outpaint(bpy.types.Panel):
         # sub.label("Color Variation:")
         # sub = row.column()
         # sub.prop(props, "outpaint_color_variation", text="", slider=False)
-        
+
         
 
 class AIR_PT_animation(bpy.types.Panel):
