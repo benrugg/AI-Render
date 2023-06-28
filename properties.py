@@ -316,7 +316,7 @@ class AIRProperties(bpy.types.PropertyGroup):
         description="",
     )
     outpaint_mask_blur: bpy.props.IntProperty(
-        name="Outpaint Mask Blur"
+        name="Outpaint Mask Blur",
         description="this changes how much the inpainting mask is blurred. This helps to avoid sharp edges on the image.",
         min=0,
         max=64,
@@ -337,6 +337,7 @@ class AIRProperties(bpy.types.PropertyGroup):
         step=0.01,
         name="Outpaint Color Variation",
     )
+
 
 classes = [
     AIRProperties
