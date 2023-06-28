@@ -526,7 +526,7 @@ class AIR_PT_inpaint(bpy.types.Panel):
         sub = row.column()
         sub.label(text="Padding:")
         sub = row.column()
-        sub.prop(props, 'inpaint_padding', text="", slider=False)
+        sub.prop(props, 'inpaint_padding', text="", slider=True)
 
         row = layout.row()
         row.prop(props, "inpaint_mask_path", text="Mask")
@@ -563,25 +563,25 @@ class AIR_PT_outpaint(bpy.types.Panel):
         sub = row.column()
         sub.label(text="Pixels to Expand:")
         sub = row.column()
-        sub.prop(props, "outpaint_pixels_to_expand", text="", slider=False)
+        sub.prop(props, "outpaint_pixels_to_expand", text="", slider=True)
 
         row = layout.row()
         sub = row.column()
         sub.label(text="Mask Blur:")
         sub = row.column()
-        sub.prop(props, "outpaint_mask_blur", text="", slider=False)
+        sub.prop(props, "outpaint_mask_blur", text="", slider=True)
 
         row = layout.row()
         sub = row.column()
         sub.label(text="Noise Quotient:")
         sub = row.column()
-        sub.prop(props, "outpaint_noise_q", text="", slider=False)
+        sub.prop(props, "outpaint_noise_q", text="", slider=True)
 
         row = layout.row()
         sub = row.column()
         sub.label(text="Color Variation:")
         sub = row.column()
-        sub.prop(props, "outpaint_color_variation", text="", slider=False)
+        sub.prop(props, "outpaint_color_variation", text="", slider=True)
 
         
 
