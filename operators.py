@@ -577,7 +577,7 @@ def sd_inpaint(scene):
     
     # load mask here
     if props.inpaint_mask_path == "":
-        return handle_error("Couldn't find the Inpaint Mask", "inpaint_mask")
+        return handle_error(f"Couldn't find the Inpaint Mask: {props.inpaint_mask_path}")
     try:
         mask_file = open(props.mask_file_path, 'rb')
     except:
