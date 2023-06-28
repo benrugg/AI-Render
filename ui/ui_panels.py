@@ -563,13 +563,13 @@ class AIR_PT_outpaint(bpy.types.Panel):
         sub = row.column()
         sub.label(text="Pixels to Expand:")
         sub = row.column()
-        sub.prop(props, "outpaint_pixels_to_expand", text="", slider=True)
+        sub.prop(props, "outpaint_pixels_to_expand", text="", slider=False)
 
         row = layout.row()
         sub = row.column()
         sub.label(text="Mask Blur:")
         sub = row.column()
-        sub.prop(props, "outpaint_mask_blur", text="", slider=True)
+        sub.prop(props, "outpaint_mask_blur", text="", slider=False)
 
         row = layout.row()
         sub = row.column()
