@@ -523,10 +523,7 @@ class AIR_PT_inpaint(bpy.types.Panel):
         row.prop(props, "inpaint_mask", text="Mask")
 
         row = layout.row()
-        row.label(text="Hello")
-
-        row = layout.row()
-        row.enabled = 'Render Result' in bpy.data.images and bpy.data.images['Render Result'].has_data
+        row.enabled = 'Render Result' in bpy.data.images and bpy.data.images['Render Result'].has_data and props.inpaint_mask
         row.operator(operators.AIR_OT_inpaint_from_render.bl_idname)
 
         row = layout.row()
