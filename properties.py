@@ -289,14 +289,14 @@ class AIRProperties(bpy.types.PropertyGroup):
     inpaint_full_res: bpy.props.BoolProperty(
         name="Inpaint Full Res",
         default=True,
-        description=""
+        description="",
     )
     inpaint_padding: bpy.props.IntProperty(
         name="Inpaint Padding",
         max=256,
         min=0,
         default=32,
-        description=""
+        description="",
     )
 
 classes = [
