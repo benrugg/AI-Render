@@ -549,36 +549,36 @@ class AIR_PT_outpaint(bpy.types.Panel):
         return utils.is_installation_valid() and context.scene.air_props.is_enabled and utils.sd_backend(context) == "shark"
     
     def draw(self, context):
-        layout = self.layout
-        scene = context.scene
-        props = scene.air_props
+        # layout = self.layout
+        # scene = context.scene
+        # props = scene.air_props
 
-        row = layout.row()
-        row.prop(props, "outpaint_direction", text="Outpaint Direction")
+        # row = layout.row()
+        # row.prop(props, "outpaint_direction", text="Outpaint Direction")
 
-        row = layout.row()
-        sub = row.column()
-        sub.label("Pixels to Expand:")
-        sub = row.column()
-        sub.prop(props, "outpaint_pixels_to_expand", text="", slider=False)
+        # row = layout.row()
+        # sub = row.column()
+        # sub.label("Pixels to Expand:")
+        # sub = row.column()
+        # sub.prop(props, "outpaint_pixels_to_expand", text="", slider=False)
 
-        row = layout.row()
-        sub = row.column()
-        sub.label("Mask Blur:")
-        sub = row.column()
-        sub.prop(props, "outpaint_mask_blur", text="", slider=False)
+        # row = layout.row()
+        # sub = row.column()
+        # sub.label("Mask Blur:")
+        # sub = row.column()
+        # sub.prop(props, "outpaint_mask_blur", text="", slider=False)
 
-        row = layout.row()
-        sub = row.column()
-        sub.label("Noise Quotient:")
-        sub = row.column()
-        sub.prop(props, "outpaint_noise_q", text="", slider=False)
+        # row = layout.row()
+        # sub = row.column()
+        # sub.label("Noise Quotient:")
+        # sub = row.column()
+        # sub.prop(props, "outpaint_noise_q", text="", slider=False)
 
-        row = layout.row()
-        sub = row.column()
-        sub.label("Color Variation:")
-        sub = row.column()
-        sub.prop(props, "outpaint_color_variation", text="", slider=False)
+        # row = layout.row()
+        # sub = row.column()
+        # sub.label("Color Variation:")
+        # sub = row.column()
+        # sub.prop(props, "outpaint_color_variation", text="", slider=False)
         
 
 
