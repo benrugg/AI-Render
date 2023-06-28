@@ -1017,6 +1017,8 @@ classes = [
     AIR_OT_automatic1111_load_controlnet_models,
     AIR_OT_automatic1111_load_controlnet_modules,
     AIR_OT_automatic1111_load_controlnet_models_and_modules,
+    AIR_OT_inpaint_from_render,
+    AIR_OT_inpaint_from_last_sd_image,
 ]
 
 
