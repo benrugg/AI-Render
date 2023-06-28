@@ -526,6 +526,9 @@ class AIR_PT_inpaint(bpy.types.Panel):
         row.enabled = props.last_generated_image_filename != "" and props.inpaint_mask != ""
         row.operator(operators.AIR_OT_inpaint_from_last_sd_image.bl_idname)
 
+        row = layout.row()
+        row.operator(operators.AIR_OT_info.bl_idname)
+
 
 class AIR_PT_animation(bpy.types.Panel):
     bl_label = "Animation"
