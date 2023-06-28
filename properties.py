@@ -291,13 +291,13 @@ class AIRProperties(bpy.types.PropertyGroup):
         default=True,
         description="",
     )
-    # inpaint_padding: bpy.props.IntProperty(
-    #     name="Inpaint Padding",
-    #     max=256,
-    #     min=0,
-    #     default=32,
-    #     description="",
-    # )
+    inpaint_padding: bpy.props.IntProperty(
+        name="Inpaint Padding",
+        max=256,
+        min=0,
+        default=32,
+        description="",
+    )
 
 classes = [
     AIRProperties
