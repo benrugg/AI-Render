@@ -969,20 +969,35 @@ class AIR_OT_automatic1111_load_controlnet_models_and_modules(bpy.types.Operator
         automatic1111_api.choose_controlnet_defaults(context)
         return {'FINISHED'}
 
-def get_available_masks(self, context):
-    mask_list = []
-    for k in bpy.data.masks:
-        mask_list.append((k,k,""))
-    return mask_list
-
-class AIR_OT_info(bpy.types.Operator):
-    bl_idname = "ai_render.info"
-    bl_label = "print info"
+class AIR_OT_inpaint_from_render(bpy.types.Operator):
+    "Inpaint a new Stable Diffusion image - without re-rendering - from the last rendered image"
+    bl_idname = "ai_render.inpaint_from_render"
+    bl_label = "Inpaint Image From Last Render"
 
     def execute(self, context):
-        handle_error(str(get_available_masks(self, context)))
+        do_pre_render_setup(context.scene)
+        do_pre_api_setup(context.scene)
+
+        # post to the api (on a different thread, outside the operator)
+        task_queue.add(functools.partial(sd_generate, context.scene))
 
         return {'FINISHED'}
+
+
+class AIR_OT_inpaint_from_last_sd_image(bpy.types.Operator):
+    "Generate a new Stable Diffusion image - without re-rendering - using the most recent Stable Diffusion image as the starting point"
+    bl_idname = "ai_render.inpaint_from_last_sd_image"
+    bl_label = "Inpaint Image From Last AI Image"
+
+    def execute(self, context):
+        do_pre_render_setup(context.scene)
+        do_pre_api_setup(context.scene)
+
+        # post to the api (on a different thread, outside the operator)
+        task_queue.add(functools.partial(sd_generate, context.scene, None, True))
+
+        return {'FINISHED'}
+
 
 classes = [
     AIR_OT_enable,
@@ -1002,7 +1017,6 @@ classes = [
     AIR_OT_automatic1111_load_controlnet_models,
     AIR_OT_automatic1111_load_controlnet_modules,
     AIR_OT_automatic1111_load_controlnet_models_and_modules,
-    AIR_OT_info,
 ]
 
 
