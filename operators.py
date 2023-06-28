@@ -599,7 +599,6 @@ def sd_inpaint(scene):
     # get the backend we're using
     sd_backend = utils.get_active_backend()
 
-    # TODO:
     # send to whichever API we're using
     start_time = time.time()
     generated_image_file = sd_backend.inpaint(params, img_file, mask_file, after_output_filename_prefix, props)

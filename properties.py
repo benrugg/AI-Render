@@ -38,11 +38,14 @@ def get_available_controlnet_modules(self, context):
     else:
         return []
 
-def get_available_masks(self, context):
-    mask_list = []
-    for k, v in bpy.data.masks.items():
-        mask_list.append((str(k),str(k),""))
-    return mask_list
+
+def get_outpaint_directions(self, context):
+    return [
+        ("up", "up", ""),
+        ("down", "down", ""),
+        ("left", "left", ""),
+        ("right", "right", ""),
+    ]
 
 def ensure_sampler(context):
     # """Ensure that the sampler is set to a valid value"""
@@ -296,7 +299,43 @@ class AIRProperties(bpy.types.PropertyGroup):
         max=256,
         min=0,
         default=32,
+        step=4,
         description="",
+    )
+    outpaint_direction: bpy.props.EnumProperty(
+        name="Outpaint Direction",
+        items=get_outpaint_directions,
+        description="The image will expand in this direction",
+    )
+    outpaint_pixels_to_expand: bpy.props.IntProperty(
+        name="Outpaint Pixels to Expand",
+        min=8,
+        max=256,
+        step=8,
+        default=8,
+        description="",
+    )
+    outpaint_mask_blur: bpy.props.IntProperty(
+        name="Outpaint Mask Blur"
+        description="this changes how much the inpainting mask is blurred. This helps to avoid sharp edges on the image.",
+        min=0,
+        max=64,
+        step=1,
+        default=0,
+    )
+    outpaint_noise_q: bpy.props.FloatProperty(
+        min=0.0,
+        max=4.0,
+        default=1.0,
+        step=0.01,
+        name="Outpaint Noise Quotient",
+    )
+    outpaint_color_variation: bpy.props.FloatProperty(
+        min=0.0,
+        max=1.0,
+        default=0.05,
+        step=0.01,
+        name="Outpaint Color Variation",
     )
 
 classes = [

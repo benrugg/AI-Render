@@ -535,6 +535,52 @@ class AIR_PT_inpaint(bpy.types.Panel):
         row.enabled = props.last_generated_image_filename != "" and props.inpaint_mask_path != ""
         row.operator(operators.AIR_OT_inpaint_from_last_sd_image.bl_idname)
 
+class AIR_PT_outpaint(bpy.types.Panel):
+    bl_label = "Outpaint"
+    bl_idname = "AIR_PT_outpaint"
+    bl_parent_id = "AIR_PT_main"
+    bl_space_type = "PROPERTIES"
+    bl_region_type = "WINDOW"
+    bl_context = "render"
+    bl_options = {'DEFAULT_CLOSED'}
+
+    @classmethod
+    def poll(cls, context):
+        return utils.is_installation_valid() and context.scene.air_props.is_enabled and utils.sd_backend(context) == "shark"
+    
+    def draw(self, context):
+        layout = self.layout
+        scene = context.scene
+        props = scene.air_props
+
+        row = layout.row()
+        row.prop(props, "outpaint_direction", text="Outpaint Direction")
+
+        row = layout.row()
+        sub = row.column()
+        sub.label("Pixels to Expand:")
+        sub = row.column()
+        sub.prop(props, "outpaint_pixels_to_expand", text="", slider=False)
+
+        row = layout.row()
+        sub = row.column()
+        sub.label("Mask Blur:")
+        sub = row.column()
+        sub.prop(props, "outpaint_mask_blur", text="", slider=False)
+
+        row = layout.row()
+        sub = row.column()
+        sub.label("Noise Quotient:")
+        sub = row.column()
+        sub.prop(props, "outpaint_noise_q", text="", slider=False)
+
+        row = layout.row()
+        sub = row.column()
+        sub.label("Color Variation:")
+        sub = row.column()
+        sub.prop(props, "outpaint_color_variation", text="", slider=False)
+        
+
 
 class AIR_PT_animation(bpy.types.Panel):
     bl_label = "Animation"
@@ -608,6 +654,7 @@ classes = [
     AIR_PT_operation,
     AIR_PT_upscale,
     AIR_PT_inpaint,
+    AIR_PT_outpaint,
     AIR_PT_animation,
 ]
 
