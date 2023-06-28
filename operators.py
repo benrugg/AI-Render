@@ -1076,14 +1076,18 @@ class AIR_OT_inpaint_from_last_sd_image(bpy.types.Operator):
 
         return {'FINISHED'}
 
-class AIR_OT_info(bpy.types.Operator):
-    "Info"
-    bl_idname = "ai_render.info"
-    bl_label = "Info"
+class AIR_OT_outpaint_from_last_sd_image(bpy.types.Operator):
+    "Inpaint a new Stable Diffusion image - without re-rendering - using the most recent Stable Diffusion image as the starting point"
+    bl_idname = "ai_render.outpaint_from_last_sd_image"
+    bl_label = "Outpaint Image From Last AI Image"
+
     def execute(self, context):
-        mask = (bpy.data.masks['Mask'].values())
-        msg = str((mask))
-        handle_error(msg)
+        do_pre_render_setup(context.scene)
+        do_pre_api_setup(context.scene)
+
+        # post to the api (on a different thread, outside the operator)
+        task_queue.add(functools.partial(sd_outpaint, context.scene))
+
         return {'FINISHED'}
 
 
@@ -1106,7 +1110,7 @@ classes = [
     AIR_OT_automatic1111_load_controlnet_modules,
     AIR_OT_automatic1111_load_controlnet_models_and_modules,
     AIR_OT_inpaint_from_last_sd_image,
-    AIR_OT_info,
+    AIR_OT_outpaint_from_last_sd_image,
 ]
 
 

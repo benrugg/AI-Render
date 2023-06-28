@@ -569,7 +569,7 @@ class AIR_PT_outpaint(bpy.types.Panel):
         sub = row.column()
         sub.label(text="Mask Blur:")
         sub = row.column()
-        sub.prop(props, "outpaint_mask_blur", text="", slider=False)
+        sub.prop(props, "outpaint_mask_blur", text="", slider=True)
 
         row = layout.row()
         sub = row.column()
@@ -583,7 +583,10 @@ class AIR_PT_outpaint(bpy.types.Panel):
         sub = row.column()
         sub.prop(props, "outpaint_color_variation", text="", slider=True)
 
-        
+        row = layout.row()
+        row.enabled = props.last_generated_image_filename != ""
+        row.operator(operators.AIR_OT_outpaint_from_last_sd_image.bl_idname)
+
 
 class AIR_PT_animation(bpy.types.Panel):
     bl_label = "Animation"
