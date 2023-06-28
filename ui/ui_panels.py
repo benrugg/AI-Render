@@ -520,14 +520,11 @@ class AIR_PT_inpaint(bpy.types.Panel):
         width_guess = 220
 
         row = layout.row()
-        row.prop(props, "inpaint_mask", text="Mask")
+        row.prop(props, "inpaint_mask_path", text="Mask")
 
         row = layout.row()
-        row.enabled = props.last_generated_image_filename != "" and props.inpaint_mask != ""
+        row.enabled = props.last_generated_image_filename != "" and props.inpaint_mask_path != ""
         row.operator(operators.AIR_OT_inpaint_from_last_sd_image.bl_idname)
-
-        row = layout.row()
-        row.operator(operators.AIR_OT_info.bl_idname)
 
 
 class AIR_PT_animation(bpy.types.Panel):
