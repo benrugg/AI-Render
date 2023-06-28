@@ -549,9 +549,9 @@ class AIR_PT_outpaint(bpy.types.Panel):
         return utils.is_installation_valid() and context.scene.air_props.is_enabled and utils.sd_backend(context) == "shark"
     
     def draw(self, context):
-        # layout = self.layout
-        # scene = context.scene
-        # props = scene.air_props
+        layout = self.layout
+        scene = context.scene
+        props = scene.air_props
 
         # row = layout.row()
         # row.prop(props, "outpaint_direction", text="Outpaint Direction")
@@ -580,7 +580,7 @@ class AIR_PT_outpaint(bpy.types.Panel):
         # sub = row.column()
         # sub.prop(props, "outpaint_color_variation", text="", slider=False)
         
-
+        
 
 class AIR_PT_animation(bpy.types.Panel):
     bl_label = "Animation"
