@@ -577,9 +577,9 @@ def sd_inpaint(scene):
     
     # load mask here
     if props.inpaint_mask_path == "":
-        return handle_error(f"Couldn't find the Inpaint Mask: {props.inpaint_mask_path}")
+        return handle_error("Couldn't find the Inpaint Mask File", "inpaint_mask_path")
     try:
-        mask_file = open(props.mask_file_path, 'rb')
+        mask_file = open(props.inpaint_mask_path, 'rb')
     except:
         return handle_error("Couldn't load the uploaded inpaint mask file", "inpaint_mask_path")
     
@@ -602,7 +602,7 @@ def sd_inpaint(scene):
     # TODO:
     # send to whichever API we're using
     start_time = time.time()
-    generated_image_file = sd_backend.inpaint(params, img_file, after_output_filename_prefix, props)
+    generated_image_file = sd_backend.inpaint(params, img_file, mask_file, after_output_filename_prefix, props)
 
     # if we didn't get a successful image, stop here (an error will have been handled by the api function)
     if not generated_image_file:
