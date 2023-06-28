@@ -524,9 +524,9 @@ class AIR_PT_inpaint(bpy.types.Panel):
 
         row = layout.row()
         sub = row.column()
-        sub.label(text="Padding")
+        sub.label(text="Padding:")
         sub = row.column()
-        sub.prop(props, 'inpaint_padding', text="", slider=False)
+        sub.prop(props, 'inpaint_padding', text="", slider=True)
 
         row = layout.row()
         row.prop(props, "inpaint_mask_path", text="Mask")
