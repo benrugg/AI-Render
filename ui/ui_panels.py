@@ -546,7 +546,7 @@ class AIR_PT_outpaint(bpy.types.Panel):
 
     @classmethod
     def poll(cls, context):
-        return utils.is_installation_valid() and context.scene.air_props.is_enabled
+        return utils.is_installation_valid() and context.scene.air_props.is_enabled and utils.sd_backend(context) == "shark"
     
     def draw(self, context):
         layout = self.layout
