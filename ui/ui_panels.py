@@ -554,9 +554,10 @@ class AIR_PT_outpaint(bpy.types.Panel):
         props = scene.air_props
 
         row = layout.row()
-        sub = row.columns()
+        sub = row.column()
         sub.label(text="Outpaint Direction:")
-        row.prop(props, "outpaint_direction", text="")
+        sub = row.column()
+        sub.prop(props, "outpaint_direction", text="")
 
         row = layout.row()
         sub = row.column()
