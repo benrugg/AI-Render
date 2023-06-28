@@ -1079,7 +1079,7 @@ class AIR_OT_info(bpy.types.Operator):
     bl_idname = "ai_render.info"
     bl_label = "Info"
     def execute(self, context):
-        mask = bpy.data.masks['Mask'].__doc__()
+        mask = type(bpy.data.masks['Mask'])
         msg = str((mask))
         handle_error(msg)
         return {'FINISHED'}
