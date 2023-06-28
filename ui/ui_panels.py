@@ -523,6 +523,9 @@ class AIR_PT_inpaint(bpy.types.Panel):
         # row.props(props, "inpaint_padding")
 
         row = layout.row()
+        row.label(text="Hello")
+
+        row = layout.row()
         row.props(props, "inpaint_full_res", text="")
 
         row = layout.row()
