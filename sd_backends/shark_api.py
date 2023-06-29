@@ -8,8 +8,6 @@ from .. import (
     utils,
 )
 
-
-# img2img generate should prabably work as is
 # TODO: Controlnet Supprt
 # TODO: Support Model Choice
 
