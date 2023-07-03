@@ -73,7 +73,7 @@ def upscale(img_file, filename_prefix, props):
 
 
 def inpaint(params, img_file, mask_file, filename_prefix, props):
-    
+
     params["image"] = "data:image/png;base64," + base64.b64encode(img_file.read()).decode()
     img_file.close()
 
@@ -94,10 +94,10 @@ def inpaint(params, img_file, mask_file, filename_prefix, props):
         return handle_success(response, filename_prefix)
     else:
         return handle_error(response)
-    
+
 
 def outpaint(params, img_file, filename_prefix, props):
-    
+
     params["init_images"] = ["data:image/png;base64," + base64.b64encode(img_file.read()).decode()]
     img_file.close()
 
@@ -234,6 +234,14 @@ def is_upscaler_model_list_loaded(context=None):
 
 def supports_reloading_upscaler_models():
     return False
+
+
+def supports_inpainting():
+    return True
+
+
+def supports_outpainting():
+    return True
 
 
 def get_upscaler_models(context):

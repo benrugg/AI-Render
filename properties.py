@@ -47,6 +47,7 @@ def get_outpaint_directions(self, context):
         ("right", "right", ""),
     ]
 
+
 def ensure_sampler(context):
     # """Ensure that the sampler is set to a valid value"""
     scene = context.scene

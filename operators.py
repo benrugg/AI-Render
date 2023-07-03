@@ -539,9 +539,10 @@ def sd_upscale(scene):
     # return success
     return True
 
+
 # Inpainting
 def sd_inpaint(scene):
-    """Post to the API to generate a Stable Diffusion image and then process it"""
+    """Post to the API to generate a Stable Diffusion image with inpainting, and then process it"""
     props = scene.air_props
 
     # get the prompt if we haven't been given one
@@ -552,7 +553,7 @@ def sd_inpaint(scene):
     else:
         prompt = get_full_prompt(scene)
         negative_prompt = props.negative_prompt_text.strip()
-    
+
 
     # validate the parameters we will send
     if not validate_params(scene, prompt):
@@ -574,7 +575,7 @@ def sd_inpaint(scene):
         img_file = open(props.last_generated_image_filename, 'rb')
     except:
         return handle_error("Couldn't load the last Stable Diffusion image. It's probably been deleted or moved. You'll need to restore it or render a new image.", "load_last_generated_image")
-    
+
     # load mask here
     if props.inpaint_mask_path == "":
         return handle_error("Couldn't find the Inpaint Mask File", "inpaint_mask_path")
@@ -582,7 +583,7 @@ def sd_inpaint(scene):
         mask_file = open(props.inpaint_mask_path, 'rb')
     except:
         return handle_error("Couldn't load the uploaded inpaint mask file", "inpaint_mask_path")
-    
+
     # prepare data for the API request
     params = {
         "prompt": prompt,
@@ -613,7 +614,7 @@ def sd_inpaint(scene):
 
     # store this image filename as the last generated image
     props.last_generated_image_filename = generated_image_file
-    
+
     # if we're rendering an animation manually, save the image to the animation output path
     if props.is_rendering_animation_manually:
         generated_image_file = save_animation_image(scene, animation_output_filename_prefix, generated_image_file)
@@ -636,7 +637,7 @@ def sd_inpaint(scene):
 
 # Outpainting
 def sd_outpaint(scene):
-    """Post to the API to generate a Stable Diffusion image and then process it"""
+    """Post to the API to generate a Stable Diffusion image with outpainting, and then process it"""
     props = scene.air_props
 
     # get the prompt if we haven't been given one
@@ -647,7 +648,7 @@ def sd_outpaint(scene):
     else:
         prompt = get_full_prompt(scene)
         negative_prompt = props.negative_prompt_text.strip()
-    
+
 
     # validate the parameters we will send
     if not validate_params(scene, prompt):
@@ -669,8 +670,8 @@ def sd_outpaint(scene):
         img_file = open(props.last_generated_image_filename, 'rb')
     except:
         return handle_error("Couldn't load the last Stable Diffusion image. It's probably been deleted or moved. You'll need to restore it or render a new image.", "load_last_generated_image")
-    
-    
+
+
     # prepare data for the API request
     params = {
         "prompt": prompt,
@@ -704,7 +705,7 @@ def sd_outpaint(scene):
 
     # store this image filename as the last generated image
     props.last_generated_image_filename = generated_image_file
-    
+
     # if we're rendering an animation manually, save the image to the animation output path
     if props.is_rendering_animation_manually:
         generated_image_file = save_animation_image(scene, animation_output_filename_prefix, generated_image_file)
@@ -723,6 +724,7 @@ def sd_outpaint(scene):
 
     # return success
     return True
+
 
 class AIR_OT_enable(bpy.types.Operator):
     "Enable AI Render in this scene"
@@ -1166,6 +1168,7 @@ class AIR_OT_inpaint_from_last_sd_image(bpy.types.Operator):
         task_queue.add(functools.partial(sd_inpaint, context.scene))
 
         return {'FINISHED'}
+
 
 class AIR_OT_outpaint_from_last_sd_image(bpy.types.Operator):
     "Inpaint a new Stable Diffusion image - without re-rendering - using the most recent Stable Diffusion image as the starting point"

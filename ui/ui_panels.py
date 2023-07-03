@@ -510,11 +510,7 @@ class AIR_PT_inpaint(bpy.types.Panel):
 
     @classmethod
     def poll(cls, context):
-        return utils.is_installation_valid() and context.scene.air_props.is_enabled
-    
-    @classmethod
-    def does_backend_support_inpainting(cls, context):
-        return utils.sd_backend(context) == "shark"
+        return utils.is_installation_valid() and context.scene.air_props.is_enabled and utils.get_active_backend().supports_inpainting()
 
     def draw(self, context):
         layout = self.layout
@@ -522,12 +518,6 @@ class AIR_PT_inpaint(bpy.types.Panel):
         props = scene.air_props
 
         width_guess = 220
-
-        if not AIR_PT_inpaint.does_backend_support_inpainting(context):
-            box = layout.box()
-            utils.label_multiline(box, text=f"Inpainting is not supported by {utils.sd_backend_formatted_name()}. If you'd like to inpaint your image, switch to SHARK by nod.ai in AI Render's preferences.", icon="ERROR", width=width_guess)
-            return
-
 
         row = layout.row()
         row.prop(props, "inpaint_full_res")
@@ -545,6 +535,7 @@ class AIR_PT_inpaint(bpy.types.Panel):
         row.enabled = props.last_generated_image_filename != "" and props.inpaint_mask_path != ""
         row.operator(operators.AIR_OT_inpaint_from_last_sd_image.bl_idname)
 
+
 class AIR_PT_outpaint(bpy.types.Panel):
     bl_label = "Outpaint"
     bl_idname = "AIR_PT_outpaint"
@@ -556,24 +547,14 @@ class AIR_PT_outpaint(bpy.types.Panel):
 
     @classmethod
     def poll(cls, context):
-        return utils.is_installation_valid() and context.scene.air_props.is_enabled
-    
-    @classmethod
-    def does_backend_support_outpainting(cls, context):
-        return utils.sd_backend(context) == "shark"
-    
+        return utils.is_installation_valid() and context.scene.air_props.is_enabled and utils.get_active_backend().supports_outpainting()
+
     def draw(self, context):
         layout = self.layout
         scene = context.scene
         props = scene.air_props
 
         width_guess = 220
-
-        if not AIR_PT_outpaint.does_backend_support_outpainting(context):
-            box = layout.box()
-            utils.label_multiline(box, text=f"Outpainting is not supported by {utils.sd_backend_formatted_name()}. If you'd like to outpaint your image, switch to SHARK by nod.ai in AI Render's preferences.", icon="ERROR", width=width_guess)
-            return
-
 
         row = layout.row()
         sub = row.column()
