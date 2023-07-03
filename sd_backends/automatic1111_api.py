@@ -279,6 +279,14 @@ def supports_reloading_upscaler_models():
     return True
 
 
+def supports_inpainting():
+    return False
+
+
+def supports_outpainting():
+    return False
+
+
 def min_image_size():
     return 128 * 128
 

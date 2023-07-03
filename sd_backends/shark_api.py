@@ -8,8 +8,6 @@ from .. import (
     utils,
 )
 
-
-# img2img generate should prabably work as is
 # TODO: Controlnet Supprt
 # TODO: Support Model Choice
 
@@ -64,6 +62,51 @@ def upscale(img_file, filename_prefix, props):
         return operators.handle_error(f"You need to specify a location for the local Stable Diffusion server in the add-on preferences. [Get help]({config.HELP_WITH_SHARK_INSTALLATION_URL})", "local_server_url_missing")
 
     response = do_post(server_url, data)
+
+    if response is False:
+        return False
+
+    if response.status_code == 200:
+        return handle_success(response, filename_prefix)
+    else:
+        return handle_error(response)
+
+
+def inpaint(params, img_file, mask_file, filename_prefix, props):
+
+    params["image"] = "data:image/png;base64," + base64.b64encode(img_file.read()).decode()
+    img_file.close()
+
+    params["mask"] = "data:image/png;base64," + base64.b64encode(mask_file.read()).decode()
+    mask_file.close()
+
+    try:
+        server_url = get_server_url("/sdapi/v1/inpaint")
+    except:
+        return operators.handle_error(f"You need to specify a location for the local Stable Diffusion server in the add-on preferences. [Get help]({config.HELP_WITH_SHARK_INSTALLATION_URL})", "local_server_url_missing")
+
+    response = do_post(server_url, params)
+
+    if response is False:
+        return False
+
+    if response.status_code == 200:
+        return handle_success(response, filename_prefix)
+    else:
+        return handle_error(response)
+
+
+def outpaint(params, img_file, filename_prefix, props):
+
+    params["init_images"] = ["data:image/png;base64," + base64.b64encode(img_file.read()).decode()]
+    img_file.close()
+
+    try:
+        server_url = get_server_url("/sdapi/v1/outpaint")
+    except:
+        return operators.handle_error(f"You need to specify a location for the local Stable Diffusion server in the add-on preferences. [Get help]({config.HELP_WITH_SHARK_INSTALLATION_URL})", "local_server_url_missing")
+
+    response = do_post(server_url, params)
 
     if response is False:
         return False
@@ -191,6 +234,14 @@ def is_upscaler_model_list_loaded(context=None):
 
 def supports_reloading_upscaler_models():
     return False
+
+
+def supports_inpainting():
+    return True
+
+
+def supports_outpainting():
+    return True
 
 
 def get_upscaler_models(context):

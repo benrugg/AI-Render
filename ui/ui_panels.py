@@ -498,6 +498,99 @@ class AIR_PT_upscale(bpy.types.Panel):
         row.operator(operators.AIR_OT_upscale_last_sd_image.bl_idname, icon="FULLSCREEN_ENTER")
 
 
+# Inpainting
+class AIR_PT_inpaint(bpy.types.Panel):
+    bl_label = "Inpaint"
+    bl_idname = "AIR_PT_inpaint"
+    bl_parent_id = "AIR_PT_main"
+    bl_space_type = "PROPERTIES"
+    bl_region_type = "WINDOW"
+    bl_context = "render"
+    bl_options = {'DEFAULT_CLOSED'}
+
+    @classmethod
+    def poll(cls, context):
+        return utils.is_installation_valid() and context.scene.air_props.is_enabled and utils.get_active_backend().supports_inpainting()
+
+    def draw(self, context):
+        layout = self.layout
+        scene = context.scene
+        props = scene.air_props
+
+        width_guess = 220
+
+        row = layout.row()
+        row.prop(props, "inpaint_full_res")
+
+        row = layout.row()
+        sub = row.column()
+        sub.label(text="Padding:")
+        sub = row.column()
+        sub.prop(props, 'inpaint_padding', text="", slider=False)
+
+        row = layout.row()
+        row.prop(props, "inpaint_mask_path", text="Mask")
+
+        row = layout.row()
+        row.enabled = props.last_generated_image_filename != "" and props.inpaint_mask_path != ""
+        row.operator(operators.AIR_OT_inpaint_from_last_sd_image.bl_idname)
+
+
+class AIR_PT_outpaint(bpy.types.Panel):
+    bl_label = "Outpaint"
+    bl_idname = "AIR_PT_outpaint"
+    bl_parent_id = "AIR_PT_main"
+    bl_space_type = "PROPERTIES"
+    bl_region_type = "WINDOW"
+    bl_context = "render"
+    bl_options = {'DEFAULT_CLOSED'}
+
+    @classmethod
+    def poll(cls, context):
+        return utils.is_installation_valid() and context.scene.air_props.is_enabled and utils.get_active_backend().supports_outpainting()
+
+    def draw(self, context):
+        layout = self.layout
+        scene = context.scene
+        props = scene.air_props
+
+        width_guess = 220
+
+        row = layout.row()
+        sub = row.column()
+        sub.label(text="Outpaint Direction:")
+        sub = row.column()
+        sub.prop(props, "outpaint_direction", text="")
+
+        row = layout.row()
+        sub = row.column()
+        sub.label(text="Pixels to Expand:")
+        sub = row.column()
+        sub.prop(props, "outpaint_pixels_to_expand", text="", slider=False)
+
+        row = layout.row()
+        sub = row.column()
+        sub.label(text="Mask Blur:")
+        sub = row.column()
+        sub.prop(props, "outpaint_mask_blur", text="", slider=True)
+
+        row = layout.row()
+        sub = row.column()
+        sub.label(text="Noise Quotient:")
+        sub = row.column()
+        sub.prop(props, "outpaint_noise_q", text="", slider=True)
+
+        row = layout.row()
+        sub = row.column()
+        sub.label(text="Color Variation:")
+        sub = row.column()
+        sub.prop(props, "outpaint_color_variation", text="", slider=True)
+
+        row = layout.row()
+        row.enabled = props.last_generated_image_filename != ""
+        row.operator(operators.AIR_OT_outpaint_from_last_sd_image.bl_idname)
+
+
 class AIR_PT_animation(bpy.types.Panel):
     bl_label = "Animation"
     bl_idname = "AIR_PT_animation"
@@ -569,6 +662,8 @@ classes = [
     AIR_PT_controlnet,
     AIR_PT_operation,
     AIR_PT_upscale,
+    AIR_PT_inpaint,
+    AIR_PT_outpaint,
     AIR_PT_animation,
 ]
 
