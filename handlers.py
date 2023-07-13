@@ -11,10 +11,9 @@ from . import (
 
 
 @persistent
-def load_post_handler(context):
+def load_post_handler(loaded_filename):
     """Handle new blender file load (and new scene load)"""
-    if not context:
-        context = bpy.context
+    context = bpy.context
 
     # if AI Render has been enabled in this file, do the enable steps
     # right now, to ensure everything is running and in place
