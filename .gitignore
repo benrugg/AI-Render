@@ -6,6 +6,7 @@ ai-render_updater
 
 # misc
 .DS_Store
+.vscode
 
 # client-side config files
 .analytics_client_id
