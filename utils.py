@@ -149,6 +149,22 @@ def get_smallest_area_by_type(area_type, workspace_id=None):
     return areas[0]['area']
 
 
+def find_area_showing_render_result(scene, context=None):
+    # Based on https://projects.blender.org/blender/blender/src/branch/main/source/blender/editors/render/render_view.cc#L74
+    if not context:
+        context = bpy.context
+
+    for window in context.window_manager.windows:
+        if window.scene != scene:
+            continue
+        
+        for area in window.screen.areas:
+            if area.type == 'IMAGE_EDITOR' and area.spaces.active.image.type == 'RENDER_RESULT':
+                return area
+
+    return None
+
+
 def split_area(context, area, direction='HORIZONTAL', factor=0.5):
     if bpy.app.version >= (3, 2, 0):
         with context.temp_override(area=area):
@@ -161,6 +177,13 @@ def split_area(context, area, direction='HORIZONTAL', factor=0.5):
 
 def view_sd_result_in_air_image_editor(img):
     image_editor_area = get_area_by_type('IMAGE_EDITOR', config.workspace_id)
+
+    if image_editor_area:
+        image_editor_area.spaces.active.image = img
+
+
+def view_sd_in_render_view(img, scene, context=None):
+    image_editor_area = find_area_showing_render_result(scene, context)
 
     if image_editor_area:
         image_editor_area.spaces.active.image = img

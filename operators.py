@@ -450,9 +450,12 @@ def sd_generate(scene, prompts=None, use_last_sd_image=False):
     except:
         return handle_error("Couldn't load the image from Stable Diffusion", "load_sd_image")
 
-    # view the image in the AIR workspace
+    # view the image in the AIR workspace or Render Result view
     try:
-        utils.view_sd_result_in_air_image_editor(img)
+        if props.view_in_workspace:
+            utils.view_sd_result_in_air_image_editor(img)
+        else:
+            utils.view_sd_in_render_view(img, scene)
     except:
         return handle_error("Couldn't switch the view to the image from Stable Diffusion", "view_sd_image")
 
@@ -520,9 +523,12 @@ def sd_upscale(scene):
     except:
         return handle_error("Couldn't load the image from Stable Diffusion", "load_sd_image")
 
-    # view the image in the AIR workspace
+    # view the image in the AIR workspace or Render Result view
     try:
-        utils.view_sd_result_in_air_image_editor(img)
+        if props.view_in_workspace:
+            utils.view_sd_result_in_air_image_editor(img)
+        else:
+            utils.view_sd_in_render_view(img, scene)
     except:
         return handle_error("Couldn't switch the view to the image from Stable Diffusion", "view_sd_image")
 
@@ -625,9 +631,12 @@ def sd_inpaint(scene):
     except:
         return handle_error("Couldn't load the image from Stable Diffusion", "load_sd_image")
 
-    # view the image in the AIR workspace
+    # view the image in the AIR workspace or Render Result view
     try:
-        utils.view_sd_result_in_air_image_editor(img)
+        if props.view_in_workspace:
+            utils.view_sd_result_in_air_image_editor(img)
+        else:
+            utils.view_sd_in_render_view(img, scene)
     except:
         return handle_error("Couldn't switch the view to the image from Stable Diffusion", "view_sd_image")
 
@@ -716,9 +725,12 @@ def sd_outpaint(scene):
     except:
         return handle_error("Couldn't load the image from Stable Diffusion", "load_sd_image")
 
-    # view the image in the AIR workspace
+    # view the image in the AIR workspace or Render Result view
     try:
-        utils.view_sd_result_in_air_image_editor(img)
+        if props.view_in_workspace:
+            utils.view_sd_result_in_air_image_editor(img)
+        else:
+            utils.view_sd_in_render_view(img, scene)
     except:
         return handle_error("Couldn't switch the view to the image from Stable Diffusion", "view_sd_image")
 
