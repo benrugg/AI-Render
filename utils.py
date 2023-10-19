@@ -49,7 +49,7 @@ def create_temp_file(prefix, suffix=".png"):
     return tempfile.NamedTemporaryFile(prefix=prefix, suffix=suffix).name
 
 
-def get_image_filename(scene, suffix = ""):
+def get_image_filename(scene, prompt, negative_prompt, suffix = ""):
     props = scene.air_props
     timestamp = int(time.time())
     template = props.image_filename_template
