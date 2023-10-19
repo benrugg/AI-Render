@@ -49,6 +49,25 @@ def create_temp_file(prefix, suffix=".png"):
     return tempfile.NamedTemporaryFile(prefix=prefix, suffix=suffix).name
 
 
+def get_image_filename(scene, suffix = ""):
+    props = scene.air_props
+    timestamp = int(time.time())
+    template = props.image_filename_template
+    if not template:
+        template = config.default_image_filename_template
+    
+    return f"{template}{suffix}".format(
+        timestamp=timestamp,
+        prompt=prompt,
+        negative_prompt=negative_prompt,
+        width=get_output_width(scene),
+        height=get_output_height(scene),
+        seed=props.seed,
+        cfg_scale=props.cfg_scale,
+        steps=props.steps,
+    )
+
+
 def should_autosave_after_image(props):
     # return true to signify we should autosave the after image, if that setting is on,
     # and the path is valid, and we're not rendering an animation

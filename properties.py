@@ -164,6 +164,11 @@ class AIRProperties(bpy.types.PropertyGroup):
         name="Preset Style",
         items=ui_preset_styles.enum_thumbnail_icons,
     )
+    image_filename_template: bpy.props.StringProperty(
+        name="Filename Template",
+        default=config.default_image_filename_template,
+        description="The filename template for generated images"
+    )
     do_autosave_before_images: bpy.props.BoolProperty(
         name="Save 'Before' Images",
         default=False,

@@ -363,9 +363,8 @@ def sd_generate(scene, prompts=None, use_last_sd_image=False):
     generate_new_random_seed(scene)
 
     # prepare the output filenames
-    timestamp = int(time.time())
-    before_output_filename_prefix = f"ai-render-{timestamp}-1-before"
-    after_output_filename_prefix = f"ai-render-{timestamp}-2-after"
+    before_output_filename_prefix = utils.get_image_filename(scene, "-1-before")
+    after_output_filename_prefix = utils.get_image_filename(scene, "-2-after")
     animation_output_filename_prefix = "ai-render-"
 
     # if we want to use the last SD image, try loading it now
@@ -563,9 +562,8 @@ def sd_inpaint(scene):
     generate_new_random_seed(scene)
 
     # prepare the output filenames
-    timestamp = int(time.time())
-    before_output_filename_prefix = f"ai-render-{timestamp}-1-before"
-    after_output_filename_prefix = f"ai-render-{timestamp}-2-inpainted"
+    before_output_filename_prefix = utils.get_image_filename(scene, "-1-before")
+    after_output_filename_prefix = utils.get_image_filename(scene, "-2-inpainted")
     animation_output_filename_prefix = "ai-render-"
 
     # if we want to use the last SD image, try loading it now
@@ -658,9 +656,8 @@ def sd_outpaint(scene):
     generate_new_random_seed(scene)
 
     # prepare the output filenames
-    timestamp = int(time.time())
-    before_output_filename_prefix = f"ai-render-{timestamp}-1-before"
-    after_output_filename_prefix = f"ai-render-{timestamp}-2-outpainted"
+    before_output_filename_prefix = utils.get_image_filename(scene, "-1-before")
+    after_output_filename_prefix = utils.get_image_filename(scene, "-2-outpainted")
     animation_output_filename_prefix = "ai-render-"
 
     # if we want to use the last SD image, try loading it now

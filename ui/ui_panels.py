@@ -241,6 +241,14 @@ class AIR_PT_advanced_options(bpy.types.Panel):
         scene = context.scene
         props = scene.air_props
 
+        #Filename template
+        row = layout.row()
+        row.label(text="Filename Template:")
+        
+        row = layout.row()
+        row.scale_y = 1.8
+        row.prop(props, "image_filename_template", text="")
+
         # Seed
         row = layout.row()
         sub = row.column()
