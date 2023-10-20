@@ -446,6 +446,7 @@ def sd_generate(scene, prompts=None, use_last_sd_image=False):
     # load the image into our scene
     try:
         img = bpy.data.images.load(generated_image_file, check_existing=False)
+        img.name = after_output_filename_prefix
     except:
         return handle_error("Couldn't load the image from Stable Diffusion", "load_sd_image")
 
@@ -516,6 +517,7 @@ def sd_upscale(scene):
     # load the image into our scene
     try:
         img = bpy.data.images.load(generated_image_file, check_existing=False)
+        img.name = after_output_filename_prefix
     except:
         return handle_error("Couldn't load the image from Stable Diffusion", "load_sd_image")
 
@@ -620,6 +622,7 @@ def sd_inpaint(scene):
     # load the image into our scene
     try:
         img = bpy.data.images.load(generated_image_file, check_existing=False)
+        img.name = after_output_filename_prefix
     except:
         return handle_error("Couldn't load the image from Stable Diffusion", "load_sd_image")
 
@@ -710,6 +713,7 @@ def sd_outpaint(scene):
     # load the image into our scene
     try:
         img = bpy.data.images.load(generated_image_file, check_existing=False)
+        img.name = after_output_filename_prefix
     except:
         return handle_error("Couldn't load the image from Stable Diffusion", "load_sd_image")
 
