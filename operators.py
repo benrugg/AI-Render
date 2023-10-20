@@ -224,8 +224,8 @@ def load_image(filename, data_block_name=None):
         img_file = bpy.data.images.load(filename, check_existing=False)
         img_file.name = name
         return img_file
-    except:
-        return handle_error(f"Couldn't load image from {bpy.path.abspath(filename)}", "load_image")
+    except Exception as e:
+        return handle_error(f"Couldn't load image from {bpy.path.abspath(filename)}", "load_image: " + str(e))
 
 def do_pre_render_setup(scene):
     # Lock the user interface when rendering, so that we can change
