@@ -225,8 +225,11 @@ def do_pre_render_setup(scene):
 
 
 def do_pre_api_setup(scene):
-    # switch the workspace to our AI Render workspace, so we can show the output when it's done
-    activate_air_workspace(scene)
+    props = scene.air_props
+
+    if props.view_in_workspace:
+        # switch the workspace to our AI Render workspace, so we can show the output when it's done
+        activate_air_workspace(scene)
 
 
 def validate_params(scene, prompt=None):
