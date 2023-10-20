@@ -167,7 +167,7 @@ class AIRProperties(bpy.types.PropertyGroup):
     image_filename_template: bpy.props.StringProperty(
         name="Filename Template",
         default=config.default_image_filename_template,
-        description="The filename template for generated images"
+        description="The filename template for generated images. Can include any of the following keywords: {timestamp}, {prompt}, {negative_prompt}, {width}, {height}, {seed}, {image_similarity}, {prompt_strength}, {steps}"
     )
     do_autosave_before_images: bpy.props.BoolProperty(
         name="Save 'Before' Images",

@@ -64,9 +64,15 @@ def get_image_filename(scene, prompt, negative_prompt, suffix = ""):
         width=get_output_width(scene),
         height=get_output_height(scene),
         seed=props.seed,
-        cfg_scale=props.cfg_scale,
+        image_similarity=props.image_similarity,
+        prompt_strength=props.cfg_scale,
         steps=props.steps,
     )
+
+
+def get_image_format(to_lower = True):
+    image_format = get_active_backend().get_image_format()
+    return image_format.lower() if to_lower else image_format
 
 
 def should_autosave_after_image(props):

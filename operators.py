@@ -155,7 +155,7 @@ def render_frame(context, current_frame, prompts):
 
 def save_render_to_file(scene, filename_prefix):
     try:
-        temp_file = utils.create_temp_file(filename_prefix + "-", suffix=f".{utils.get_active_backend().get_image_format().lower()}")
+        temp_file = utils.create_temp_file(filename_prefix + "-", suffix=f".{utils.get_image_format()}")
     except:
         return handle_error("Couldn't create temp file for image", "temp_file")
 
@@ -164,7 +164,7 @@ def save_render_to_file(scene, filename_prefix):
         orig_render_color_mode = scene.render.image_settings.color_mode
         orig_render_color_depth = scene.render.image_settings.color_depth
 
-        scene.render.image_settings.file_format = utils.get_active_backend().get_image_format()
+        scene.render.image_settings.file_format = utils.get_image_format(to_lower=False)
         scene.render.image_settings.color_mode = 'RGBA'
         scene.render.image_settings.color_depth = '8'
 
@@ -192,7 +192,7 @@ def save_before_image(scene, filename_prefix):
 
 
 def save_after_image(scene, filename_prefix, img_file):
-    filename = f"{filename_prefix}.{utils.get_active_backend().get_image_format().lower()}"
+    filename = f"{filename_prefix}.{utils.get_image_format()}"
     full_path_and_filename = utils.get_absolute_path_for_output_file(scene.air_props.autosave_image_path, filename)
     try:
         utils.copy_file(img_file, full_path_and_filename)
@@ -202,7 +202,7 @@ def save_after_image(scene, filename_prefix, img_file):
 
 
 def save_animation_image(scene, filename_prefix, img_file):
-    filename = f"{filename_prefix}{str(scene.frame_current).zfill(4)}.{utils.get_active_backend().get_image_format().lower()}"
+    filename = f"{filename_prefix}{str(scene.frame_current).zfill(4)}.{utils.get_image_format()}"
     full_path_and_filename = utils.get_absolute_path_for_output_file(scene.air_props.animation_output_path, filename)
     try:
         utils.copy_file(img_file, full_path_and_filename)
