@@ -211,6 +211,22 @@ def save_animation_image(scene, filename_prefix, img_file):
         return handle_error(f"Couldn't save animation image to {bpy.path.abspath(full_path_and_filename)}", "save_image")
 
 
+def load_image(filename, data_block_name=None):
+    try:
+        name = filename
+        if data_block_name:
+            name = data_block_name
+
+        if bpy.data.images.has(name):
+            existing_img = bpy.data.images.get(name)
+            bpy.data.images.remove(existing_img)
+
+        img_file = bpy.data.images.load(filename, check_existing=False)
+        img_file.name = name
+        return img_file
+    except:
+        return handle_error(f"Couldn't load image from {bpy.path.abspath(filename)}", "load_image")
+
 def do_pre_render_setup(scene):
     # Lock the user interface when rendering, so that we can change
     # compositor nodes in the render_init handler without causing a crash!
@@ -445,8 +461,7 @@ def sd_generate(scene, prompts=None, use_last_sd_image=False):
 
     # load the image into our scene
     try:
-        img = bpy.data.images.load(generated_image_file, check_existing=False)
-        img.name = after_output_filename_prefix
+        img = load_image(generated_image_file, after_output_filename_prefix)
     except:
         return handle_error("Couldn't load the image from Stable Diffusion", "load_sd_image")
 
@@ -516,8 +531,7 @@ def sd_upscale(scene):
 
     # load the image into our scene
     try:
-        img = bpy.data.images.load(generated_image_file, check_existing=False)
-        img.name = after_output_filename_prefix
+        img = load_image(generated_image_file, after_output_filename_prefix)
     except:
         return handle_error("Couldn't load the image from Stable Diffusion", "load_sd_image")
 
@@ -621,8 +635,7 @@ def sd_inpaint(scene):
 
     # load the image into our scene
     try:
-        img = bpy.data.images.load(generated_image_file, check_existing=False)
-        img.name = after_output_filename_prefix
+        img = load_image(generated_image_file, after_output_filename_prefix)
     except:
         return handle_error("Couldn't load the image from Stable Diffusion", "load_sd_image")
 
@@ -712,8 +725,7 @@ def sd_outpaint(scene):
 
     # load the image into our scene
     try:
-        img = bpy.data.images.load(generated_image_file, check_existing=False)
-        img.name = after_output_filename_prefix
+        img = load_image(generated_image_file, after_output_filename_prefix)
     except:
         return handle_error("Couldn't load the image from Stable Diffusion", "load_sd_image")
 
