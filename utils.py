@@ -52,10 +52,8 @@ def create_temp_file(prefix, suffix=".png"):
     return tempfile.NamedTemporaryFile(prefix=prefix, suffix=suffix).name
 
 def sanitize_filename(filename):
-    # remove any characters that aren't alphanumeric, underscore, dash, space, or period
-    filename = re.sub(r'[^\w\-_\. ]', '_', filename)
-    # convert spaces to underscores
-    filename = filename.replace(' ', '_')
+    # remove any characters that aren't alphanumeric, underscore, dash, or period
+    filename = re.sub(r'[^\w\-_\.]', '_', filename)
     # remove any double underscores, dashes, periods, or spaces
     filename = re.sub(r'([-_\. ]){2,}', r'\1', filename)
     # remove any leading spaces and limit to max filename length
