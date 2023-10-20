@@ -218,7 +218,8 @@ def load_image(filename, data_block_name=None):
 
     if name in bpy.data.images:
         existing_img = bpy.data.images[name]
-        bpy.data.images.remove(existing_img)
+        existing_img.filepath = filename
+        return existing_img
 
     img_file = bpy.data.images.load(filename, check_existing=False)
     img_file.name = name
