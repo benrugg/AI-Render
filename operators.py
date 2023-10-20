@@ -217,8 +217,8 @@ def load_image(filename, data_block_name=None):
         if data_block_name:
             name = data_block_name
 
-        if bpy.data.images.has(name):
-            existing_img = bpy.data.images.get(name)
+        existing_img = bpy.data.images[name]
+        if existing_img:
             bpy.data.images.remove(existing_img)
 
         img_file = bpy.data.images.load(filename, check_existing=False)
