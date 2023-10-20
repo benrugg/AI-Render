@@ -22,6 +22,7 @@ import re
 import os
 import shutil
 import math
+import time
 import tempfile
 from . import config
 from .sd_backends import (
@@ -55,7 +56,7 @@ def get_image_filename(scene, prompt, negative_prompt, suffix = ""):
     template = props.image_filename_template
     if not template:
         template = config.default_image_filename_template
-    
+
     return f"{template}{suffix}".format(
         timestamp=timestamp,
         prompt=prompt,
