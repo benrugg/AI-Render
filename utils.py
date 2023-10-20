@@ -39,6 +39,8 @@ valid_dimension_step_size = 64
 example_dimensions = [512, 640, 768, 896, 960, 1024, 1280, 1344, 1600, 1920, 2048]
 file_formats = {"JPEG": "jpg", "BMP": "bmp", "IRIS": "rgb", "PNG": "png", "JPEG2000": "jp2", "TARGA": "tga", "TARGA_RAW": "tga", "CINEON": "cin", "DPX": "dpx", "OPEN_EXR_MULTILAYER": "exr", "OPEN_EXR": "exr", "HDR": "hdr", "TIFF": "tif", "WEBP": "webp"}
 
+max_filename_length = 255
+
 
 def get_addon_preferences(context=None):
     if not context:
@@ -49,6 +51,18 @@ def get_addon_preferences(context=None):
 def create_temp_file(prefix, suffix=".png"):
     return tempfile.NamedTemporaryFile(prefix=prefix, suffix=suffix).name
 
+def sanitize_filename(filename):
+    # remove any characters that aren't alphanumeric, underscore, dash, space, or period
+    filename = re.sub(r'[^\w\-_\. ]', '_', filename)
+    # convert spaces to underscores
+    filename = filename.replace(' ', '_')
+    # remove any double underscores, dashes, periods, or spaces
+    filename = re.sub(r'([-_\. ]){2,}', r'\1', filename)
+    # remove any leading spaces and limit to max filename length
+    filename = filename.lstrip(' ')[:max_filename_length]
+    # remove any trailing spaces or periods
+    filename = filename.rstrip(' .')
+    return filename
 
 def get_image_filename(scene, prompt, negative_prompt, suffix = ""):
     props = scene.air_props
@@ -57,7 +71,7 @@ def get_image_filename(scene, prompt, negative_prompt, suffix = ""):
     if not template:
         template = config.default_image_filename_template
 
-    return f"{template}{suffix}".format(
+    full_filename = f"{template}{suffix}".format(
         timestamp=timestamp,
         prompt=prompt,
         negative_prompt=negative_prompt,
@@ -68,6 +82,8 @@ def get_image_filename(scene, prompt, negative_prompt, suffix = ""):
         prompt_strength=props.cfg_scale,
         steps=props.steps,
     )
+
+    return sanitize_filename(full_filename)
 
 
 def get_image_format(to_lower = True):
