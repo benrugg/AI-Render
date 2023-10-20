@@ -157,7 +157,7 @@ def find_area_showing_render_result(scene, context=None):
     for window in context.window_manager.windows:
         if window.scene != scene:
             continue
-        
+
         for area in window.screen.areas:
             if area.type == 'IMAGE_EDITOR' and area.spaces.active.image.type == 'RENDER_RESULT':
                 return area
