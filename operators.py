@@ -212,20 +212,17 @@ def save_animation_image(scene, filename_prefix, img_file):
 
 
 def load_image(filename, data_block_name=None):
-    try:
-        name = filename
-        if data_block_name:
-            name = data_block_name
+    name = filename
+    if data_block_name:
+        name = data_block_name
 
+    if name in bpy.data.images:
         existing_img = bpy.data.images[name]
-        if existing_img:
-            bpy.data.images.remove(existing_img)
+        bpy.data.images.remove(existing_img)
 
-        img_file = bpy.data.images.load(filename, check_existing=False)
-        img_file.name = name
-        return img_file
-    except Exception as e:
-        return handle_error(f"Couldn't load image from {bpy.path.abspath(filename)}", "load_image: " + str(e))
+    img_file = bpy.data.images.load(filename, check_existing=False)
+    img_file.name = name
+    return img_file
 
 def do_pre_render_setup(scene):
     # Lock the user interface when rendering, so that we can change
