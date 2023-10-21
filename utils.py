@@ -140,7 +140,8 @@ def find_area_showing_render_result(scene=None, context=None):
     areas = get_areas_by_type('IMAGE_EDITOR', scene, context)
 
     for area in areas:
-        if area.spaces.active.image.type == 'RENDER_RESULT':
+        active_image = area.spaces.active.image
+        if active_image is not None and active_image.type == 'RENDER_RESULT':
             return area
     return None
 
