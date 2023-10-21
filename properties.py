@@ -145,11 +145,6 @@ class AIRProperties(bpy.types.PropertyGroup):
         default=True,
         description="Generate a new image automatically after each render. When off, you will need to manually generate a new image",
     )
-    view_in_workspace: bpy.props.BoolProperty(
-        name="Goto Workspace After Render",
-        default=True,
-        description="After generating images open the AIR workspace"
-    )
     error_key: bpy.props.StringProperty(
         name="Error Key",
         default="",

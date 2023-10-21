@@ -384,10 +384,6 @@ class AIR_PT_operation(bpy.types.Panel):
         col = row.column()
         col.prop(props, 'auto_run')
 
-        # View workspace after render
-        col = row.column()
-        col.prop(props, "view_in_workspace")
-
         # Generate Image
         layout.separator()
 
