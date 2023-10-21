@@ -95,14 +95,23 @@ def ensure_animated_prompts_text():
 
 
 def ensure_animated_prompts_text_editor(context):
-    script_area = utils.get_areas_by_type('TEXT_EDITOR', context=context)[0]
+    script_area = None
+    areas = utils.get_areas_by_type('TEXT_EDITOR', context=context)
+    if len(areas) > 0:
+        script_area = areas[0]
 
     if not script_area:
         # get current area
         area = context.area
+        if area is None:
+            area = context.screen.areas[0]
+
         utils.split_area(context, area, factor=0.5)
         # create a new text editor area
-        script_area = utils.get_areas_by_type('TEXT_EDITOR', context=context)[-1]
+        areas = utils.get_areas_by_type(area.type, context=context)
+        if len(areas) > 0:
+            script_area = areas[-1]
+            script_area.type = 'TEXT_EDITOR'
 
     script_area.spaces[0].text = utils.get_animated_prompt_text_data_block()
 
