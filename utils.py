@@ -39,7 +39,7 @@ valid_dimension_step_size = 64
 example_dimensions = [512, 640, 768, 896, 960, 1024, 1280, 1344, 1600, 1920, 2048]
 file_formats = {"JPEG": "jpg", "BMP": "bmp", "IRIS": "rgb", "PNG": "png", "JPEG2000": "jp2", "TARGA": "tga", "TARGA_RAW": "tga", "CINEON": "cin", "DPX": "dpx", "OPEN_EXR_MULTILAYER": "exr", "OPEN_EXR": "exr", "HDR": "hdr", "TIFF": "tif", "WEBP": "webp"}
 
-max_filename_length = 128 # Most system have a max of 255, but we'll leave room
+max_filename_length = 230
 
 
 def get_addon_preferences(context=None):
@@ -51,37 +51,45 @@ def get_addon_preferences(context=None):
 def create_temp_file(prefix, suffix=".png"):
     return tempfile.NamedTemporaryFile(prefix=prefix, suffix=suffix).name
 
-def sanitize_filename(filename):
-    # remove any characters that aren't alphanumeric, underscore, dash, or period
-    filename = re.sub(r'[^\w\-_\.]', '_', filename)
+
+def sanitize_filename(filename, extra_length=0):
+    # remove any characters that aren't alphanumeric, space, underscore, dash, period, comma or parentheses
+    filename = re.sub(r'[^\w \-_\.(),]', '_', filename)
     # remove any double underscores, dashes, periods
     filename = re.sub(r'([-_\.]){2,}', r'\1', filename)
-    # remove any leading underscores and limit to max filename length
-    filename = filename.lstrip('_')[:max_filename_length]
-    # remove any trailing underscores, dashes, and periods
-    filename = filename.rstrip('_-.')
+    # limit to max filename length
+    filename = filename[:(max_filename_length - extra_length)]
     return filename
 
-def get_image_filename(scene, prompt, negative_prompt, suffix = ""):
+
+def sanitize_filename_template(template):
+    # remove any {vars} that aren't in the list of allowed vars
+    return re.sub(r'{(.*?)}', lambda match: match.group(0) if match.group(1) in config.filename_template_allowed_vars else '', template)
+
+
+def get_image_filename(scene, prompt, negative_prompt, suffix=""):
     props = scene.air_props
     timestamp = int(time.time())
     template = props.image_filename_template
     if not template:
         template = config.default_image_filename_template
 
-    full_filename = f"{template}{suffix}".format(
+    template = sanitize_filename_template(template)
+
+    full_filename = f"{template}".format(
         timestamp=timestamp,
         prompt=prompt,
         negative_prompt=negative_prompt,
         width=get_output_width(scene),
         height=get_output_height(scene),
         seed=props.seed,
-        image_similarity=props.image_similarity,
-        prompt_strength=props.cfg_scale,
+        image_similarity=round(props.image_similarity, 2),
+        prompt_strength=round(props.cfg_scale, 2),
         steps=props.steps,
     )
 
-    return sanitize_filename(full_filename)
+    sanitized_filename = sanitize_filename(full_filename, len(suffix))
+    return sanitized_filename + suffix
 
 
 def get_image_format(to_lower = True):

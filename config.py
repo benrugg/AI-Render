@@ -1,6 +1,7 @@
 package_name = 'AI-Render'
 default_prompt_text = 'Describe anything you can imagine'
 default_image_filename_template = "ai-render-{timestamp}"
+filename_template_allowed_vars = ['timestamp', 'prompt', 'width', 'height', 'seed', 'steps', 'image_similarity', 'sampler', 'negative_prompt']
 tmp_path_subfolder = 'ai-render-temp'
 animated_prompts_text_name = 'AI Render Animated Prompts'
 
