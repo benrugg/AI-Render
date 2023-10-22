@@ -22,6 +22,7 @@ import re
 import os
 import shutil
 import math
+import time
 import tempfile
 from . import config
 from .sd_backends import (
@@ -38,6 +39,8 @@ valid_dimension_step_size = 64
 example_dimensions = [512, 640, 768, 896, 960, 1024, 1280, 1344, 1600, 1920, 2048]
 file_formats = {"JPEG": "jpg", "BMP": "bmp", "IRIS": "rgb", "PNG": "png", "JPEG2000": "jp2", "TARGA": "tga", "TARGA_RAW": "tga", "CINEON": "cin", "DPX": "dpx", "OPEN_EXR_MULTILAYER": "exr", "OPEN_EXR": "exr", "HDR": "hdr", "TIFF": "tif", "WEBP": "webp"}
 
+max_filename_length = 128 # Most system have a max of 255, but we'll leave room
+
 
 def get_addon_preferences(context=None):
     if not context:
@@ -47,6 +50,43 @@ def get_addon_preferences(context=None):
 
 def create_temp_file(prefix, suffix=".png"):
     return tempfile.NamedTemporaryFile(prefix=prefix, suffix=suffix).name
+
+def sanitize_filename(filename):
+    # remove any characters that aren't alphanumeric, underscore, dash, or period
+    filename = re.sub(r'[^\w\-_\.]', '_', filename)
+    # remove any double underscores, dashes, periods
+    filename = re.sub(r'([-_\.]){2,}', r'\1', filename)
+    # remove any leading underscores and limit to max filename length
+    filename = filename.lstrip('_')[:max_filename_length]
+    # remove any trailing underscores, dashes, and periods
+    filename = filename.rstrip('_-.')
+    return filename
+
+def get_image_filename(scene, prompt, negative_prompt, suffix = ""):
+    props = scene.air_props
+    timestamp = int(time.time())
+    template = props.image_filename_template
+    if not template:
+        template = config.default_image_filename_template
+
+    full_filename = f"{template}{suffix}".format(
+        timestamp=timestamp,
+        prompt=prompt,
+        negative_prompt=negative_prompt,
+        width=get_output_width(scene),
+        height=get_output_height(scene),
+        seed=props.seed,
+        image_similarity=props.image_similarity,
+        prompt_strength=props.cfg_scale,
+        steps=props.steps,
+    )
+
+    return sanitize_filename(full_filename)
+
+
+def get_image_format(to_lower = True):
+    image_format = get_active_backend().get_image_format()
+    return image_format.lower() if to_lower else image_format
 
 
 def should_autosave_after_image(props):

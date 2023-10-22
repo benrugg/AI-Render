@@ -130,7 +130,7 @@ def render_frame(context, current_frame, prompts):
 
 def save_render_to_file(scene, filename_prefix):
     try:
-        temp_file = utils.create_temp_file(filename_prefix + "-", suffix=f".{utils.get_active_backend().get_image_format().lower()}")
+        temp_file = utils.create_temp_file(filename_prefix + "-", suffix=f".{utils.get_image_format()}")
     except:
         return handle_error("Couldn't create temp file for image", "temp_file")
 
@@ -139,7 +139,7 @@ def save_render_to_file(scene, filename_prefix):
         orig_render_color_mode = scene.render.image_settings.color_mode
         orig_render_color_depth = scene.render.image_settings.color_depth
 
-        scene.render.image_settings.file_format = utils.get_active_backend().get_image_format()
+        scene.render.image_settings.file_format = utils.get_image_format(to_lower=False)
         scene.render.image_settings.color_mode = 'RGBA'
         scene.render.image_settings.color_depth = '8'
 
@@ -167,7 +167,7 @@ def save_before_image(scene, filename_prefix):
 
 
 def save_after_image(scene, filename_prefix, img_file):
-    filename = f"{filename_prefix}.{utils.get_active_backend().get_image_format().lower()}"
+    filename = f"{filename_prefix}.{utils.get_image_format()}"
     full_path_and_filename = utils.get_absolute_path_for_output_file(scene.air_props.autosave_image_path, filename)
     try:
         utils.copy_file(img_file, full_path_and_filename)
@@ -177,7 +177,7 @@ def save_after_image(scene, filename_prefix, img_file):
 
 
 def save_animation_image(scene, filename_prefix, img_file):
-    filename = f"{filename_prefix}{str(scene.frame_current).zfill(4)}.{utils.get_active_backend().get_image_format().lower()}"
+    filename = f"{filename_prefix}{str(scene.frame_current).zfill(4)}.{utils.get_image_format()}"
     full_path_and_filename = utils.get_absolute_path_for_output_file(scene.air_props.animation_output_path, filename)
     try:
         utils.copy_file(img_file, full_path_and_filename)
@@ -185,6 +185,20 @@ def save_animation_image(scene, filename_prefix, img_file):
     except:
         return handle_error(f"Couldn't save animation image to {bpy.path.abspath(full_path_and_filename)}", "save_image")
 
+
+def load_image(filename, data_block_name=None):
+    name = filename
+    if data_block_name:
+        name = data_block_name
+
+    if name in bpy.data.images:
+        existing_img = bpy.data.images[name]
+        existing_img.filepath = filename
+        return existing_img
+
+    img_file = bpy.data.images.load(filename, check_existing=False)
+    img_file.name = name
+    return img_file
 
 def do_pre_render_setup(scene):
     # Lock the user interface when rendering, so that we can change
@@ -338,9 +352,8 @@ def sd_generate(scene, prompts=None, use_last_sd_image=False):
     generate_new_random_seed(scene)
 
     # prepare the output filenames
-    timestamp = int(time.time())
-    before_output_filename_prefix = f"ai-render-{timestamp}-1-before"
-    after_output_filename_prefix = f"ai-render-{timestamp}-2-after"
+    before_output_filename_prefix = utils.get_image_filename(scene, prompt, negative_prompt, "-1-before")
+    after_output_filename_prefix = utils.get_image_filename(scene, prompt, negative_prompt, "-2-after")
     animation_output_filename_prefix = "ai-render-"
 
     # if we want to use the last SD image, try loading it now
@@ -421,7 +434,7 @@ def sd_generate(scene, prompts=None, use_last_sd_image=False):
 
     # load the image into our scene
     try:
-        img = bpy.data.images.load(generated_image_file, check_existing=False)
+        img = load_image(generated_image_file, after_output_filename_prefix)
     except:
         return handle_error("Couldn't load the image from Stable Diffusion", "load_sd_image")
 
@@ -491,7 +504,7 @@ def sd_upscale(scene):
 
     # load the image into our scene
     try:
-        img = bpy.data.images.load(generated_image_file, check_existing=False)
+        img = load_image(generated_image_file, after_output_filename_prefix)
     except:
         return handle_error("Couldn't load the image from Stable Diffusion", "load_sd_image")
 
@@ -538,9 +551,8 @@ def sd_inpaint(scene):
     generate_new_random_seed(scene)
 
     # prepare the output filenames
-    timestamp = int(time.time())
-    before_output_filename_prefix = f"ai-render-{timestamp}-1-before"
-    after_output_filename_prefix = f"ai-render-{timestamp}-2-inpainted"
+    before_output_filename_prefix = utils.get_image_filename(scene, prompt, negative_prompt, "-1-before")
+    after_output_filename_prefix = utils.get_image_filename(scene, prompt, negative_prompt, "-2-inpainted")
     animation_output_filename_prefix = "ai-render-"
 
     # if we want to use the last SD image, try loading it now
@@ -596,7 +608,7 @@ def sd_inpaint(scene):
 
     # load the image into our scene
     try:
-        img = bpy.data.images.load(generated_image_file, check_existing=False)
+        img = load_image(generated_image_file, after_output_filename_prefix)
     except:
         return handle_error("Couldn't load the image from Stable Diffusion", "load_sd_image")
 
@@ -633,9 +645,8 @@ def sd_outpaint(scene):
     generate_new_random_seed(scene)
 
     # prepare the output filenames
-    timestamp = int(time.time())
-    before_output_filename_prefix = f"ai-render-{timestamp}-1-before"
-    after_output_filename_prefix = f"ai-render-{timestamp}-2-outpainted"
+    before_output_filename_prefix = utils.get_image_filename(scene, prompt, negative_prompt, "-1-before")
+    after_output_filename_prefix = utils.get_image_filename(scene, prompt, negative_prompt, "-2-outpainted")
     animation_output_filename_prefix = "ai-render-"
 
     # if we want to use the last SD image, try loading it now
@@ -687,7 +698,7 @@ def sd_outpaint(scene):
 
     # load the image into our scene
     try:
-        img = bpy.data.images.load(generated_image_file, check_existing=False)
+        img = load_image(generated_image_file, after_output_filename_prefix)
     except:
         return handle_error("Couldn't load the image from Stable Diffusion", "load_sd_image")
 

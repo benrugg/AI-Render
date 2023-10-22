@@ -415,6 +415,17 @@ class AIR_PT_operation(bpy.types.Panel):
         if (props.do_autosave_before_images or props.do_autosave_after_images) and not props.autosave_image_path:
             utils.label_multiline(layout, text="Please specify a path", icon="ERROR", width=width_guess)
 
+        layout.separator()
+
+        # Filename template
+        row = layout.row()
+        row.label(text="Filename Template:")
+
+        row = layout.row()
+        split = row.split(factor=0.85, align=True)
+        split.prop(props, "image_filename_template", text="")
+        split.label(text=f".{utils.get_image_format()}")
+
 
 class AIR_PT_upscale(bpy.types.Panel):
     bl_label = "Upscale"
