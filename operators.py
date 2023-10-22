@@ -24,10 +24,6 @@ def enable_air(scene):
     # because app timers get stopped when loading a new blender file)
     task_queue.register()
 
-    # ensure that we have our AI Render workspace with an image viewer,
-    # so the new rendered image will be shown after the render is complete
-    ensure_air_workspace()
-
     # clear any possible past errors in the file (this would happen if ai render
     # was enabled in a file that we just opened, and it had been saved with
     # an error from a past render)
@@ -39,31 +35,6 @@ def mute_legacy_compositor_node_group(scene):
         legacy_node_group = scene.node_tree.nodes.get('AIR')
         if legacy_node_group:
             legacy_node_group.mute = True
-
-
-def ensure_air_workspace():
-    """Ensure we have an AIR workspace with an image viewer"""
-
-    # if the workspace isn't in our file, add it from our own included blend file
-    if config.workspace_id not in bpy.data.workspaces:
-
-        original_workspace = utils.get_current_workspace()
-
-        bpy.ops.workspace.append_activate(
-            idname=config.workspace_id,
-            filepath=utils.get_workspace_blend_file_filepath()
-        )
-
-        utils.activate_workspace(workspace=original_workspace)
-
-
-def activate_air_workspace(scene):
-    """Activate the special AIR workspace"""
-    try:
-        utils.activate_workspace(workspace_id=config.workspace_id)
-    except:
-        scene.air_props.is_enabled = False
-        handle_error("Couldn't find the AI Render workspace. Please re-enable AI Render, or deactivate the AI Render add-on.", "no_workspace")
 
 
 def set_image_dimensions(context, width, height):
@@ -123,20 +94,24 @@ def ensure_animated_prompts_text():
         text.select_set(0, 3, 0, -1)
 
 
-def ensure_animated_prompts_text_editor_in_workspace(context):
-    script_area = utils.get_area_by_type('TEXT_EDITOR', workspace_id=config.workspace_id)
+def ensure_animated_prompts_text_editor(context):
+    script_area = None
+    areas = utils.get_areas_by_type('TEXT_EDITOR', context=context)
+    if len(areas) > 0:
+        script_area = areas[0]
 
     if not script_area:
-        area = utils.get_area_by_type('NODE_EDITOR', workspace_id=config.workspace_id)
+        # get current area
+        area = context.area
         if area is None:
-            area = utils.get_area_by_type('IMAGE_EDITOR', workspace_id=config.workspace_id)
-        if area is None:
-            return handle_error("Couldn't find the right areas in the AI Render workspace. Please re-enable AI Render.", "invalid_workspace")
+            area = context.screen.areas[0]
 
-        utils.split_area(context, area, factor=0.3)
-
-        script_area = utils.get_smallest_area_by_type(area.type, workspace_id=config.workspace_id)
-        script_area.type = 'TEXT_EDITOR'
+        utils.split_area(context, area, factor=0.5)
+        # create a new text editor area
+        areas = utils.get_areas_by_type(area.type, context=context)
+        if len(areas) > 0:
+            script_area = areas[-1]
+            script_area.type = 'TEXT_EDITOR'
 
     script_area.spaces[0].text = utils.get_animated_prompt_text_data_block()
 
@@ -225,8 +200,8 @@ def do_pre_render_setup(scene):
 
 
 def do_pre_api_setup(scene):
-    # switch the workspace to our AI Render workspace, so we can show the output when it's done
-    activate_air_workspace(scene)
+    # TODO: does nothing at the moment
+    pass
 
 
 def validate_params(scene, prompt=None):
@@ -450,9 +425,9 @@ def sd_generate(scene, prompts=None, use_last_sd_image=False):
     except:
         return handle_error("Couldn't load the image from Stable Diffusion", "load_sd_image")
 
-    # view the image in the AIR workspace
     try:
-        utils.view_sd_result_in_air_image_editor(img)
+        # View the image in the Render Result view
+        utils.view_sd_in_render_view(img, scene)
     except:
         return handle_error("Couldn't switch the view to the image from Stable Diffusion", "view_sd_image")
 
@@ -520,9 +495,9 @@ def sd_upscale(scene):
     except:
         return handle_error("Couldn't load the image from Stable Diffusion", "load_sd_image")
 
-    # view the image in the AIR workspace
     try:
-        utils.view_sd_result_in_air_image_editor(img)
+        # View the image in the Render Result view
+        utils.view_sd_in_render_view(img, scene)
     except:
         return handle_error("Couldn't switch the view to the image from Stable Diffusion", "view_sd_image")
 
@@ -625,9 +600,9 @@ def sd_inpaint(scene):
     except:
         return handle_error("Couldn't load the image from Stable Diffusion", "load_sd_image")
 
-    # view the image in the AIR workspace
     try:
-        utils.view_sd_result_in_air_image_editor(img)
+        # View the image in the Render Result view
+        utils.view_sd_in_render_view(img, scene)
     except:
         return handle_error("Couldn't switch the view to the image from Stable Diffusion", "view_sd_image")
 
@@ -716,9 +691,9 @@ def sd_outpaint(scene):
     except:
         return handle_error("Couldn't load the image from Stable Diffusion", "load_sd_image")
 
-    # view the image in the AIR workspace
     try:
-        utils.view_sd_result_in_air_image_editor(img)
+        # View the image in the Render Result view
+        utils.view_sd_in_render_view(img, scene)
     except:
         return handle_error("Couldn't switch the view to the image from Stable Diffusion", "view_sd_image")
 
@@ -841,8 +816,7 @@ class AIR_OT_edit_animated_prompts(bpy.types.Operator):
 
     def execute(self, context):
         ensure_animated_prompts_text()
-        utils.activate_workspace(workspace_id=config.workspace_id)
-        task_queue.add(functools.partial(ensure_animated_prompts_text_editor_in_workspace, context))
+        task_queue.add(functools.partial(ensure_animated_prompts_text_editor, context))
 
         return {'FINISHED'}
 

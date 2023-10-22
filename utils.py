@@ -87,10 +87,6 @@ def copy_file(src, dest):
     shutil.copy2(src, dest)
 
 
-def get_workspace_blend_file_filepath():
-    return get_filepath_in_package("blendfiles", "air_workspace.blend")
-
-
 def get_preset_style_thumnails_filepath():
     return get_filepath_in_package("style_thumbnails")
 
@@ -122,31 +118,32 @@ def activate_workspace(context=None, workspace=None, workspace_id=None):
         bpy.data.window_managers[0].windows[0].workspace = workspace
 
 
-def get_area_by_type(area_type, workspace_id=None):
-    if workspace_id:
-        workspace = bpy.data.workspaces[workspace_id]
-    else:
-        workspace = get_current_workspace()
+def get_areas_by_type(area_type, scene=None, context=None):
+     # Based on https://projects.blender.org/blender/blender/src/branch/main/source/blender/editors/render/render_view.cc#L74
+    if not scene:
+        scene = context.scene
+    if not context:
+        context = bpy.context
 
-    for area in workspace.screens[0].areas:
-        if area.type == area_type:
+    results = []
+    for window in context.window_manager.windows:
+        if window.scene != scene:
+            continue
+
+        for area in window.screen.areas:
+            if area.type == area_type:
+                results.append(area)
+    return results
+
+
+def find_area_showing_render_result(scene=None, context=None):
+    areas = get_areas_by_type('IMAGE_EDITOR', scene, context)
+
+    for area in areas:
+        active_image = area.spaces.active.image
+        if active_image is not None and active_image.type == 'RENDER_RESULT':
             return area
     return None
-
-
-def get_smallest_area_by_type(area_type, workspace_id=None):
-    if workspace_id:
-        workspace = bpy.data.workspaces[workspace_id]
-    else:
-        workspace = get_current_workspace()
-
-    areas = []
-    for area in workspace.screens[0].areas:
-        if area.type == area_type:
-            areas.append({ 'area': area, 'screen_size': area.width * area.height })
-
-    areas.sort(key=lambda x: x['screen_size'])
-    return areas[0]['area']
 
 
 def split_area(context, area, direction='HORIZONTAL', factor=0.5):
@@ -159,8 +156,8 @@ def split_area(context, area, direction='HORIZONTAL', factor=0.5):
         bpy.ops.screen.area_split(override, direction=direction, factor=factor)
 
 
-def view_sd_result_in_air_image_editor(img):
-    image_editor_area = get_area_by_type('IMAGE_EDITOR', config.workspace_id)
+def view_sd_in_render_view(img, scene=None, context=None):
+    image_editor_area = find_area_showing_render_result(scene, context)
 
     if image_editor_area:
         image_editor_area.spaces.active.image = img
