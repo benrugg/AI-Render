@@ -188,11 +188,17 @@ def get_areas_by_type(area_type, scene=None, context=None):
 def find_area_showing_render_result(scene=None, context=None):
     areas = get_areas_by_type('IMAGE_EDITOR', scene, context)
 
+    potential_area = None
+
     for area in areas:
         active_image = area.spaces.active.image
-        if active_image is not None and active_image.type == 'RENDER_RESULT':
-            return area
-    return None
+        if active_image is not None:
+            if active_image.type == 'RENDER_RESULT':
+                return area
+            else:
+                potential_area = area
+
+    return potential_area
 
 
 def split_area(context, area, direction='HORIZONTAL', factor=0.5):
