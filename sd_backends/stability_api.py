@@ -100,14 +100,17 @@ def handle_success(response, filename_prefix):
     try:
         data = response.json()
         output_file = utils.create_temp_file(filename_prefix + "-")
+    except:
+        return operators.handle_error(f"Couldn't create a temp file to save image", "temp_file")
 
+    try:
         for i, image in enumerate(data["artifacts"]):
             with open(output_file, 'wb') as file:
                 file.write(base64.b64decode(image["base64"]))
 
         return output_file
     except:
-        return operators.handle_error(f"Couldn't create a temp file to save image", "temp_file")
+        return operators.handle_error(f"DreamStudio returned an unexpected response", "unexpected_response")
 
 
 def handle_error(response):
