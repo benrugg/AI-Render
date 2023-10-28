@@ -147,19 +147,11 @@ def get_extension_from_file_format(file_format):
         return ""
 
 
-def get_current_workspace(context=None):
-    if not context:
-        context = bpy.context
-
-    if context.window and context.window.workspace:
-        return context.window.workspace
-    else:
-        return None
-
-
 def activate_workspace(context=None, workspace=None, workspace_id=None):
     if not workspace:
-        workspace = bpy.data.workspaces[workspace_id]
+        workspace = bpy.data.workspaces.get(workspace_id)
+        if not workspace:
+            return
 
     if context and context.window:
         context.window.workspace = workspace
@@ -167,29 +159,39 @@ def activate_workspace(context=None, workspace=None, workspace_id=None):
         bpy.data.window_managers[0].windows[0].workspace = workspace
 
 
-def get_areas_by_type(area_type, scene=None, context=None):
-     # Based on https://projects.blender.org/blender/blender/src/branch/main/source/blender/editors/render/render_view.cc#L74
+def get_areas_by_type(area_type, scene=None, context=None, workspace_id=None):
     if not scene:
         scene = context.scene
     if not context:
         context = bpy.context
 
     results = []
-    for window in context.window_manager.windows:
-        if window.scene != scene:
-            continue
 
-        for area in window.screen.areas:
+    # get an area from our desired workspace, if we have one
+    if (workspace_id):
+        workspace = bpy.data.workspaces[workspace_id]
+        for area in workspace.screens[0].areas:
             if area.type == area_type:
                 results.append(area)
-    return results
+        return results
+    else:
+        # otherwise, get an area from the current screen in any open window
+        for window in context.window_manager.windows:
+            if window.scene != scene:
+                continue
+
+            for area in window.screen.areas:
+                if area.type == area_type:
+                    results.append(area)
+        return results
 
 
-def find_area_showing_render_result(scene=None, context=None):
-    areas = get_areas_by_type('IMAGE_EDITOR', scene, context)
-
+def find_area_showing_render_result(scene=None, context=None, workspace_id=None):
+    areas = get_areas_by_type('IMAGE_EDITOR', scene, context, workspace_id)
     potential_area = None
 
+    # loop through all areas, prioritizing the render result area, but returning
+    # any image editor area as a backup
     for area in areas:
         active_image = area.spaces.active.image
         if active_image is not None:
@@ -212,8 +214,15 @@ def split_area(context, area, direction='HORIZONTAL', factor=0.5):
 
 
 def view_sd_in_render_view(img, scene=None, context=None):
+    # get the render result area, if it's open
     image_editor_area = find_area_showing_render_result(scene, context)
 
+    # if it's not open, try to switch to the render workspace and then get the area
+    if not image_editor_area:
+        activate_workspace(workspace_id='Rendering')
+        image_editor_area = find_area_showing_render_result(scene, context, 'Rendering')
+
+    # if we have an area, set the image
     if image_editor_area:
         image_editor_area.spaces.active.image = img
 
