@@ -410,6 +410,9 @@ def sd_generate(scene, prompts=None, use_last_sd_image=False):
     if utils.should_autosave_after_image(props):
         generated_image_file = save_after_image(scene, after_output_filename_prefix, generated_image_file)
 
+        if not generated_image_file:
+            return False
+
     # store this image filename as the last generated image
     props.last_generated_image_filename = generated_image_file
 
@@ -428,9 +431,15 @@ def sd_generate(scene, prompts=None, use_last_sd_image=False):
         if utils.should_autosave_after_image(props):
             generated_image_file = save_after_image(scene, after_output_filename_prefix, generated_image_file)
 
+            if not generated_image_file:
+                return False
+
     # if we're rendering an animation manually, save the image to the animation output path
     if props.is_rendering_animation_manually:
         generated_image_file = save_animation_image(scene, animation_output_filename_prefix, generated_image_file)
+
+        if not generated_image_file:
+            return False
 
     # load the image into our scene
     try:
@@ -501,6 +510,9 @@ def sd_upscale(scene):
     # autosave the image, if we should
     if utils.should_autosave_after_image(props):
         generated_image_file = save_after_image(scene, after_output_filename_prefix, generated_image_file)
+
+        if not generated_image_file:
+            return False
 
     # load the image into our scene
     try:
@@ -599,12 +611,18 @@ def sd_inpaint(scene):
     if utils.should_autosave_after_image(props):
         generated_image_file = save_after_image(scene, after_output_filename_prefix, generated_image_file)
 
+        if not generated_image_file:
+            return False
+
     # store this image filename as the last generated image
     props.last_generated_image_filename = generated_image_file
 
     # if we're rendering an animation manually, save the image to the animation output path
     if props.is_rendering_animation_manually:
         generated_image_file = save_animation_image(scene, animation_output_filename_prefix, generated_image_file)
+
+        if not generated_image_file:
+            return False
 
     # load the image into our scene
     try:
@@ -689,12 +707,18 @@ def sd_outpaint(scene):
     if utils.should_autosave_after_image(props):
         generated_image_file = save_after_image(scene, after_output_filename_prefix, generated_image_file)
 
+        if not generated_image_file:
+            return False
+
     # store this image filename as the last generated image
     props.last_generated_image_filename = generated_image_file
 
     # if we're rendering an animation manually, save the image to the animation output path
     if props.is_rendering_animation_manually:
         generated_image_file = save_animation_image(scene, animation_output_filename_prefix, generated_image_file)
+
+        if not generated_image_file:
+            return False
 
     # load the image into our scene
     try:
