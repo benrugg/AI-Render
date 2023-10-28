@@ -22,6 +22,7 @@ import re
 import os
 import shutil
 import math
+import platform
 import time
 import tempfile
 from . import config
@@ -39,7 +40,7 @@ valid_dimension_step_size = 64
 example_dimensions = [512, 640, 768, 896, 960, 1024, 1280, 1344, 1600, 1920, 2048]
 file_formats = {"JPEG": "jpg", "BMP": "bmp", "IRIS": "rgb", "PNG": "png", "JPEG2000": "jp2", "TARGA": "tga", "TARGA_RAW": "tga", "CINEON": "cin", "DPX": "dpx", "OPEN_EXR_MULTILAYER": "exr", "OPEN_EXR": "exr", "HDR": "hdr", "TIFF": "tif", "WEBP": "webp"}
 
-max_filename_length = 230
+max_filename_length = 128 if platform.system() == "Windows" else 230
 
 
 def get_addon_preferences(context=None):
