@@ -23,19 +23,7 @@ def generate(params, img_file, filename_prefix, props):
     headers = create_headers()
 
     # prepare the URL (specifically setting the engine id)
-    sd_model = props.sd_model
-
-    if 'xl' in sd_model:
-        engine = sd_model
-    elif 'v2' in sd_model:
-        if params["width"] >= 768 and params["height"] >= 768:
-            engine = f"stable-diffusion-768-{sd_model}"
-        else:
-            engine = f"stable-diffusion-512-{sd_model}"
-    else:
-        engine = f"stable-diffusion-{sd_model}"
-
-    api_url = f"{config.STABILITY_API_URL}{engine}/image-to-image"
+    api_url = f"{config.STABILITY_API_URL}{props.sd_model}/image-to-image"
 
     # prepare the file input
     files = {
