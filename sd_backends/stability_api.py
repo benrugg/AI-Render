@@ -170,15 +170,12 @@ def map_params(params):
 
 
 def validate_params(params, props):
-    if 'xl' in props.sd_model:
-        # for the sdxl model, only 512x512, 512x768, and 768x512 are supported
-        if \
-            params["width"] == 512 and params["height"] == 512 or \
-            params["width"] == 512 and params["height"] == 768 or \
-            params["width"] == 768 and params["height"] == 512:
-                return True
+    if props.sd_model.startswith('stable-diffusion-xl-1024'):
+        # the sdxl 1024 model only supports a few specific image sizes
+        if utils.are_sdxl_1024_dimensions_valid(params["width"], params["height"]):
+            return True
         else:
-            return operators.handle_error(f"The SDXL model only supports 512x512, 512x768 and 768x512 images. Please change your image size and try again.", "invalid_dimensions")
+            return operators.handle_error(f"The SDXL model only supports these image sizes: {', '.join(utils.sdxl_1024_valid_dimensions)}. Please change your image size and try again.", "invalid_dimensions")
     else:
         return True
 
@@ -292,7 +289,7 @@ def supports_outpainting():
 
 
 def min_image_size():
-    return 256 * 1024
+    return 640 * 1536
 
 
 def max_image_size():
@@ -301,3 +298,7 @@ def max_image_size():
 
 def max_upscaled_image_size():
     return 2048 * 2048
+
+
+def is_using_sdxl_1024_model(props):
+    return props.sd_model.startswith('stable-diffusion-xl-1024')

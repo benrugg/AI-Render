@@ -125,14 +125,11 @@ class AIRProperties(bpy.types.PropertyGroup):
     )
     sd_model: bpy.props.EnumProperty(
         name="Stable Diffusion Model",
-        default=40,
+        default=120,
         items=[
-            ('v1-5', 'SD 1.5', '', 20),
-            ('v2-0', 'SD 2.0', '', 30),
-            ('v2-1', 'SD 2.1', '', 40),
-            ('stable-diffusion-xl-beta-v2-2-2', 'SDXL Beta', '', 100),
+            ('stable-diffusion-xl-1024-v1-0', 'SDXL 1.0', '', 120),
         ],
-        description="The Stable Diffusion model to use. SDXL is optimized for photorealism and detailed portraits (comparable to Midjourney). 2.x is more accurate than 1.5 with some types of images, and prompts differently from earlier versions. 1.5 is best for using artist names and art styles in prompts",
+        description="The Stable Diffusion model to use. SDXL is comparable to Midjourney. Older versions have now been removed, but newer versions may be added in the future",
     )
     sampler: bpy.props.EnumProperty(
         name="Sampler",
@@ -192,7 +189,7 @@ class AIRProperties(bpy.types.PropertyGroup):
     )
     upscale_factor: bpy.props.FloatProperty(
         name="Upscale Factor",
-        default=4.0,
+        default=2.0,
         soft_min=2.0,
         soft_max=4.0,
         min=1.0,

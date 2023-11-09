@@ -36,6 +36,7 @@ from .sd_backends import (
 min_dimension_size = 128
 max_dimension_size = 2048
 valid_dimension_step_size = 64
+sdxl_1024_valid_dimensions = ['1024x1024', '1152x896', '896x1152', '1216x832', '832x1216', '1344x768', '768x1344', '1536x640', '640x1536']
 
 example_dimensions = [512, 640, 768, 896, 960, 1024, 1280, 1344, 1600, 1920, 2048]
 file_formats = {"JPEG": "jpg", "BMP": "bmp", "IRIS": "rgb", "PNG": "png", "JPEG2000": "jp2", "TARGA": "tga", "TARGA_RAW": "tga", "CINEON": "cin", "DPX": "dpx", "OPEN_EXR_MULTILAYER": "exr", "OPEN_EXR": "exr", "HDR": "hdr", "TIFF": "tif", "WEBP": "webp"}
@@ -318,18 +319,26 @@ def sanitized_upscaled_height(max_upscaled_image_size, scene=None):
 
 
 def are_dimensions_valid(scene):
-    return (
-        get_output_width(scene) in range(
-            min_dimension_size,
-            max_dimension_size + valid_dimension_step_size, # range is exclusive of the last value
-            valid_dimension_step_size
-        ) and
-        get_output_height(scene) in range(
-            min_dimension_size,
-            max_dimension_size + valid_dimension_step_size, # range is exclusive of the last value
-            valid_dimension_step_size
+    if is_using_sdxl_1024_model(scene):
+        return are_sdxl_1024_dimensions_valid(get_output_width(scene), get_output_height(scene))
+    else:
+        return (
+            get_output_width(scene) in range(
+                min_dimension_size,
+                max_dimension_size + valid_dimension_step_size, # range is exclusive of the last value
+                valid_dimension_step_size
+            ) and
+            get_output_height(scene) in range(
+                min_dimension_size,
+                max_dimension_size + valid_dimension_step_size, # range is exclusive of the last value
+                valid_dimension_step_size
+            )
         )
-    )
+
+
+def are_sdxl_1024_dimensions_valid(width, height):
+    dimensions = f"{width}x{height}"
+    return dimensions in sdxl_1024_valid_dimensions
 
 
 def are_dimensions_too_large(scene):
@@ -347,6 +356,15 @@ def are_upscaled_dimensions_too_large(scene):
 def generate_example_dimensions_tuple_list():
     return_tuple = lambda num: (str(num), str(num) + " px", str(num))
     return list(map(return_tuple, example_dimensions))
+
+
+def generate_sdxl_1024_dimensions_tuple_list():
+    return_tuple = lambda dimension: (dimension, ' x '.join(dimension.split('x')), dimension)
+    return list(map(return_tuple, sdxl_1024_valid_dimensions))
+
+
+def is_using_sdxl_1024_model(scene):
+    return get_active_backend().is_using_sdxl_1024_model(scene.air_props)
 
 
 def has_url(text, strict_match_protocol=False):

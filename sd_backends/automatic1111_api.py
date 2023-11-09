@@ -299,6 +299,13 @@ def max_upscaled_image_size():
     return 4096 * 4096
 
 
+def is_using_sdxl_1024_model(props):
+    # TODO: Use the actual model loaded in Automatic1111. For now, we're just
+    # returning false, because that way the UI will allow the user to select
+    # more image size options.
+    return False
+
+
 def get_available_controlnet_models(context):
     models = context.scene.air_props.controlnet_available_models
 

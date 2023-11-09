@@ -212,6 +212,10 @@ def max_upscaled_image_size():
     return 512 * 512
 
 
+def is_using_sdxl_1024_model(props):
+    return False
+
+
 def supports_upscaling():
     return True
 

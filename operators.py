@@ -17,6 +17,7 @@ from .sd_backends import automatic1111_api
 
 
 example_dimensions_tuple_list = utils.generate_example_dimensions_tuple_list()
+sdxl_1024_dimensions_tuple_list = utils.generate_sdxl_1024_dimensions_tuple_list()
 
 
 def enable_air(scene):
@@ -759,25 +760,14 @@ class AIR_OT_disable(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class AIR_OT_set_image_size_to_512x512(bpy.types.Operator):
-    "Set render width and height to 512 x 512"
-    bl_idname = "ai_render.set_image_size_to_512x512"
-    bl_label = "512x512"
+class AIR_OT_set_image_size_to_1024x1024(bpy.types.Operator):
+    "Set render width and height to 1024 x 1024"
+    bl_idname = "ai_render.set_image_size_to_1024x1024"
+    bl_label = "1024 x 1024"
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
-        set_image_dimensions(context, 512, 512)
-        return {'FINISHED'}
-
-
-class AIR_OT_set_image_size_to_768x768(bpy.types.Operator):
-    "Set render width and height to 768 x 768"
-    bl_idname = "ai_render.set_image_size_to_768x768"
-    bl_label = "768x768"
-    bl_options = {'REGISTER', 'UNDO'}
-
-    def execute(self, context):
-        set_image_dimensions(context, 768, 768)
+        set_image_dimensions(context, 1024, 1024)
         return {'FINISHED'}
 
 
@@ -791,20 +781,20 @@ class AIR_OT_show_other_dimension_options(bpy.types.Operator):
 
     width: bpy.props.EnumProperty(
         name="Image Width",
-        default="512",
+        default="1024",
         items=example_dimensions_tuple_list,
         description="Image Width"
     )
     height: bpy.props.EnumProperty(
         name="Image Height",
-        default="512",
+        default="1024",
         items=example_dimensions_tuple_list,
         description="Image Height"
     )
 
     def draw(self, context):
         layout = self.layout
-        utils.label_multiline(layout, text=f"Choose dimensions that Stable Diffusion can work with. (Dimensions larger than 512x512 take longer and use more credits). Dimensions can be any multiple of {utils.valid_dimension_step_size} in the range {utils.min_dimension_size}-{utils.max_dimension_size}.", width=self.panel_width)
+        utils.label_multiline(layout, text=f"Choose dimensions that Stable Diffusion can work with. (If you're unsure, try 1024x1024). Dimensions can be any multiple of {utils.valid_dimension_step_size} in the range {utils.min_dimension_size}-{utils.max_dimension_size}.", width=self.panel_width)
 
         layout.separator()
 
@@ -830,6 +820,43 @@ class AIR_OT_show_other_dimension_options(bpy.types.Operator):
 
     def execute(self, context):
         set_image_dimensions(context, int(self.width), int(self.height))
+        return {'FINISHED'}
+
+
+class AIR_OT_show_dimension_options_for_sdxl_1024(bpy.types.Operator):
+    "Options for image size with SDXL 1024"
+    bl_idname = "ai_render.show_dimension_options_for_sdxl_1024"
+    bl_label = "Image Size Options"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    panel_width = 250
+
+    dimensions: bpy.props.EnumProperty(
+        name="Image Height",
+        default="1024x1024",
+        items=sdxl_1024_dimensions_tuple_list,
+        description="Image Dimensions"
+    )
+
+    def draw(self, context):
+        layout = self.layout
+        utils.label_multiline(layout, text=f"Choose dimensions that Stable Diffusion can work with. SDXL images must be one of the these image sizes:", width=self.panel_width)
+
+        layout.separator()
+
+        row = layout.row()
+        col = row.column()
+        col.label(text="Dimensions:")
+        col = row.column()
+        col.prop(self, "dimensions", text="")
+
+        layout.separator()
+
+    def invoke(self, context, event):
+        return context.window_manager.invoke_props_dialog(self, width=self.panel_width)
+
+    def execute(self, context):
+        set_image_dimensions(context, int(self.dimensions.split('x')[0]), int(self.dimensions.split('x')[1]))
         return {'FINISHED'}
 
 
@@ -1197,9 +1224,9 @@ class AIR_OT_outpaint_from_last_sd_image(bpy.types.Operator):
 classes = [
     AIR_OT_enable,
     AIR_OT_disable,
-    AIR_OT_set_image_size_to_512x512,
-    AIR_OT_set_image_size_to_768x768,
+    AIR_OT_set_image_size_to_1024x1024,
     AIR_OT_show_other_dimension_options,
+    AIR_OT_show_dimension_options_for_sdxl_1024,
     AIR_OT_copy_preset_text,
     AIR_OT_edit_animated_prompts,
     AIR_OT_generate_new_image_from_render,

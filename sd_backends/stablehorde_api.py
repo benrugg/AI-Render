@@ -236,3 +236,7 @@ def max_upscaled_image_size():
     # NOTE: Stable Horde does not support upscaling (at least as of the time of this writing),
     # but adding this here to keep the API consistent with other backends.
     return 2048 * 2048
+
+
+def is_using_sdxl_1024_model(props):
+    return False

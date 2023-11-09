@@ -131,11 +131,12 @@ class AIR_PT_setup(bpy.types.Panel):
 
             row = layout.row(align=True)
             col = row.column()
-            col.operator(operators.AIR_OT_set_image_size_to_512x512.bl_idname)
+            col.operator(operators.AIR_OT_set_image_size_to_1024x1024.bl_idname)
             col = row.column()
-            col.operator(operators.AIR_OT_set_image_size_to_768x768.bl_idname)
-            col = row.column()
-            col.operator(operators.AIR_OT_show_other_dimension_options.bl_idname, text="Other")
+            if utils.is_using_sdxl_1024_model(scene):
+                col.operator(operators.AIR_OT_show_dimension_options_for_sdxl_1024.bl_idname, text="Other")
+            else:
+                col.operator(operators.AIR_OT_show_other_dimension_options.bl_idname, text="Other")
 
             if utils.get_active_backend().supports_upscaling() and props.do_upscale_automatically:
                 layout.separator()
@@ -149,7 +150,10 @@ class AIR_PT_setup(bpy.types.Panel):
             row.operator("wm.url_open", text="Help Getting Started", icon="URL").url = config.VIDEO_TUTORIAL_URL
 
             row = layout.row(align=True)
-            row.operator(operators.AIR_OT_show_other_dimension_options.bl_idname, text="Change Image Size")
+            if utils.is_using_sdxl_1024_model(scene):
+                row.operator(operators.AIR_OT_show_dimension_options_for_sdxl_1024.bl_idname, text="Change Image Size")
+            else:
+                row.operator(operators.AIR_OT_show_other_dimension_options.bl_idname, text="Change Image Size")
             row.separator()
             row.operator(operators.AIR_OT_disable.bl_idname, text="Disable AI Render")
 
