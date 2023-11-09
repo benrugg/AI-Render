@@ -426,8 +426,10 @@ def load_controlnet_modules(context):
         print("ControlNet modules returned from Automatic1111 API:")
         print(response_obj)
 
-        # store the list of modules in the scene properties
+        # sort the modules in alphabetical order, and then store them in the scene
+        # properties
         modules = response_obj["module_list"]
+        modules.sort()
         context.scene.air_props.controlnet_available_modules = "||||".join(modules)
         return True
     except:
