@@ -249,11 +249,9 @@ def get_full_prompt(scene, prompt=None):
 
     if prompt == config.default_prompt_text:
         prompt = ""
+
     if props.use_preset:
-        if prompt == "":
-            prompt = props.preset_style
-        else:
-            prompt = prompt + f", {props.preset_style}"
+        prompt = props.preset_style.replace("{prompt}", prompt)
 
     return prompt
 
