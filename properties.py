@@ -58,7 +58,10 @@ def ensure_sampler(context):
 def ensure_upscaler_model(context):
     # """Ensure that the upscale model is set to a valid value"""
     scene = context.scene
-    if utils.get_active_backend().is_upscaler_model_list_loaded(context) and not scene.air_props.upscaler_model:
+    if (
+        utils.get_active_backend().is_upscaler_model_list_loaded(context)
+        and not scene.air_props.upscaler_model
+    ):
         scene.air_props.upscaler_model = get_default_upscaler_model()
 
 
@@ -117,23 +120,23 @@ class AIRProperties(bpy.types.PropertyGroup):
     steps: bpy.props.IntProperty(
         name="Steps",
         default=30,
-        soft_min=10,
+        soft_min=1,
         soft_max=50,
-        min=10,
+        min=1,
         max=150,
-        description="How long to process the image. Values in the range of 25-50 generally work well. Higher values take longer (and use more credits) and may or may not improve results",
+        description="How long to process the image. Values in the range of 20-40 generally work well. Higher values take longer (and use more credits) and may or may not improve results",
     )
     sd_model: bpy.props.EnumProperty(
         name="Stable Diffusion Model",
         default=120,
         items=[
-            ('stable-diffusion-xl-1024-v1-0', 'SDXL 1.0', '', 120),
+            ("stable-diffusion-xl-1024-v1-0", "SDXL 1.0", "", 120),
         ],
         description="The Stable Diffusion model to use. SDXL is comparable to Midjourney. Older versions have now been removed, but newer versions may be added in the future",
     )
     sampler: bpy.props.EnumProperty(
         name="Sampler",
-        default=120, # maps to DPM++ 2M, which is a good, fast sampler
+        default=120,  # maps to DPM++ 2M, which is a good, fast sampler
         items=get_available_samplers,
         description="Which sampler method to use",
     )
@@ -196,7 +199,7 @@ class AIRProperties(bpy.types.PropertyGroup):
         max=8.0,
         precision=1,
         step=10,
-        description="The factor to upscale the image by. The resulting image will be its original size times this factor"
+        description="The factor to upscale the image by. The resulting image will be its original size times this factor",
     )
     do_upscale_automatically: bpy.props.BoolProperty(
         name="Upscale Automatically",
@@ -342,9 +345,7 @@ class AIRProperties(bpy.types.PropertyGroup):
     )
 
 
-classes = [
-    AIRProperties
-]
+classes = [AIRProperties]
 
 
 def register():
