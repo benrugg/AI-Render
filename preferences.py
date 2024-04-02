@@ -39,11 +39,11 @@ class AIRPreferences(bpy.types.AddonPreferences):
         name="Stable Diffusion Backend",
         default="comfyui",
         items=[
+            ('comfyui', 'ComfUI (local)', ''),
+            ('automatic1111', 'Automatic1111 (local)', ''),
             ('dreamstudio', 'DreamStudio (cloud)', ''),
             ('stablehorde', 'Stable Horde (cloud)', ''),
-            ('automatic1111', 'Automatic1111 (local)', ''),
             ('shark', 'SHARK by nod.ai (local)', ''),
-            ('comfyui', 'ComfUI (local)', ''),
         ],
         update=properties.ensure_properties,
         description="Choose a Stable Diffusion backend to use. DreamStudio is the default, and is the quickest to run. Stable Horde is a community-run backend that is completely free. Automatic1111 is a local installation of Stable Diffusion.",
@@ -52,7 +52,7 @@ class AIRPreferences(bpy.types.AddonPreferences):
     local_sd_url: bpy.props.StringProperty(
         name="URL of the Stable Diffusion Web Server",
         description="The location of the web server that is currently running on your local machine",
-        default="http://127.0.0.1:8188/",  # WEBUI http://127.0.0.1:7860",  COMFYUI http://127.0.0.1:8188/
+        default="http://127.0.0.1:7860/",  # WEBUI http://127.0.0.1:7860",  COMFYUI http://127.0.0.1:8188/
     )
 
     local_sd_timeout: bpy.props.IntProperty(
