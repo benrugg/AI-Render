@@ -92,7 +92,8 @@ def upscale(img_file, filename_prefix, props):
     response = do_post(server_url, data)
 
     # print log info for debugging
-    debug_log(response)
+    print("DEBUG COMFY")
+    # debug_log(response)
 
     if response == False:
         return False

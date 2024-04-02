@@ -146,8 +146,13 @@ class AIR_PT_setup(bpy.types.Panel):
         # else, show the ready / getting started message and disable and change image size buttons
         else:
             utils.label_multiline(layout, text="You're ready to start rendering!", width=width_guess, alignment="CENTER")
-            row = layout.row()
-            row.operator("wm.url_open", text="Help Getting Started", icon="URL").url = config.VIDEO_TUTORIAL_URL
+
+            col = layout.column()
+            col.prop(utils.get_addon_preferences(context), "sd_backend", text="")
+            col.prop(utils.get_addon_preferences(context), "local_sd_url", text="")
+
+            # row = layout.row()
+            # row.operator("wm.url_open", text="Help Getting Started", icon="URL").url = config.VIDEO_TUTORIAL_URL
 
             row = layout.row(align=True)
             if utils.is_using_sdxl_1024_model(scene):

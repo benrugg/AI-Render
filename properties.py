@@ -71,14 +71,13 @@ def update_local_sd_url(context):
     If is set to Automatic1111, the url is http://127.0.0.1:7860
     If is set to ComfyUI, the url is http://127.0.0.1:8188
     """
-    
-    scene = context.scene
-    if utils.sd_backend() == "automatic1111":
-        context.preferences.addons[__package__].preferences.local_sd_url = "http://127.0.0.1:7860"
-    elif utils.sd_backend() == "comfyui":
-        context.preferences.addons[__package__].preferences.local_sd_url = "http://127.0.0.1:8188"
 
-    return scene.preferences.local_sd_url
+    addonprefs = utils.get_addon_preferences(context)
+
+    if utils.sd_backend() == "automatic1111":
+        addonprefs.local_sd_url = "http://127.0.0.1:7860"
+    elif utils.sd_backend() == "comfyui":
+        addonprefs.local_sd_url = "http://127.0.0.1:7860"
 
 
 def ensure_properties(self, context):
@@ -220,7 +219,7 @@ class AIRProperties(bpy.types.PropertyGroup):
     )
     do_upscale_automatically: bpy.props.BoolProperty(
         name="Upscale Automatically",
-        default=True,
+        default=False,
         description="When true, will automatically upscale the image after each render",
     )
     upscaler_model: bpy.props.EnumProperty(
