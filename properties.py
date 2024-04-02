@@ -66,10 +66,26 @@ def ensure_upscaler_model(context):
         scene.air_props.upscaler_model = get_default_upscaler_model()
 
 
+def update_local_sd_url(context):
+    """
+    If is set to Automatic1111, the url is http://127.0.0.1:7860
+    If is set to ComfyUI, the url is http://127.0.0.1:8188
+    """
+    
+    scene = context.scene
+    if utils.sd_backend() == "automatic1111":
+        context.preferences.addons[__package__].preferences.local_sd_url = "http://127.0.0.1:7860"
+    elif utils.sd_backend() == "comfyui":
+        context.preferences.addons[__package__].preferences.local_sd_url = "http://127.0.0.1:8188"
+
+    return scene.preferences.local_sd_url
+
+
 def ensure_properties(self, context):
     # """Ensure that any properties which could change with a change in preferences are set to valid values"""
     ensure_sampler(context)
     ensure_upscaler_model(context)
+    update_local_sd_url(context)
 
 
 class AIRProperties(bpy.types.PropertyGroup):
