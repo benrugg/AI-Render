@@ -14,6 +14,7 @@ from . import (
 )
 
 from .sd_backends import automatic1111_api
+from .sd_backends import comfyui_api
 
 
 example_dimensions_tuple_list = utils.generate_example_dimensions_tuple_list()

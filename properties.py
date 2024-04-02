@@ -7,6 +7,7 @@ from . import (
 )
 from .ui import ui_preset_styles
 from .sd_backends import automatic1111_api
+from .sd_backends import comfyui_api
 
 
 def get_available_samplers(self, context):
@@ -157,7 +158,7 @@ class AIRProperties(bpy.types.PropertyGroup):
     )
     use_preset: bpy.props.BoolProperty(
         name="Apply a Preset Style",
-        default=True,
+        default=False,
         description="Optionally use a preset style to apply modifier words to your prompt",
     )
     preset_style: bpy.props.EnumProperty(

@@ -27,6 +27,7 @@ import time
 import tempfile
 from . import config
 from .sd_backends import (
+    comfyui_api,
     automatic1111_api,
     stability_api,
     stablehorde_api,
@@ -499,6 +500,8 @@ def get_active_backend():
         return automatic1111_api
     elif backend == "shark":
         return shark_api
+    elif backend == "comfyui":
+        return comfyui_api
 
 
 def is_installation_valid():
