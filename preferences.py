@@ -52,7 +52,7 @@ class AIRPreferences(bpy.types.AddonPreferences):
     local_sd_url: bpy.props.StringProperty(
         name="URL of the Stable Diffusion Web Server",
         description="The location of the web server that is currently running on your local machine",
-        default="http://127.0.0.1:7860/",  # WEBUI http://127.0.0.1:7860",  COMFYUI http://127.0.0.1:8188/
+        default="http://127.0.0.1:8188/",  # WEBUI http://127.0.0.1:7860",  COMFYUI http://127.0.0.1:8188/
     )
 
     local_sd_timeout: bpy.props.IntProperty(
@@ -184,7 +184,7 @@ class AIRPreferences(bpy.types.AddonPreferences):
                 row = box.row()
                 row.operator("wm.url_open", text="Help with local installation", icon="URL").url \
                     = config.HELP_WITH_LOCAL_INSTALLATION_URL
-            
+
             # Local Installation with SHARK
             if self.sd_backend == "shark":
                 box = layout.box()
@@ -214,7 +214,7 @@ class AIRPreferences(bpy.types.AddonPreferences):
                 row = box.row()
                 row.operator("wm.url_open", text="Help with local installation", icon="URL").url \
                     = config.HELP_WITH_SHARK_INSTALLATION_URL
-            
+
             # Notes
             box = layout.box()
             box.label(text="Note:")
