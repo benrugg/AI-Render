@@ -1,9 +1,9 @@
 {
   "3": {
     "inputs": {
-      "seed": 156680208700286,
+      "seed": 8566257,
       "steps": 20,
-      "cfg": 8,
+      "cfg": 7,
       "sampler_name": "euler",
       "scheduler": "normal",
       "denoise": 1,
@@ -31,7 +31,7 @@
   },
   "4": {
     "inputs": {
-      "ckpt_name": "SD15\\v1-5-pruned-emaonly.safetensors"
+      "ckpt_name": "SD15\\\\28DSTABLEBESTVERSION_v6.safetensors"
     },
     "class_type": "CheckpointLoaderSimple",
     "_meta": {
@@ -51,7 +51,7 @@
   },
   "6": {
     "inputs": {
-      "text": "beautiful scenery nature glass bottle landscape, , purple galaxy bottle,",
+      "text": "masterpiece best quality girl",
       "clip": [
         "4",
         1
@@ -64,7 +64,7 @@
   },
   "7": {
     "inputs": {
-      "text": "text, watermark",
+      "text": "bad hands",
       "clip": [
         "4",
         1
