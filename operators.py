@@ -410,6 +410,7 @@ def sd_generate(scene, prompts=None, use_last_sd_image=False):
         "cfg_scale": props.cfg_scale,
         "steps": props.steps,
         "sampler": props.sampler,
+        "scheduler": props.scheduler,
     }
 
     # get the backend we're using
