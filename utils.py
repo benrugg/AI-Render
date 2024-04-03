@@ -259,6 +259,8 @@ def sd_backend_formatted_name(context=None):
         return 'Automatic1111'
     elif backend == 'shark':
         return 'SHARK by nod.ai'
+    elif backend == 'comfyui':
+        return 'ComfyUI'
 
 
 def local_sd_url(context=None):
