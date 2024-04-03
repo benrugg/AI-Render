@@ -266,6 +266,13 @@ class AIR_PT_advanced_options(bpy.types.Panel):
         sub = row.column()
         sub.prop(props, 'image_similarity', text="", slider=False)
 
+        # Denoising Strength
+        row = layout.row()
+        sub = row.column()
+        sub.label(text="Denoising Strength")
+        sub = row.column()
+        sub.prop(props, 'denoising_strength', text="", slider=False)
+
         # Steps
         row = layout.row()
         sub = row.column()
@@ -294,6 +301,14 @@ class AIR_PT_advanced_options(bpy.types.Panel):
         sub.label(text="Sampler")
         sub = row.column()
         sub.prop(props, 'sampler', text="")
+
+        # Scheduler only if comfyui backend active
+        if utils.sd_backend(context) == "comfyui":
+            row = layout.row()
+            sub = row.column()
+            sub.label(text="Scheduler")
+            sub = row.column()
+            sub.prop(props, 'scheduler', text="")
 
 
 class AIR_PT_controlnet(bpy.types.Panel):

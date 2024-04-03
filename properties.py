@@ -14,6 +14,15 @@ def get_available_samplers(self, context):
     return utils.get_active_backend().get_samplers()
 
 
+def get_available_schedulers(self, context):
+    # print(utils.sd_backend())
+    if utils.sd_backend() == "comfyui":
+        return utils.get_active_backend().get_schedulers()
+    else:
+        return []
+    # return utils.get_active_backend().get_schedulers()
+
+
 def get_default_sampler():
     return utils.get_active_backend().default_sampler()
 
@@ -77,7 +86,7 @@ def update_local_sd_url(context):
     if utils.sd_backend() == "automatic1111":
         addonprefs.local_sd_url = "http://127.0.0.1:7860"
     elif utils.sd_backend() == "comfyui":
-        addonprefs.local_sd_url = "http://127.0.0.1:7860"
+        addonprefs.local_sd_url = "http://127.0.0.1:8188"
 
 
 def ensure_properties(self, context):
@@ -85,6 +94,12 @@ def ensure_properties(self, context):
     ensure_sampler(context)
     ensure_upscaler_model(context)
     update_local_sd_url(context)
+
+
+def update_denoise(self, context):
+    """round(1 - params["image_similarity"], 2)"""
+    context.scene.air_props.denoising_strength = round(1 - context.scene.air_props.image_similarity, 2)
+
 
 
 class AIRProperties(bpy.types.PropertyGroup):
@@ -108,10 +123,21 @@ class AIRProperties(bpy.types.PropertyGroup):
         name="Image Similarity",
         default=0.4,
         soft_min=0.0,
-        soft_max=0.8,
+        soft_max=0.9,
         min=0.0,
         max=1.0,
         description="How closely the final image will match the initial rendered image. Values around 0.1-0.4 will turn simple renders into new creations. Around 0.5 will keep a lot of the composition, and transform into something like the prompt. 0.6-0.7 keeps things more stable between renders. Higher values may require more steps for best results. You can set this to 0.0 to use only the prompt",
+        update=update_denoise
+    )
+    denoising_strength: bpy.props.FloatProperty(
+        name="Denoising Strength",
+        default=0.6,
+        soft_min=0.0,
+        soft_max=1.0,
+        min=0.0,
+        max=1.0,
+        description="How much to denoise the image. Higher values will remove more noise, but may also remove detail",
+        update=update_denoise
     )
     cfg_scale: bpy.props.FloatProperty(
         name="Prompt Strength",
@@ -152,9 +178,15 @@ class AIRProperties(bpy.types.PropertyGroup):
     )
     sampler: bpy.props.EnumProperty(
         name="Sampler",
-        default=120,  # maps to DPM++ 2M, which is a good, fast sampler
+        default=130,  # maps to DPM++ 2M, which is a good, fast sampler
         items=get_available_samplers,
         description="Which sampler method to use",
+    )
+    scheduler: bpy.props.EnumProperty(
+        name="Scheduler",
+        default=10,
+        items=get_available_schedulers,
+        description="Which scheduler method to use",
     )
     auto_run: bpy.props.BoolProperty(
         name="Run Automatically on Render",
