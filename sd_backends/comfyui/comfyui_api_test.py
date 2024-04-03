@@ -1,14 +1,14 @@
 import json
-from urllib import request, parse
+import requests
 from pprint import pprint
 
 prompt_text = """
 {
   "3": {
     "inputs": {
-      "seed": 8566257,
+      "seed": 156680208700286,
       "steps": 20,
-      "cfg": 7,
+      "cfg": 8,
       "sampler_name": "euler",
       "scheduler": "normal",
       "denoise": 1,
@@ -36,7 +36,7 @@ prompt_text = """
   },
   "4": {
     "inputs": {
-      "ckpt_name": "SD15\\\\28DSTABLEBESTVERSION_v6.safetensors"
+      "ckpt_name": "v1-5-pruned-emaonly.safetensors"
     },
     "class_type": "CheckpointLoaderSimple",
     "_meta": {
@@ -56,7 +56,7 @@ prompt_text = """
   },
   "6": {
     "inputs": {
-      "text": "masterpiece best quality girl",
+      "text": "beautiful scenery nature glass bottle landscape, , purple galaxy bottle,",
       "clip": [
         "4",
         1
@@ -69,7 +69,7 @@ prompt_text = """
   },
   "7": {
     "inputs": {
-      "text": "bad hands",
+      "text": "text, watermark",
       "clip": [
         "4",
         1
@@ -115,18 +115,19 @@ prompt_text = """
 def queue_prompt(prompt):
     p = {"prompt": prompt}
     data = json.dumps(p).encode('utf-8')
-    req =  request.Request("http://127.0.0.1:8188/prompt", data=data)
+    response = requests.post("http://127.0.0.1:8188/prompt", data=data)
+
     # Pretty print the response
-    pprint(json.loads(request.urlopen(req).read()))
+    pprint(json.loads(response.text))
 
 
 
 prompt = json.loads(prompt_text)
 #set the text prompt for our positive CLIPTextEncode
-prompt["6"]["inputs"]["text"] = "masterpiece best quality"
+# prompt["6"]["inputs"]["text"] = "masterpiece best quality"
 
 #set the seed for our KSampler node
-prompt["3"]["inputs"]["seed"] = 5
+# prompt["3"]["inputs"]["seed"] = 5
 
 
 queue_prompt(prompt)

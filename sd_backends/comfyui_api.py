@@ -1,11 +1,14 @@
 import bpy
 import base64
 import requests
+import json
 from .. import (
     config,
     operators,
     utils,
 )
+from pprint import pprint
+from colorama import Fore, Style
 
 
 # CORE FUNCTIONS:
@@ -16,38 +19,58 @@ def generate(params, img_file, filename_prefix, props):
     map_params(params)
 
     # add a base 64 encoded image to the params
-    params["init_images"] = ["data:image/png;base64," + base64.b64encode(img_file.read()).decode()]
-    img_file.close()
+    # params["init_images"] = ["data:image/png;base64," + base64.b64encode(img_file.read()).decode()]
+    # img_file.close()
 
-    # add args for ControlNet if it's enabled
-    if props.controlnet_is_enabled:
-        controlnet_model = props.controlnet_model
-        controlnet_module = props.controlnet_module
-        controlnet_weight = props.controlnet_weight
+    # Load json from local file
+    with open('sd_backends/comfyui/default_api.json') as f:
+        data = {"prompt": json.load(f)}
 
-        if not controlnet_model:
-            return operators.handle_error(f"No ContolNet model selected. Either choose a new model or disable ControlNet. [Get help]({config.HELP_WITH_CONTROLNET_URL})", "controlnet_model_missing")
+    print("\nPARAMS:")
+    print(Fore.GREEN)
+    pprint(params)
+    print(Style.RESET_ALL)
 
-        params["alwayson_scripts"] = {
-            "controlnet": {
-                "args": [
-                    {
-                    "weight": controlnet_weight,
-                    "module": controlnet_module,
-                    "model": controlnet_model
-                    }
-                ]
-            }
-        }
+    # PARAMS:
+    # {'cfg_scale': 7.0,
+    # 'denoising_strength': 0.6,
+    # 'height': 1024,
+    # 'image_similarity': 0.4000000059604645,
+    # 'negative_prompt': 'ugly, bad art',
+    # 'prompt': 'Describe anything you can imagines',
+    # 'sampler': 'dpmpp_2m',
+    # 'sampler_index': 'dpmpp_2m',
+    # 'scheduler': 'karras',
+    # 'seed': 1672440712,
+    # 'steps': 30,
+    # 'width': 1024}
+
+    # Get params from user input
+    K_SAMPLER_NODE = "3"
+
+    # seed
+    data["prompt"][K_SAMPLER_NODE]["inputs"]["seed"] = params["seed"]
+    data["prompt"][K_SAMPLER_NODE]["inputs"]["steps"] = params["steps"]
+    data["prompt"][K_SAMPLER_NODE]["inputs"]["sampler_name"] = params["sampler"]
+    data["prompt"][K_SAMPLER_NODE]["inputs"]["scheduler"] = params["scheduler"]
+    data["prompt"][K_SAMPLER_NODE]["inputs"]["cfg"] = params["cfg_scale"]
+    data["prompt"][K_SAMPLER_NODE]["inputs"]["denoise"] = params["denoising_strength"]
+
+    # prompt
+    CLIP_TEXT_POS_NODE = "6"
+    CLIP_TEXT_NEG_NODE = "7"
+
+    data["prompt"][CLIP_TEXT_POS_NODE]["inputs"]["text"] = params["prompt"]
+    data["prompt"][CLIP_TEXT_NEG_NODE]["inputs"]["text"] = params["negative_prompt"]
 
     # prepare the server url
     try:
-        server_url = get_server_url("/sdapi/v1/img2img")
+        server_url = get_server_url("/prompt")
     except:
         return operators.handle_error(f"You need to specify a location for the local Stable Diffusion server in the add-on preferences. [Get help]({config.HELP_WITH_LOCAL_INSTALLATION_URL})", "local_server_url_missing")
 
     # send the API request
-    response = do_post(server_url, params)
+    response = do_post(url=server_url, data=data)
 
     if response == False:
         return False
@@ -79,7 +102,8 @@ def upscale(img_file, filename_prefix, props):
     }
 
     # add a base 64 encoded image to the params
-    data["image"] = "data:image/png;base64," + base64.b64encode(img_file.read()).decode()
+    data["image"] = "data:image/png;base64," + \
+        base64.b64encode(img_file.read()).decode()
     img_file.close()
 
     # prepare the server url
@@ -110,7 +134,7 @@ def handle_success(response, filename_prefix):
     # ensure we have the type of response we are expecting
     try:
         response_obj = response.json()
-        base64_img = response_obj.get("images", [False])[0] or response_obj.get("image")
+        # base64_img = response_obj.get("images", [False])[0] or response_obj.get("image")
     except:
         print("Automatic1111 response content: ")
         print(response.content)
@@ -124,17 +148,19 @@ def handle_success(response, filename_prefix):
 
     # decode base64 image
     try:
-        img_binary = base64.b64decode(base64_img.replace("data:image/png;base64,", ""))
+        pass
+        # img_binary = base64.b64decode(base64_img.replace("data:image/png;base64,", ""))
     except:
-        return operators.handle_error("Couldn't decode base64 image from the Automatic1111 Stable Diffusion server.", "base64_decode")
+        return operators.handle_error("Couldn't decode base64 image from the ComfyUI Stable Diffusion server.", "base64_decode")
 
     # save the image to the temp file
     try:
         with open(output_file, 'wb') as file:
-            file.write(img_binary)
+            pass
+            # file.write(img_binary)
+
     except:
         return operators.handle_error("Couldn't write to temp file.", "temp_file_write")
-
 
     # return the temp file
     return output_file
@@ -151,12 +177,12 @@ def handle_error(response):
             elif response_obj.get('detail') and response_obj['detail'] == "Sampler not found":
                 return operators.handle_error("The sampler you selected is not available on the Automatic1111 Stable Diffusion server. Please select a different sampler.", "invalid_sampler")
             else:
-                return operators.handle_error(f"An error occurred in the Automatic1111 Stable Diffusion server. Full server response: {json.dumps(response_obj)}", "unknown_error")
+                return operators.handle_error(f"An error occurred in the ComfyUI server. Full server response: {json.dumps(response_obj)}", "unknown_error")
         except:
             return operators.handle_error(f"It looks like the Automatic1111 server is running, but it's not in API mode. [Get help]({config.HELP_WITH_AUTOMATIC1111_NOT_IN_API_MODE_URL})", "automatic1111_not_in_api_mode")
 
     else:
-        return operators.handle_error("An error occurred in the Automatic1111 Stable Diffusion server. Check the server logs for more info.", "unknown_error_response")
+        return operators.handle_error(f"An error occurred in the ComfyUI server.", "unknown_error_response")
 
 
 # PRIVATE SUPPORT FUNCTIONS:
@@ -184,6 +210,10 @@ def map_params(params):
 
 def do_post(url, data):
     # send the API request
+    print("\nSending request to: " + url)
+    print("\nRequest body:")
+    pprint(data, indent=2)
+
     try:
         return requests.post(url, json=data, headers=create_headers(), timeout=utils.local_sd_timeout())
     except requests.exceptions.ConnectionError:
@@ -215,41 +245,43 @@ def get_samplers():
     # values (in stability_api.py). These act like an internal unique ID for Blender
     # to use when switching between the lists.
     return [
-        ('Euler', 'Euler', '', 10),
-        ('Euler a', 'Euler a', '', 20),
-        ('Heun', 'Heun', '', 30),
-        ('DPM2', 'DPM2', '', 40),
-        ('DPM2 a', 'DPM2 a', '', 50),
-        ('DPM2 Karras', 'DPM2 Karras', '', 52),
-        ('DPM2 a Karras', 'DPM2 a Karras', '', 55),
-        ('LMS', 'LMS', '', 60),
-        ('LMS Karras', 'LMS Karras', '', 65),
-        ('DPM fast', 'DPM fast', '', 70),
-        ('DPM adaptive', 'DPM adaptive', '', 80),
-        ('DPM++ 2S a Karras', 'DPM++ 2S a Karras', '', 90),
-        ('DPM++ 2M Karras', 'DPM++ 2M Karras', '', 100),
-        ('DPM++ SDE Karras', 'DPM++ SDE Karras', '', 105),
-        ('DPM++ 2S a', 'DPM++ 2S a', '', 110),
-        ('DPM++ 2M', 'DPM++ 2M', '', 120),
-        ('DPM++ SDE', 'DPM++ SDE', '', 125),
-        ('DPM++ 2M SDE', 'DPM++ 2M SDE', '', 130),
-        ('DPM++ 2M SDE Karras', 'DPM++ 2M SDE Karras', '', 135),
-        ('DPM++ 2M SDE Exponential', 'DPM++ 2M SDE Exponential', '', 140),
-        ('DPM++ 2M SDE Heun', 'DPM++ 2M SDE Heun', '', 145),
-        ('DPM++ 2M SDE Heun Karras', 'DPM++ 2M SDE Heun Karras', '', 150),
-        ('DPM++ 2M SDE Heun Exponential', 'DPM++ 2M SDE Heun Exponential', '', 155),
-        ('DPM++ 3M SDE', 'DPM++ 3M SDE', '', 160),
-        ('DPM++ 3M SDE Karras', 'DPM++ 3M SDE Karras', '', 165),
-        ('DPM++ 3M SDE Exponential', 'DPM++ 3M SDE Exponential', '', 170),
-        ('Restart', 'Restart', '', 190),
-        ('PLMS', 'PLMS', '', 200),
-        ('DDIM', 'DDIM', '', 210),
-        ('UniPC', 'UniPC', '', 250),
+        ('euler', 'euler', '', 10),
+        ('euler_ancestral', 'euler_ancestral', '', 20),
+        ('heun', 'heun', '', 30),
+        ('heunpp2', 'heunpp2', '', 40),
+        ('dpm_2', 'dpm_2', '', 50),
+        ('dpm_2_ancestral', 'dpm_2_ancestral', '', 60),
+        ('lms', 'lms', '', 70),
+        ('dpm_fast', 'dpm_fast', '', 80),
+        ('dpm_adaptive', 'dpm_adaptive', '', 90),
+        ('dpmpp_2s_ancestral', 'dpmpp_2s_ancestral', '', 100),
+        ('dpmpp_sde', 'dpmpp_sde', '', 110),
+        ('dpmpp_sde_gpu', 'dpmpp_sde_gpu', '', 120),
+        ('dpmpp_2m', 'dpmpp_2m', '', 130),
+        ('dpmpp_2m_sde', 'dpmpp_2m_sde', '', 140),
+        ('dpmpp_2m_sde_gpu', 'dpmpp_2m_sde_gpu', '', 150),
+        ('dpmpp_3m_sde', 'dpmpp_3m_sde', '', 160),
+        ('ddpm', 'ddpm', '', 170),
+        ('lcm', 'lcm', '', 180),
+        ('ddim', 'ddim', '', 190),
+        ('uni_pc', 'uni_pc', '', 200),
+        ('uni_pc_bh2', 'uni_pc_bh2', '', 210)
+    ]
+
+
+def get_schedulers():
+    return [
+        ('normal', 'normal', '', 10),
+        ('karras', 'karras', '', 20),
+        ('exponential', 'exponential', '', 30),
+        ('sgm_uniform', 'sgm_uniform', '', 40),
+        ('simple', 'simple', '', 50),
+        ('ddim', 'ddim', '', 60),
     ]
 
 
 def default_sampler():
-    return 'LMS'
+    return 'dpmpp_2m'
 
 
 def get_upscaler_models(context):
@@ -319,7 +351,6 @@ def is_using_sdxl_1024_model(props):
     # returning false, because that way the UI will allow the user to select
     # more image size options.
     return False
-
 
 def get_available_controlnet_models(context):
     models = context.scene.air_props.controlnet_available_models

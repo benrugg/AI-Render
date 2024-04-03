@@ -1,9 +1,9 @@
 {
   "3": {
     "inputs": {
-      "seed": 8566257,
+      "seed": 1566802287002286,
       "steps": 20,
-      "cfg": 7,
+      "cfg": 8,
       "sampler_name": "euler",
       "scheduler": "normal",
       "denoise": 1,
@@ -31,7 +31,7 @@
   },
   "4": {
     "inputs": {
-      "ckpt_name": "SD15\\\\28DSTABLEBESTVERSION_v6.safetensors"
+      "ckpt_name": "v1-5-pruned-emaonly.safetensors"
     },
     "class_type": "CheckpointLoaderSimple",
     "_meta": {
@@ -51,7 +51,7 @@
   },
   "6": {
     "inputs": {
-      "text": "masterpiece best quality girl",
+      "text": "",
       "clip": [
         "4",
         1
@@ -64,7 +64,7 @@
   },
   "7": {
     "inputs": {
-      "text": "bad hands",
+      "text": "",
       "clip": [
         "4",
         1
