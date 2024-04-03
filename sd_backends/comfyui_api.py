@@ -287,7 +287,7 @@ def supports_choosing_model():
 
 
 def supports_upscaling():
-    return True
+    return False
 
 
 def supports_reloading_upscaler_models():
