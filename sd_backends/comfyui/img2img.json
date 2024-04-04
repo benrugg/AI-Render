@@ -1,7 +1,7 @@
 {
   "3": {
     "inputs": {
-      "seed": 1093493907289377,
+      "seed": 156680208700286,
       "steps": 20,
       "cfg": 8,
       "sampler_name": "euler",
@@ -12,15 +12,15 @@
         0
       ],
       "positive": [
-        "13",
+        "6",
         0
       ],
       "negative": [
-        "13",
-        1
+        "7",
+        0
       ],
       "latent_image": [
-        "14",
+        "10",
         0
       ]
     },
@@ -31,7 +31,7 @@
   },
   "4": {
     "inputs": {
-      "ckpt_name": "SD15\\28DSTABLEBESTVERSION_v6.safetensors"
+      "ckpt_name": "v1-5-pruned-emaonly.safetensors"
     },
     "class_type": "CheckpointLoaderSimple",
     "_meta": {
@@ -40,7 +40,7 @@
   },
   "6": {
     "inputs": {
-      "text": "castle",
+      "text": "positive",
       "clip": [
         "4",
         1
@@ -53,7 +53,7 @@
   },
   "7": {
     "inputs": {
-      "text": "e",
+      "text": "negative",
       "clip": [
         "4",
         1
@@ -93,61 +93,15 @@
       "title": "Save Image"
     }
   },
-  "11": {
+  "10": {
     "inputs": {
-      "image": "castle-3dmodel-depth.png",
-      "upload": "image"
-    },
-    "class_type": "LoadImage",
-    "_meta": {
-      "title": "Load Image"
-    }
-  },
-  "12": {
-    "inputs": {
-      "control_net_name": "SD15\\control_v11\\control_v11f1p_sd15_depth.pth"
-    },
-    "class_type": "ControlNetLoader",
-    "_meta": {
-      "title": "Load ControlNet Model"
-    }
-  },
-  "13": {
-    "inputs": {
-      "strength": 1,
-      "start_percent": 0,
-      "end_percent": 1,
-      "positive": [
-        "6",
-        0
-      ],
-      "negative": [
-        "7",
-        0
-      ],
-      "control_net": [
+      "pixels": [
         "12",
         0
       ],
-      "image": [
+      "vae": [
         "11",
         0
-      ]
-    },
-    "class_type": "ControlNetApplyAdvanced",
-    "_meta": {
-      "title": "Apply ControlNet (Advanced)"
-    }
-  },
-  "14": {
-    "inputs": {
-      "pixels": [
-        "15",
-        0
-      ],
-      "vae": [
-        "4",
-        2
       ]
     },
     "class_type": "VAEEncode",
@@ -155,9 +109,18 @@
       "title": "VAE Encode"
     }
   },
-  "15": {
+  "11": {
     "inputs": {
-      "image": "Castello_4K_3DScan_Reference.png",
+      "vae_name": "vae-ft-mse-840000-ema-pruned.safetensors"
+    },
+    "class_type": "VAELoader",
+    "_meta": {
+      "title": "Load VAE"
+    }
+  },
+  "12": {
+    "inputs": {
+      "image": "example.png",
       "upload": "image"
     },
     "class_type": "LoadImage",

@@ -1,3 +1,4 @@
+from os import path
 import bpy
 import base64
 import requests
@@ -10,72 +11,59 @@ from .. import (
 from pprint import pprint
 from colorama import Fore, Style
 
+# Import logging
+import logging
+
+# Set up logging
+logging.basicConfig(level=logging.DEBUG)
+
 
 # CORE FUNCTIONS:
 
-def upload_image():
-    pass
+def upload_image(img_file):
 
+    print(Fore.CYAN + "UPLOAD IMAGE:")
+    # <_io.BufferedReader name='C:\\Users\\ROBESA~1\\AppData\\Local\\Temp\\ai-render-1712270473-cat-1-before-ezav24wt.png'>
+    print(img_file)
 
-def generate(params, img_file, filename_prefix, props):
+    # Get the image path from _io.BufferedReader
+    image_path = img_file.name
+    print(Fore.CYAN + "IMAGE PATH:")
+    print(image_path)
 
-    # map the generic params to the specific ones for the Automatic1111 API
-    map_params(params)
+    # Post the image to the /upload/image endpoint
+    server_url = get_server_url("/upload/image")
+    print(Fore.CYAN + "UPLOAD IMAGE URL:")
+    print(server_url)
 
-    # Save the image to a file
-    with open('sd_backends/comfyui/test.png', 'wb') as file:
-        file.write(img_file.read())
+    # prepare the data
+    headers = create_headers()
+    data = {"subfolder": "test", "type": "input"}
+    files = {'image': (path.basename(image_path), open(image_path, 'rb'))}
+    resp = requests.post(server_url, files=files, data=data, headers=headers)
+
+    print(Fore.CYAN + "UPLOAD IMAGE RESPONSE:")
+    # b'{"name": "ai-render-1712271170-cat-1-before-y939nzr0.png", "subfolder": "", "type": "input"}'
+    print(resp.content)
 
     # add a base 64 encoded image to the params
     # params["init_images"] = ["data:image/png;base64," + base64.b64encode(img_file.read()).decode()]
     # img_file.close()
 
-    # Load json from local file
-    with open('sd_backends/comfyui/depth_api.json') as f:
-        data = {"prompt": json.load(f)}
+    return resp.json()["subfolder"], resp.json()["name"]
 
-    print("\nPARAMS:")
-    print(Fore.GREEN)
-    pprint(params)
-    print(Style.RESET_ALL)
 
-    # PARAMS:
-    # {'cfg_scale': 7.0,
-    # 'denoising_strength': 0.6,
-    # 'height': 1024,
-    # 'image_similarity': 0.4000000059604645,
-    # 'negative_prompt': 'ugly, bad art',
-    # 'prompt': 'Describe anything you can imagines',
-    # 'sampler': 'dpmpp_2m',
-    # 'sampler_index': 'dpmpp_2m',
-    # 'scheduler': 'karras',
-    # 'seed': 1672440712,
-    # 'steps': 30,
-    # 'width': 1024}
+def generate(params, img_file, filename_prefix, props):
 
-    # Get params from user input
-    K_SAMPLER_NODE = "3"
+    # upload the image, get the subfolder and image name
+    subfolder, img_name = upload_image(img_file)
 
-    # seed
-    data["prompt"][K_SAMPLER_NODE]["inputs"]["seed"] = params["seed"]
-    data["prompt"][K_SAMPLER_NODE]["inputs"]["steps"] = params["steps"]
-    data["prompt"][K_SAMPLER_NODE]["inputs"]["sampler_name"] = params["sampler"]
-    data["prompt"][K_SAMPLER_NODE]["inputs"]["scheduler"] = params["scheduler"]
-    data["prompt"][K_SAMPLER_NODE]["inputs"]["cfg"] = params["cfg_scale"]
-    data["prompt"][K_SAMPLER_NODE]["inputs"]["denoise"] = params["denoising_strength"]
+    # Add the image path to the params
+    params["init_images"] = [f"{subfolder}/{img_name}"]
 
-    # prompt
-    CLIP_TEXT_POS_NODE = "6"
-    CLIP_TEXT_NEG_NODE = "7"
-
-    data["prompt"][CLIP_TEXT_POS_NODE]["inputs"]["text"] = params["prompt"]
-    data["prompt"][CLIP_TEXT_NEG_NODE]["inputs"]["text"] = params["negative_prompt"]
-
-    # Resolution
-    EMPTY_LATENT_NODE = "5"
-
-    data["prompt"][EMPTY_LATENT_NODE]["inputs"]["width"] = params["width"]
-    data["prompt"][EMPTY_LATENT_NODE]["inputs"]["height"] = params["height"]
+    # map the params to the ComfyUI nodes
+    json_obj = map_params(params)
+    data = {"prompt": json_obj}
 
     # prepare the server url
     try:
@@ -131,7 +119,7 @@ def upscale(img_file, filename_prefix, props):
 
     # print log info for debugging
     print("DEBUG COMFY")
-    # debug_log(response)
+    debug_log(response)
 
     if response == False:
         return False
@@ -220,12 +208,96 @@ def get_server_url(path):
         return base_url + path
 
 
+def map_KSampler(params, json_obj):
+    for key, value in json_obj.items():
+        if value['class_type'] == 'KSampler':
+            logging.debug(f"Found KSampler: {key}")
+            value['inputs']['seed'] = params['seed']
+            value['inputs']['steps'] = params['steps']
+            value['inputs']['cfg'] = params['cfg_scale']
+            value['inputs']['sampler_name'] = params['sampler']
+            value['inputs']['scheduler'] = params['scheduler']
+            value['inputs']['denoise'] = params['denoising_strength']
+
+    return json_obj
+
+
+def map_prompts(params, json_obj):
+
+    # Get the node number of the positive and negative prompta
+    for key, value in json_obj.items():
+        if value['class_type'] == 'KSampler':
+            positive = value['inputs']['positive'][0]
+            logging.debug(f"Positive prompt node: {positive}")
+            negative = value['inputs']['negative'][0]
+            logging.debug(f"Negative prompt node: {negative}")
+
+    for key, value in json_obj.items():
+        if value['class_type'] == 'CLIPTextEncode':
+            logging.debug(f"Found CLIPTextEncode: {key}")
+            if key == positive:
+                value['inputs']['text'] = params['prompt']
+                logging.debug(f"Positive prompt: {value['inputs']['text']}")
+            if key == negative:
+                value['inputs']['text'] = params['negative_prompt']
+                logging.debug(f"Negative prompt: {value['inputs']['text']}")
+
+    return json_obj
+
+
+def map_init_image(params, json_obj):
+    for key, value in json_obj.items():
+        if value['class_type'] == 'LoadImage':
+            value['inputs']['image'] = params['init_images']
+            logging.debug(f"Found LoadImage: {key}")
+            logging.debug(f"Init image: {value['inputs']['image']}")
+    return json_obj
+
+
 def map_params(params):
+
     params["denoising_strength"] = round(1 - params["image_similarity"], 2)
     params["sampler_index"] = params["sampler"]
 
+    print(Fore.CYAN + "\nPARAMS:")
+    pprint(params)
+
+    # PARAMS:
+    # {'cfg_scale': 7.0,
+    # 'denoising_strength': 1.0,
+    # 'height': 256,
+    # 'image_similarity': 0.0,
+    # 'init_images': ['test/ai-render-1712271997-cat-1-before-xio3j52m.png'],
+    # 'negative_prompt': 'ugly, bad art, poorly drawn hands, poorly drawn feet, '
+    #                     'poorly drawn face, out of frame, extra limbs, disfigured, '
+    #                     'deformed, body out of frame, blurry, bad anatomy, '
+    #                     'blurred, watermark, grainy, tiling, signature, cut off, '
+    #                     'draft',
+    # 'prompt': 'cat',
+    # 'sampler': 'ddpm',
+    # 'sampler_index': 'ddpm',
+    # 'scheduler': 'ddim_uniform',
+    # 'seed': 1433872359,
+    # 'steps': 15,
+    # 'width': 1024}
+
+    # Load json from local file
+    with open('sd_backends/comfyui/img2img.json') as f:
+        json_obj = json.load(f)
+
+    json_obj = map_KSampler(params, json_obj)
+    json_obj = map_prompts(params, json_obj)
+    # json_obj = map_init_image(params, json_obj)
+
+    # Save mapped json to local file
+    with open('sd_backends/comfyui/mapped_img2img.json', 'w') as f:
+        json.dump(json_obj, f, indent=4)
+
+    return json_obj
+
 
 def do_post(url, data):
+
     # send the API request
     print("\nSending request to: " + url)
     print("\nRequest body:")
@@ -247,7 +319,7 @@ def debug_log(response):
     print("\n")
 
     print("response body:")
-    print(response.content)
+    # print(response.content)
 
     try:
         print(response.json())
@@ -293,7 +365,7 @@ def get_schedulers():
         ('exponential', 'exponential', '', 30),
         ('sgm_uniform', 'sgm_uniform', '', 40),
         ('simple', 'simple', '', 50),
-        ('ddim', 'ddim', '', 60),
+        ('ddim_uniform', 'ddim_uniform', '', 60),
     ]
 
 
