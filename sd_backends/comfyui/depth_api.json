@@ -1,23 +1,23 @@
 {
   "3": {
     "inputs": {
-      "seed": 1093493907289377,
-      "steps": 20,
-      "cfg": 8,
-      "sampler_name": "euler",
-      "scheduler": "normal",
+      "seed": 548504934291318,
+      "steps": 4,
+      "cfg": 0.1,
+      "sampler_name": "lcm",
+      "scheduler": "sgm_uniform",
       "denoise": 1,
       "model": [
         "4",
         0
       ],
       "positive": [
-        "13",
+        "11",
         0
       ],
       "negative": [
-        "13",
-        1
+        "7",
+        0
       ],
       "latent_image": [
         "5",
@@ -31,7 +31,7 @@
   },
   "4": {
     "inputs": {
-      "ckpt_name": "SD15\\v1-5-pruned-emaonly.safetensors"
+      "ckpt_name": "SD15/LCM/photonLCM_v10.safetensors"
     },
     "class_type": "CheckpointLoaderSimple",
     "_meta": {
@@ -40,8 +40,8 @@
   },
   "5": {
     "inputs": {
-      "width": 1024,
-      "height": 256,
+      "width": 512,
+      "height": 512,
       "batch_size": 1
     },
     "class_type": "EmptyLatentImage",
@@ -51,7 +51,7 @@
   },
   "6": {
     "inputs": {
-      "text": "castle",
+      "text": "beautiful guy, nature glass bottle landscape, , purple galaxy bottle,",
       "clip": [
         "4",
         1
@@ -64,7 +64,7 @@
   },
   "7": {
     "inputs": {
-      "text": "e",
+      "text": "text, watermark",
       "clip": [
         "4",
         1
@@ -106,7 +106,28 @@
   },
   "11": {
     "inputs": {
-      "image": "castle-3dscan-depth.png",
+      "strength": 1,
+      "conditioning": [
+        "6",
+        0
+      ],
+      "control_net": [
+        "14",
+        0
+      ],
+      "image": [
+        "13",
+        0
+      ]
+    },
+    "class_type": "ControlNetApply",
+    "_meta": {
+      "title": "Apply ControlNet"
+    }
+  },
+  "13": {
+    "inputs": {
+      "image": "castle-3dmodel-depth.png",
       "upload": "image"
     },
     "class_type": "LoadImage",
@@ -114,40 +135,13 @@
       "title": "Load Image"
     }
   },
-  "12": {
+  "14": {
     "inputs": {
-      "control_net_name": "SD15\\control_v11\\control_v11f1p_sd15_depth.pth"
+      "control_net_name": "SD15/control_v11/control_v11f1p_sd15_depth.pth"
     },
     "class_type": "ControlNetLoader",
     "_meta": {
       "title": "Load ControlNet Model"
-    }
-  },
-  "13": {
-    "inputs": {
-      "strength": 1,
-      "start_percent": 0,
-      "end_percent": 1,
-      "positive": [
-        "6",
-        0
-      ],
-      "negative": [
-        "7",
-        0
-      ],
-      "control_net": [
-        "12",
-        0
-      ],
-      "image": [
-        "11",
-        0
-      ]
-    },
-    "class_type": "ControlNetApplyAdvanced",
-    "_meta": {
-      "title": "Apply ControlNet (Advanced)"
     }
   }
 }

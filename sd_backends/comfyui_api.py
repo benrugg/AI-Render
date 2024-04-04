@@ -13,17 +13,25 @@ from colorama import Fore, Style
 
 # CORE FUNCTIONS:
 
+def upload_image():
+    pass
+
+
 def generate(params, img_file, filename_prefix, props):
 
     # map the generic params to the specific ones for the Automatic1111 API
     map_params(params)
+
+    # Save the image to a file
+    with open('sd_backends/comfyui/test.png', 'wb') as file:
+        file.write(img_file.read())
 
     # add a base 64 encoded image to the params
     # params["init_images"] = ["data:image/png;base64," + base64.b64encode(img_file.read()).decode()]
     # img_file.close()
 
     # Load json from local file
-    with open('sd_backends/comfyui/default_api.json') as f:
+    with open('sd_backends/comfyui/depth_api.json') as f:
         data = {"prompt": json.load(f)}
 
     print("\nPARAMS:")
@@ -62,6 +70,12 @@ def generate(params, img_file, filename_prefix, props):
 
     data["prompt"][CLIP_TEXT_POS_NODE]["inputs"]["text"] = params["prompt"]
     data["prompt"][CLIP_TEXT_NEG_NODE]["inputs"]["text"] = params["negative_prompt"]
+
+    # Resolution
+    EMPTY_LATENT_NODE = "5"
+
+    data["prompt"][EMPTY_LATENT_NODE]["inputs"]["width"] = params["width"]
+    data["prompt"][EMPTY_LATENT_NODE]["inputs"]["height"] = params["height"]
 
     # prepare the server url
     try:
@@ -182,7 +196,10 @@ def handle_error(response):
             return operators.handle_error(f"It looks like the Automatic1111 server is running, but it's not in API mode. [Get help]({config.HELP_WITH_AUTOMATIC1111_NOT_IN_API_MODE_URL})", "automatic1111_not_in_api_mode")
 
     else:
-        return operators.handle_error(f"An error occurred in the ComfyUI server.", "unknown_error_response")
+        print(Fore.CYAN + "ERROR DETAILS: ")
+        pprint(response.content)
+        print(Style.RESET_ALL)
+        return operators.handle_error(f"AN ERROR occurred in the ComfyUI server.", "unknown_error_response")
 
 
 # PRIVATE SUPPORT FUNCTIONS:
@@ -212,7 +229,7 @@ def do_post(url, data):
     # send the API request
     print("\nSending request to: " + url)
     print("\nRequest body:")
-    pprint(data, indent=2)
+    pprint(data, indent=1)
 
     try:
         return requests.post(url, json=data, headers=create_headers(), timeout=utils.local_sd_timeout())
@@ -352,6 +369,7 @@ def is_using_sdxl_1024_model(props):
     # more image size options.
     return False
 
+
 def get_available_controlnet_models(context):
     models = context.scene.air_props.controlnet_available_models
 
@@ -414,7 +432,7 @@ def load_upscaler_models(context):
 
         # get the list of available upscaler models from the Automatic1111 api
         server_url = get_server_url("/sdapi/v1/upscalers")
-        headers = { "Accept": "application/json" }
+        headers = {"Accept": "application/json"}
         response = requests.get(server_url, headers=headers, timeout=5)
         response_obj = response.json()
         print("Upscaler models returned from Automatic1111 API:")
@@ -429,7 +447,8 @@ def load_upscaler_models(context):
             for model in response_obj:
                 if (model["name"] != "None"):
                     upscaler_models.append(model["name"])
-            context.scene.air_props.automatic1111_available_upscaler_models = "||||".join(upscaler_models)
+            context.scene.air_props.automatic1111_available_upscaler_models = "||||".join(
+                upscaler_models)
 
             # if the list of models was not already loaded, set the default model
             if not was_already_loaded:
@@ -445,7 +464,7 @@ def load_controlnet_models(context):
     try:
         # get the list of available controlnet models from the Automatic1111 api
         server_url = get_server_url("/controlnet/model_list")
-        headers = { "Accept": "application/json" }
+        headers = {"Accept": "application/json"}
         response = requests.get(server_url, headers=headers, timeout=5)
         response_obj = response.json()
         print("ControlNet models returned from Automatic1111 API:")
@@ -456,7 +475,8 @@ def load_controlnet_models(context):
         if not models:
             return operators.handle_error(f"You don't have any ControlNet models installed. You will need to download them from Hugging Face. [Get help]({config.HELP_WITH_CONTROLNET_URL})")
         else:
-            context.scene.air_props.controlnet_available_models = "||||".join(models)
+            context.scene.air_props.controlnet_available_models = "||||".join(
+                models)
             return True
     except:
         return operators.handle_error(f"Couldn't get the list of available ControlNet models from the Automatic1111 server. Make sure ControlNet is installed and activated. [Get help]({config.HELP_WITH_CONTROLNET_URL})")
@@ -466,7 +486,7 @@ def load_controlnet_modules(context):
     try:
         # get the list of available controlnet modules from the Automatic1111 api
         server_url = get_server_url("/controlnet/module_list")
-        headers = { "Accept": "application/json" }
+        headers = {"Accept": "application/json"}
         response = requests.get(server_url, headers=headers, timeout=5)
         response_obj = response.json()
         print("ControlNet modules returned from Automatic1111 API:")
@@ -476,7 +496,8 @@ def load_controlnet_modules(context):
         # properties
         modules = response_obj["module_list"]
         modules.sort()
-        context.scene.air_props.controlnet_available_modules = "||||".join(modules)
+        context.scene.air_props.controlnet_available_modules = "||||".join(
+            modules)
         return True
     except:
         return operators.handle_error(f"Couldn't get the list of available ControlNet modules from the Automatic1111 server. Make sure ControlNet is installed and activated. [Get help]({config.HELP_WITH_CONTROLNET_URL})")
