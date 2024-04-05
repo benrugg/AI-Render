@@ -11,6 +11,8 @@ from .. import (
 from pprint import pprint
 from colorama import Fore, Style
 
+from rich import print_json
+
 # Import logging
 import logging
 
@@ -22,19 +24,14 @@ logging.basicConfig(level=logging.DEBUG)
 
 def upload_image(img_file):
 
-    print(Fore.GREEN + "LOG UPLOAD IMAGE:" + Style.RESET_ALL)
-    # <_io.BufferedReader name='C:\\Users\\ROBESA~1\\AppData\\Local\\Temp\\ai-render-1712270473-cat-1-before-ezav24wt.png'>
-    print(img_file)
-
     # Get the image path from _io.BufferedReader
     image_path = img_file.name
-    print(Fore.GREEN + "LOG IMAGE PATH:" + Style.RESET_ALL)
+    print(Fore.WHITE + "LOG IMAGE PATH:" + Style.RESET_ALL)
     print(image_path)
 
     # Post the image to the /upload/image endpoint
     server_url = get_server_url("/upload/image")
-    print(Fore.GREEN + "LOG UPLOAD IMAGE URL:" + Style.RESET_ALL)
-    print(server_url)
+    print(Fore.WHITE + "\nSENDING REQUEST TO: " + server_url)
 
     # prepare the data
     headers = create_headers()
@@ -42,7 +39,7 @@ def upload_image(img_file):
     files = {'image': (path.basename(image_path), open(image_path, 'rb'))}
     resp = requests.post(server_url, files=files, data=data, headers=headers)
 
-    print(Fore.GREEN + "LOG UPLOAD IMAGE RESPONSE:" + Style.RESET_ALL)
+    print(Fore.WHITE + "LOG UPLOAD IMAGE RESPONSE:" + Style.RESET_ALL)
     # b'{"name": "ai-render-1712271170-cat-1-before-y939nzr0.png", "subfolder": "", "type": "input"}'
     print(resp.content)
 
@@ -54,6 +51,9 @@ def upload_image(img_file):
 
 
 def generate(params, img_file, filename_prefix, props):
+
+    params["denoising_strength"] = round(1 - params["image_similarity"], 4)
+    params["sampler_index"] = params["sampler"]
 
     # upload the image, get the subfolder and image name
     subfolder, img_name = upload_image(img_file)
@@ -190,6 +190,46 @@ def handle_error(response):
 
 # PRIVATE SUPPORT FUNCTIONS:
 
+def print_with_colors(json_dict):
+    def find_prompts(data, class_type='KSampler'):
+        for key, value in data.items():
+            if isinstance(value, dict):
+                if value.get('class_type') == class_type:
+                    return value['inputs'].get('positive', [''])[0], value['inputs'].get('negative', [''])[0]
+                positive_key, negative_key = find_prompts(value, class_type)
+                if positive_key or negative_key:
+                    return positive_key, negative_key
+        return None, None
+
+    def recursive_print(data, positive_key=None, negative_key=None, path=""):
+        for key, value in data.items():
+            # Maintain the path traveled in the JSON structure
+            json_traverse_path = f"{path}/{key}"
+            if isinstance(value, dict):
+                recursive_print(value, positive_key,
+                                negative_key, json_traverse_path)
+            elif isinstance(value, list) and all(isinstance(item, dict) for item in value):
+                for item in value:
+                    recursive_print(item, positive_key,
+                                    negative_key, json_traverse_path)
+            else:
+                if key == 'prompt' or (key == 'text' and positive_key and positive_key in json_traverse_path):
+                    print(
+                        Fore.GREEN + f"{key}: {Fore.LIGHTGREEN_EX}{value}" + Style.RESET_ALL)
+                elif key == 'negative_prompt' or (key == 'text' and negative_key and negative_key in json_traverse_path):
+                    print(
+                        Fore.RED + f"{key}: {Fore.LIGHTRED_EX}{value}" + Style.RESET_ALL)
+                elif key in ['sampler', 'scheduler', 'denoising_strength', 'steps', 'seed', 'cfg_scale', 'denoise', 'sampler_name', 'cfg']:
+                    print(
+                        Fore.MAGENTA + f"{key}: {Fore.LIGHTMAGENTA_EX}{value}" + Style.RESET_ALL)
+                elif key in ['init_images', 'image']:
+                    print(
+                        Fore.YELLOW + f"{key}: {Fore.LIGHTYELLOW_EX}{value}" + Style.RESET_ALL)
+
+    positive_node, negative_node = find_prompts(json_dict)
+    recursive_print(json_dict, positive_node, negative_node)
+
+
 def create_headers():
     return {
         "User-Agent": f"Blender/{bpy.app.version_string}",
@@ -210,6 +250,7 @@ def map_KSampler(params, json_obj):
     for key, value in json_obj.items():
         if value['class_type'] == 'KSampler':
             logging.debug(f"Found KSampler: {key}")
+            print(Fore.LIGHTCYAN_EX + "KSAMPLER: " + Style.RESET_ALL + key)
             value['inputs']['seed'] = params['seed']
             value['inputs']['steps'] = params['steps']
             value['inputs']['cfg'] = params['cfg_scale']
@@ -222,13 +263,20 @@ def map_KSampler(params, json_obj):
 
 def map_prompts(params, json_obj):
 
+    positive = None
+    negative = None
+
     # Get the node number of the positive and negative prompta
     for key, value in json_obj.items():
         if value['class_type'] == 'KSampler':
             positive = value['inputs']['positive'][0]
             logging.debug(f"Positive prompt node: {positive}")
+            print(Fore.LIGHTCYAN_EX + "POSITIVE PROMPT NODE: " +
+                  Style.RESET_ALL + positive)
             negative = value['inputs']['negative'][0]
             logging.debug(f"Negative prompt node: {negative}")
+            print(Fore.LIGHTCYAN_EX + "NEGATIVE PROMPT NODE: " +
+                  Style.RESET_ALL + negative)
 
     for key, value in json_obj.items():
         if value['class_type'] == 'CLIPTextEncode':
@@ -236,25 +284,32 @@ def map_prompts(params, json_obj):
             if key == positive:
                 value['inputs']['text'] = params['prompt']
                 logging.debug(f"Positive prompt: {value['inputs']['text']}")
+                print(Fore.LIGHTCYAN_EX + "POSITIVE PROMPT: " +
+                      Style.RESET_ALL + value['inputs']['text'])
             if key == negative:
                 value['inputs']['text'] = params['negative_prompt']
                 logging.debug(f"Negative prompt: {value['inputs']['text']}")
+                print(Fore.LIGHTCYAN_EX + "NEGATIVE PROMPT: " +
+                      Style.RESET_ALL + value['inputs']['text'])
 
     return json_obj
 
 
 def map_init_image(params, json_obj):
 
+    connected_image = None
+
     # Get the node number of the VAEEncode
     for key, value in json_obj.items():
         if value['class_type'] == 'VAEEncode':
             logging.debug(f"Found VAEEncode: {key}")
-            vae = value['inputs']['pixels'][0]
-            print("VAE ENCODER: " + vae)
+            connected_image = value['inputs']['pixels'][0]
+            print(Fore.LIGHTCYAN_EX + "IMAGE CONNECTED TO VAE ENCODER: " +
+                  Style.RESET_ALL + connected_image)
 
     for key, value in json_obj.items():
         if value['class_type'] == 'LoadImage':
-            if key == vae:  # If the LoadImage is connected to the VAEEncode
+            if key == connected_image:  # If the LoadImage is connected to the VAEEncode
                 value['inputs']['image'] = params['init_images'][0]
                 logging.debug(f"Found LoadImage: {key}")
                 logging.debug(f"Init image: {value['inputs']['image']}")
@@ -263,11 +318,8 @@ def map_init_image(params, json_obj):
 
 def map_params(params):
 
-    params["denoising_strength"] = round(1 - params["image_similarity"], 2)
-    params["sampler_index"] = params["sampler"]
-
-    print(Fore.GREEN + "\nLOG PARAMS:" + Style.RESET_ALL)
-    pprint(params)
+    print(Fore.LIGHTWHITE_EX + "\nLOG PARAMS:" + Style.RESET_ALL)
+    print_with_colors(params)
 
     # PARAMS:
     # {'cfg_scale': 7.0,
@@ -292,6 +344,9 @@ def map_params(params):
     with open('sd_backends/comfyui/img2img.json') as f:
         json_obj = json.load(f)
 
+    # Map the params to the ComfyUI nodes
+    print(Fore.WHITE + "\nMAPPING COMFYUI NODES:" + Style.RESET_ALL)
+
     json_obj = map_KSampler(params, json_obj)
     json_obj = map_prompts(params, json_obj)
     json_obj = map_init_image(params, json_obj)
@@ -306,9 +361,9 @@ def map_params(params):
 def do_post(url, data):
 
     # send the API request
-    print(Fore.GREEN + "\nSENDING REQUEST TO: " + url)
-    print(Fore.GREEN + "\nLOG REQUEST DATA:" + Style.RESET_ALL)
-    pprint(data, indent=1)
+    print(Fore.WHITE + "\nSENDING REQUEST TO: " + url)
+    print(Fore.WHITE + "\nLOG REQUEST DATA:" + Style.RESET_ALL)
+    print_with_colors(data)
 
     try:
         return requests.post(url, json=data, headers=create_headers(), timeout=utils.local_sd_timeout())
@@ -411,6 +466,8 @@ def supports_negative_prompts():
 
 
 def supports_choosing_model():
+    # TODO - This should be set to true
+    # and a get_model() shoulb be used to get the model list from the ComfyUI API
     return False
 
 

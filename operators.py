@@ -403,14 +403,14 @@ def sd_generate(scene, prompts=None, use_last_sd_image=False):
     params = {
         "prompt": prompt,
         "negative_prompt": negative_prompt,
+        "seed": props.seed,
+        "sampler": props.sampler,
+        "scheduler": props.scheduler,
+        "steps": props.steps,
+        "cfg_scale": props.cfg_scale,
         "width": utils.get_output_width(scene),
         "height": utils.get_output_height(scene),
         "image_similarity": props.image_similarity,
-        "seed": props.seed,
-        "cfg_scale": props.cfg_scale,
-        "steps": props.steps,
-        "sampler": props.sampler,
-        "scheduler": props.scheduler,
     }
 
     # get the backend we're using

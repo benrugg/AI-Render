@@ -1,12 +1,12 @@
 {
     "3": {
         "inputs": {
-            "seed": 1433872359,
+            "seed": 1433870208,
             "steps": 15,
             "cfg": 7.0,
-            "sampler_name": "ddpm",
-            "scheduler": "ddim_uniform",
-            "denoise": 0.78,
+            "sampler_name": "euler",
+            "scheduler": "normal",
+            "denoise": 0.1,
             "model": [
                 "4",
                 0
@@ -40,7 +40,7 @@
     },
     "6": {
         "inputs": {
-            "text": "cat",
+            "text": "a red cube and a green sphere",
             "clip": [
                 "4",
                 1
@@ -120,7 +120,7 @@
     },
     "12": {
         "inputs": {
-            "image": "test/ai-render-1712306509-cat-1-before-3diay5e0.png",
+            "image": "test/ai-render-1712333366-a red cube and a green sphere-1-before-383vqiko.png",
             "upload": "image"
         },
         "class_type": "LoadImage",

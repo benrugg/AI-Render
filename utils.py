@@ -34,6 +34,8 @@ from .sd_backends import (
     shark_api,
 )
 
+from colorama import Fore, Style
+
 min_dimension_size = 128
 max_dimension_size = 2048
 valid_dimension_step_size = 64
@@ -245,7 +247,9 @@ def get_stable_horde_api_key(context=None):
 
 
 def sd_backend(context=None):
-    return get_addon_preferences(context).sd_backend
+    active_sd_backend = get_addon_preferences(context).sd_backend
+    # print(Fore.GREEN + "SD BACKEND: " + Style.RESET_ALL + active_sd_backend)
+    return active_sd_backend
 
 
 def sd_backend_formatted_name(context=None):

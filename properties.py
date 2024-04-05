@@ -15,12 +15,19 @@ def get_available_samplers(self, context):
 
 
 def get_available_schedulers(self, context):
+
+    # TODO This should be moved to the backend
+
     # print(utils.sd_backend())
     if utils.sd_backend() == "comfyui":
         return utils.get_active_backend().get_schedulers()
     else:
         return []
-    # return utils.get_active_backend().get_schedulers()
+
+
+def get_available_models(self, context):
+    # TODO: This should be moved to the backend
+    pass
 
 
 def get_default_sampler():
@@ -98,8 +105,8 @@ def ensure_properties(self, context):
 
 def update_denoise(self, context):
     """round(1 - params["image_similarity"], 2)"""
-    context.scene.air_props.denoising_strength = round(1 - context.scene.air_props.image_similarity, 2)
-
+    context.scene.air_props.denoising_strength = round(
+        1 - context.scene.air_props.image_similarity, 4)
 
 
 class AIRProperties(bpy.types.PropertyGroup):
