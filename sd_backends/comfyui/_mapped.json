@@ -40,7 +40,7 @@
     },
     "6": {
         "inputs": {
-            "text": "a red cube and a green sphere",
+            "text": "a green cube and a red sphere",
             "clip": [
                 "4",
                 1
@@ -120,7 +120,7 @@
     },
     "12": {
         "inputs": {
-            "image": "test/ai-render-1712333366-a red cube and a green sphere-1-before-383vqiko.png",
+            "image": "test/ai-render-1712334580-a green cube and a red sphere-1-before-ykll17fa.png",
             "upload": "image"
         },
         "class_type": "LoadImage",

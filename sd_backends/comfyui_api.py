@@ -13,12 +13,6 @@ from colorama import Fore, Style
 
 from rich import print_json
 
-# Import logging
-import logging
-
-# Set up logging
-logging.basicConfig(level=logging.DEBUG)
-
 
 # CORE FUNCTIONS:
 
@@ -247,10 +241,13 @@ def get_server_url(path):
 
 
 def map_KSampler(params, json_obj):
+
+    KSampler = None
+
     for key, value in json_obj.items():
         if value['class_type'] == 'KSampler':
-            logging.debug(f"Found KSampler: {key}")
-            print(Fore.LIGHTCYAN_EX + "KSAMPLER: " + Style.RESET_ALL + key)
+            KSampler = key
+
             value['inputs']['seed'] = params['seed']
             value['inputs']['steps'] = params['steps']
             value['inputs']['cfg'] = params['cfg_scale']
@@ -258,7 +255,7 @@ def map_KSampler(params, json_obj):
             value['inputs']['scheduler'] = params['scheduler']
             value['inputs']['denoise'] = params['denoising_strength']
 
-    return json_obj
+    return json_obj, KSampler
 
 
 def map_prompts(params, json_obj):
@@ -270,29 +267,16 @@ def map_prompts(params, json_obj):
     for key, value in json_obj.items():
         if value['class_type'] == 'KSampler':
             positive = value['inputs']['positive'][0]
-            logging.debug(f"Positive prompt node: {positive}")
-            print(Fore.LIGHTCYAN_EX + "POSITIVE PROMPT NODE: " +
-                  Style.RESET_ALL + positive)
             negative = value['inputs']['negative'][0]
-            logging.debug(f"Negative prompt node: {negative}")
-            print(Fore.LIGHTCYAN_EX + "NEGATIVE PROMPT NODE: " +
-                  Style.RESET_ALL + negative)
 
     for key, value in json_obj.items():
         if value['class_type'] == 'CLIPTextEncode':
-            logging.debug(f"Found CLIPTextEncode: {key}")
             if key == positive:
                 value['inputs']['text'] = params['prompt']
-                logging.debug(f"Positive prompt: {value['inputs']['text']}")
-                print(Fore.LIGHTCYAN_EX + "POSITIVE PROMPT: " +
-                      Style.RESET_ALL + value['inputs']['text'])
             if key == negative:
                 value['inputs']['text'] = params['negative_prompt']
-                logging.debug(f"Negative prompt: {value['inputs']['text']}")
-                print(Fore.LIGHTCYAN_EX + "NEGATIVE PROMPT: " +
-                      Style.RESET_ALL + value['inputs']['text'])
 
-    return json_obj
+    return json_obj, positive, negative
 
 
 def map_init_image(params, json_obj):
@@ -302,18 +286,14 @@ def map_init_image(params, json_obj):
     # Get the node number of the VAEEncode
     for key, value in json_obj.items():
         if value['class_type'] == 'VAEEncode':
-            logging.debug(f"Found VAEEncode: {key}")
             connected_image = value['inputs']['pixels'][0]
-            print(Fore.LIGHTCYAN_EX + "IMAGE CONNECTED TO VAE ENCODER: " +
-                  Style.RESET_ALL + connected_image)
 
     for key, value in json_obj.items():
         if value['class_type'] == 'LoadImage':
             if key == connected_image:  # If the LoadImage is connected to the VAEEncode
                 value['inputs']['image'] = params['init_images'][0]
-                logging.debug(f"Found LoadImage: {key}")
-                logging.debug(f"Init image: {value['inputs']['image']}")
-    return json_obj
+
+    return json_obj, connected_image
 
 
 def map_params(params):
@@ -345,11 +325,16 @@ def map_params(params):
         json_obj = json.load(f)
 
     # Map the params to the ComfyUI nodes
-    print(Fore.WHITE + "\nMAPPING COMFYUI NODES:" + Style.RESET_ALL)
 
-    json_obj = map_KSampler(params, json_obj)
-    json_obj = map_prompts(params, json_obj)
-    json_obj = map_init_image(params, json_obj)
+    json_obj, KSampler = map_KSampler(params, json_obj)
+    json_obj, positive, negative = map_prompts(params, json_obj)
+    json_obj, connected_image = map_init_image(params, json_obj)
+
+    # print(Fore.WHITE + "\nMAPPING COMFYUI NODES:" + Style.RESET_ALL)
+    # print(Fore.MAGENTA + "KSAMPLER: " + Style.RESET_ALL + KSampler)
+    # print(Fore.GREEN + "POSITIVE PROMPT: " + Style.RESET_ALL + positive)
+    # print(Fore.RED + "NEGATIVE PROMPT: " + Style.RESET_ALL + negative)
+    # print(Fore.YELLOW + "IMAGE CONNECTED TO VAE ENCODER: " + Style.RESET_ALL + connected_image)
 
     # Save mapped json to local file
     with open('sd_backends/comfyui/_mapped.json', 'w') as f:
@@ -361,9 +346,9 @@ def map_params(params):
 def do_post(url, data):
 
     # send the API request
-    print(Fore.WHITE + "\nSENDING REQUEST TO: " + url)
-    print(Fore.WHITE + "\nLOG REQUEST DATA:" + Style.RESET_ALL)
-    print_with_colors(data)
+    # print(Fore.WHITE + "\nSENDING REQUEST TO: " + url)
+    # print(Fore.WHITE + "\nLOG REQUEST DATA:" + Style.RESET_ALL)
+    # print_with_colors(data)
 
     try:
         return requests.post(url, json=data, headers=create_headers(), timeout=utils.local_sd_timeout())
