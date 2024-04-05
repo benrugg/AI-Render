@@ -52,7 +52,8 @@ class AIRPreferences(bpy.types.AddonPreferences):
     local_sd_url: bpy.props.StringProperty(
         name="URL of the Stable Diffusion Web Server",
         description="The location of the web server that is currently running on your local machine",
-        default="http://127.0.0.1:8188/",  # WEBUI http://127.0.0.1:7860",  COMFYUI http://127.0.0.1:8188/
+        # WEBUI http://127.0.0.1:7860",  COMFYUI http://127.0.0.1:8188/
+        default="http://127.0.0.1:8188/",
     )
 
     local_sd_timeout: bpy.props.IntProperty(
@@ -107,6 +108,12 @@ class AIRPreferences(bpy.types.AddonPreferences):
         min=0,
         max=59)
 
+    workflows_path: bpy.props.StringProperty(
+        name="Workflow Path",
+        description="Path where the workflows are stored",
+        default=utils.get_default_comfy_workflows_path(),
+        subtype='DIR_PATH')
+
     def draw(self, context):
         layout = self.layout
 
@@ -140,7 +147,7 @@ class AIRPreferences(bpy.types.AddonPreferences):
                 box.separator()
 
                 row = box.row()
-                row.operator("wm.url_open", text="Sign Up For DreamStudio (free)", icon="URL").url = config.DREAM_STUDIO_URL
+                row.operator("wm.url_open", text="Sign Up For DreamStudio (free)",icon="URL").url = config.DREAM_STUDIO_URL
 
                 row = box.row()
                 row.prop(self, "dream_studio_api_key")
@@ -178,12 +185,17 @@ class AIRPreferences(bpy.types.AddonPreferences):
                 col.prop(self, "local_sd_timeout", text="")
 
                 box.separator()
-                utils.label_multiline(box, text=f"AI Render will use your local Stable Diffusion installation. Please make sure the Web UI is launched and running in a terminal.", icon="KEYTYPE_BREAKDOWN_VEC", width=width_guess)
+                utils.label_multiline(box, text=f"AI Render will use your local Stable Diffusion installation. Please make sure the WebUI or ComfyUI are launched and running in a terminal.",
+                                      icon="KEYTYPE_BREAKDOWN_VEC", width=width_guess)
 
                 box.separator()
                 row = box.row()
                 row.operator("wm.url_open", text="Help with local installation", icon="URL").url \
                     = config.HELP_WITH_LOCAL_INSTALLATION_URL
+
+                if self.sd_backend == 'comfyui':
+                    row = box.row()
+                    row.prop(self, "workflows_path")
 
             # Local Installation with SHARK
             if self.sd_backend == "shark":
@@ -208,7 +220,8 @@ class AIRPreferences(bpy.types.AddonPreferences):
                 col.prop(self, "local_sd_timeout", text="")
 
                 box.separator()
-                utils.label_multiline(box, text=f"AI Render will use your local Stable Diffusion installation. Please make sure the Web UI is launched and running in a terminal.", icon="KEYTYPE_BREAKDOWN_VEC", width=width_guess)
+                utils.label_multiline(box, text=f"AI Render will use your local Stable Diffusion installation. Please make sure the Web UI is launched and running in a terminal.",
+                                      icon="KEYTYPE_BREAKDOWN_VEC", width=width_guess)
 
                 box.separator()
                 row = box.row()

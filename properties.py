@@ -15,23 +15,30 @@ def get_available_samplers(self, context):
 
 
 def get_available_schedulers(self, context):
-
-    # TODO This should be moved to the backend
-
-    # print(utils.sd_backend())
     if utils.sd_backend() == "comfyui":
         return utils.get_active_backend().get_schedulers()
     else:
         return []
 
 
+def get_available_workflows(self, context):
+    if utils.sd_backend() == "comfyui":
+        return utils.get_active_backend().get_workflows()
+    else:
+        return []
+
+
 def get_available_models(self, context):
-    # TODO: This should be moved to the backend
+    # TODO: Do it
     pass
 
 
 def get_default_sampler():
     return utils.get_active_backend().default_sampler()
+
+
+def get_default_scheduler():
+    return utils.get_active_backend().default_scheduler()
 
 
 def get_available_upscaler_models(self, context):
@@ -72,6 +79,13 @@ def ensure_sampler(context):
         scene.air_props.sampler = get_default_sampler()
 
 
+def ensure_scheduler(context):
+    # """Ensure that the scheduler is set to a valid value"""
+    scene = context.scene
+    if not scene.air_props.scheduler:
+        scene.air_props.scheduler = get_default_scheduler()
+
+
 def ensure_upscaler_model(context):
     # """Ensure that the upscale model is set to a valid value"""
     scene = context.scene
@@ -99,6 +113,8 @@ def update_local_sd_url(context):
 def ensure_properties(self, context):
     # """Ensure that any properties which could change with a change in preferences are set to valid values"""
     ensure_sampler(context)
+    if utils.sd_backend() == "comfyui":
+        ensure_scheduler(context)
     ensure_upscaler_model(context)
     update_local_sd_url(context)
 
@@ -397,6 +413,12 @@ class AIRProperties(bpy.types.PropertyGroup):
         default=0.05,
         step=0.01,
         name="Outpaint Color Variation",
+    )
+    comfyui_workflows: bpy.props.EnumProperty(
+        name="ComfyUI Workflows",
+        default=1,
+        items=get_available_workflows,
+        description="A list of the available workflows (loaded from the ComfyUI API)",
     )
 
 

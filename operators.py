@@ -226,7 +226,8 @@ def do_pre_render_setup(scene):
 
 
 def do_pre_api_setup(scene):
-    # TODO: does nothing at the moment
+    # TODO: does nothing at the moment - INTERESTING
+    # could be used to set up any other things we need before calling the API
     pass
 
 

@@ -1,12 +1,12 @@
 {
     "3": {
         "inputs": {
-            "seed": 1433870208,
-            "steps": 15,
+            "seed": 1417807297,
+            "steps": 30,
             "cfg": 7.0,
-            "sampler_name": "euler",
+            "sampler_name": "dpmpp_2m",
             "scheduler": "normal",
-            "denoise": 0.1,
+            "denoise": 1.0,
             "model": [
                 "4",
                 0
@@ -40,7 +40,7 @@
     },
     "6": {
         "inputs": {
-            "text": "a green cube and a red sphere",
+            "text": "",
             "clip": [
                 "4",
                 1
@@ -53,7 +53,7 @@
     },
     "7": {
         "inputs": {
-            "text": "ugly, bad art, poorly drawn hands, poorly drawn feet, poorly drawn face, out of frame, extra limbs, disfigured, deformed, body out of frame, blurry, bad anatomy, blurred, watermark, grainy, tiling, signature, cut off, draft",
+            "text": "ugly, bad art",
             "clip": [
                 "4",
                 1
@@ -120,7 +120,7 @@
     },
     "12": {
         "inputs": {
-            "image": "test/ai-render-1712334580-a green cube and a red sphere-1-before-ykll17fa.png",
+            "image": "test/ai-render-1712352651--1-before-h3784hje.png",
             "upload": "image"
         },
         "class_type": "LoadImage",

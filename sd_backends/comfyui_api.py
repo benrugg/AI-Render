@@ -1,4 +1,4 @@
-from os import path
+import os
 import bpy
 import base64
 import requests
@@ -8,19 +8,26 @@ from .. import (
     operators,
     utils,
 )
-from pprint import pprint
-from colorama import Fore, Style
-
-from rich import print_json
+from colorama import Fore
 
 
 # CORE FUNCTIONS:
+
+def load_workflow(context, workflow_file):
+    workflow_path = os.path.join(get_workflows_path(context), workflow_file)
+    with open(workflow_path, 'r') as file:
+        return json.load(file)
+
+
+def get_active_workflow(context):
+    return context.scene.air_props.comfyui_workflows
+
 
 def upload_image(img_file):
 
     # Get the image path from _io.BufferedReader
     image_path = img_file.name
-    print(Fore.WHITE + "LOG IMAGE PATH:" + Style.RESET_ALL)
+    print("\nLOG IMAGE PATH:")
     print(image_path)
 
     # Post the image to the /upload/image endpoint
@@ -30,10 +37,10 @@ def upload_image(img_file):
     # prepare the data
     headers = create_headers()
     data = {"subfolder": "test", "type": "input"}
-    files = {'image': (path.basename(image_path), open(image_path, 'rb'))}
+    files = {'image': (os.path.basename(image_path), open(image_path, 'rb'))}
     resp = requests.post(server_url, files=files, data=data, headers=headers)
 
-    print(Fore.WHITE + "LOG UPLOAD IMAGE RESPONSE:" + Style.RESET_ALL)
+    print("\nLOG UPLOAD IMAGE RESPONSE:")
     # b'{"name": "ai-render-1712271170-cat-1-before-y939nzr0.png", "subfolder": "", "type": "input"}'
     print(resp.content)
 
@@ -46,6 +53,11 @@ def upload_image(img_file):
 
 def generate(params, img_file, filename_prefix, props):
 
+    # Load the workflow
+    workflow = load_workflow(bpy.context, get_active_workflow(bpy.context))
+    print(f"{Fore.LIGHTWHITE_EX}\nLOG WORKFLOW: {Fore.RESET}{get_active_workflow(bpy.context)}")
+    # pprint(workflow)
+
     params["denoising_strength"] = round(1 - params["image_similarity"], 4)
     params["sampler_index"] = params["sampler"]
 
@@ -56,7 +68,7 @@ def generate(params, img_file, filename_prefix, props):
     params["init_images"] = [f"{subfolder}/{img_name}"]
 
     # map the params to the ComfyUI nodes
-    json_obj = map_params(params)
+    json_obj = map_params(params, workflow)
     data = {"prompt": json_obj}
 
     # prepare the server url
@@ -177,7 +189,7 @@ def handle_error(response):
             return operators.handle_error(f"It looks like the Automatic1111 server is running, but it's not in API mode. [Get help]({config.HELP_WITH_AUTOMATIC1111_NOT_IN_API_MODE_URL})", "automatic1111_not_in_api_mode")
 
     else:
-        print(Fore.GREEN + "ERROR DETAILS: " + Style.RESET_ALL)
+        print(Fore.GREEN + "ERROR DETAILS: " + Fore.RESET)
         print(json.dumps(response.json(), indent=2))
         return operators.handle_error(f"AN ERROR occurred in the ComfyUI server.", "unknown_error_response")
 
@@ -209,16 +221,16 @@ def print_with_colors(json_dict):
             else:
                 if key == 'prompt' or (key == 'text' and positive_key and positive_key in json_traverse_path):
                     print(
-                        Fore.GREEN + f"{key}: {Fore.LIGHTGREEN_EX}{value}" + Style.RESET_ALL)
+                        Fore.GREEN + f"{key}: {Fore.LIGHTGREEN_EX}{value}" + Fore.RESET)
                 elif key == 'negative_prompt' or (key == 'text' and negative_key and negative_key in json_traverse_path):
                     print(
-                        Fore.RED + f"{key}: {Fore.LIGHTRED_EX}{value}" + Style.RESET_ALL)
+                        Fore.RED + f"{key}: {Fore.LIGHTRED_EX}{value}" + Fore.RESET)
                 elif key in ['sampler', 'scheduler', 'denoising_strength', 'steps', 'seed', 'cfg_scale', 'denoise', 'sampler_name', 'cfg']:
                     print(
-                        Fore.MAGENTA + f"{key}: {Fore.LIGHTMAGENTA_EX}{value}" + Style.RESET_ALL)
+                        Fore.MAGENTA + f"{key}: {Fore.LIGHTMAGENTA_EX}{value}" + Fore.RESET)
                 elif key in ['init_images', 'image']:
                     print(
-                        Fore.YELLOW + f"{key}: {Fore.LIGHTYELLOW_EX}{value}" + Style.RESET_ALL)
+                        Fore.YELLOW + f"{key}: {Fore.LIGHTYELLOW_EX}{value}" + Fore.RESET)
 
     positive_node, negative_node = find_prompts(json_dict)
     recursive_print(json_dict, positive_node, negative_node)
@@ -296,45 +308,21 @@ def map_init_image(params, json_obj):
     return json_obj, connected_image
 
 
-def map_params(params):
+def map_params(params, json_obj):
 
-    print(Fore.LIGHTWHITE_EX + "\nLOG PARAMS:" + Style.RESET_ALL)
+    print("\nLOG PARAMS:")
     print_with_colors(params)
 
-    # PARAMS:
-    # {'cfg_scale': 7.0,
-    # 'denoising_strength': 0.55,
-    # 'height': 256,
-    # 'image_similarity': 0.44999998807907104,
-    # 'init_images': ['test/ai-render-1712303702-cat-1-before-wpv27cub.png'],
-    # 'negative_prompt': 'ugly, bad art, poorly drawn hands, poorly drawn feet, '
-    #                     'poorly drawn face, out of frame, extra limbs, disfigured, '
-    #                     'deformed, body out of frame, blurry, bad anatomy, '
-    #                     'blurred, watermark, grainy, tiling, signature, cut off, '
-    #                     'draft',
-    # 'prompt': 'cat',
-    # 'sampler': 'ddpm',
-    # 'sampler_index': 'ddpm',
-    # 'scheduler': 'ddim_uniform',
-    # 'seed': 1433872359,
-    # 'steps': 15,
-    # 'width': 1024}
-
-    # Load json from local file
-    with open('sd_backends/comfyui/img2img.json') as f:
-        json_obj = json.load(f)
-
     # Map the params to the ComfyUI nodes
-
     json_obj, KSampler = map_KSampler(params, json_obj)
     json_obj, positive, negative = map_prompts(params, json_obj)
     json_obj, connected_image = map_init_image(params, json_obj)
 
-    # print(Fore.WHITE + "\nMAPPING COMFYUI NODES:" + Style.RESET_ALL)
-    # print(Fore.MAGENTA + "KSAMPLER: " + Style.RESET_ALL + KSampler)
-    # print(Fore.GREEN + "POSITIVE PROMPT: " + Style.RESET_ALL + positive)
-    # print(Fore.RED + "NEGATIVE PROMPT: " + Style.RESET_ALL + negative)
-    # print(Fore.YELLOW + "IMAGE CONNECTED TO VAE ENCODER: " + Style.RESET_ALL + connected_image)
+    # print("\nMAPPING COMFYUI NODES:")
+    # print(Fore.MAGENTA + "KSAMPLER: " + Fore.RESET + KSampler)
+    # print(Fore.GREEN + "POSITIVE PROMPT: " + Fore.RESET + positive)
+    # print(Fore.RED + "NEGATIVE PROMPT: " + Fore.RESET + negative)
+    # print(Fore.YELLOW + "IMAGE CONNECTED TO VAE ENCODER: " + Fore.RESET + connected_image)
 
     # Save mapped json to local file
     with open('sd_backends/comfyui/_mapped.json', 'w') as f:
@@ -346,9 +334,9 @@ def map_params(params):
 def do_post(url, data):
 
     # send the API request
-    # print(Fore.WHITE + "\nSENDING REQUEST TO: " + url)
-    # print(Fore.WHITE + "\nLOG REQUEST DATA:" + Style.RESET_ALL)
-    # print_with_colors(data)
+    print(Fore.WHITE + "\nSENDING REQUEST TO: " + url)
+    print("\nLOG REQUEST DATA:")
+    print_with_colors(data)
 
     try:
         return requests.post(url, json=data, headers=create_headers(), timeout=utils.local_sd_timeout())
@@ -375,6 +363,19 @@ def debug_log(response):
 
 
 # PUBLIC SUPPORT FUNCTIONS:
+
+def get_workflows_path(context):
+    return utils.get_addon_preferences().workflows_path
+
+
+def get_workflows():
+    workflows_path = get_workflows_path(bpy.context)
+    workflow_files = [f for f in os.listdir(workflows_path) if os.path.isfile(
+        os.path.join(workflows_path, f)) and f.endswith(".json")]
+    workflow_tuples = [(f, f, "", i) for i, f in enumerate(workflow_files)]
+
+    return workflow_tuples
+
 
 def get_samplers():
     # NOTE: Keep the number values (fourth item in the tuples) in sync with DreamStudio's
