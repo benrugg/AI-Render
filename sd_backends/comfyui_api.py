@@ -22,18 +22,18 @@ logging.basicConfig(level=logging.DEBUG)
 
 def upload_image(img_file):
 
-    print(Fore.CYAN + "UPLOAD IMAGE:")
+    print(Fore.GREEN + "LOG UPLOAD IMAGE:" + Style.RESET_ALL)
     # <_io.BufferedReader name='C:\\Users\\ROBESA~1\\AppData\\Local\\Temp\\ai-render-1712270473-cat-1-before-ezav24wt.png'>
     print(img_file)
 
     # Get the image path from _io.BufferedReader
     image_path = img_file.name
-    print(Fore.CYAN + "IMAGE PATH:")
+    print(Fore.GREEN + "LOG IMAGE PATH:" + Style.RESET_ALL)
     print(image_path)
 
     # Post the image to the /upload/image endpoint
     server_url = get_server_url("/upload/image")
-    print(Fore.CYAN + "UPLOAD IMAGE URL:")
+    print(Fore.GREEN + "LOG UPLOAD IMAGE URL:" + Style.RESET_ALL)
     print(server_url)
 
     # prepare the data
@@ -42,7 +42,7 @@ def upload_image(img_file):
     files = {'image': (path.basename(image_path), open(image_path, 'rb'))}
     resp = requests.post(server_url, files=files, data=data, headers=headers)
 
-    print(Fore.CYAN + "UPLOAD IMAGE RESPONSE:")
+    print(Fore.GREEN + "LOG UPLOAD IMAGE RESPONSE:" + Style.RESET_ALL)
     # b'{"name": "ai-render-1712271170-cat-1-before-y939nzr0.png", "subfolder": "", "type": "input"}'
     print(resp.content)
 
@@ -170,7 +170,6 @@ def handle_success(response, filename_prefix):
 
 def handle_error(response):
     if response.status_code == 404:
-        import json
 
         try:
             response_obj = response.json()
@@ -184,9 +183,8 @@ def handle_error(response):
             return operators.handle_error(f"It looks like the Automatic1111 server is running, but it's not in API mode. [Get help]({config.HELP_WITH_AUTOMATIC1111_NOT_IN_API_MODE_URL})", "automatic1111_not_in_api_mode")
 
     else:
-        print(Fore.CYAN + "ERROR DETAILS: ")
-        pprint(response.content)
-        print(Style.RESET_ALL)
+        print(Fore.GREEN + "ERROR DETAILS: " + Style.RESET_ALL)
+        print(json.dumps(response.json(), indent=2))
         return operators.handle_error(f"AN ERROR occurred in the ComfyUI server.", "unknown_error_response")
 
 
@@ -246,11 +244,20 @@ def map_prompts(params, json_obj):
 
 
 def map_init_image(params, json_obj):
+
+    # Get the node number of the VAEEncode
+    for key, value in json_obj.items():
+        if value['class_type'] == 'VAEEncode':
+            logging.debug(f"Found VAEEncode: {key}")
+            vae = value['inputs']['pixels'][0]
+            print("VAE ENCODER: " + vae)
+
     for key, value in json_obj.items():
         if value['class_type'] == 'LoadImage':
-            value['inputs']['image'] = params['init_images']
-            logging.debug(f"Found LoadImage: {key}")
-            logging.debug(f"Init image: {value['inputs']['image']}")
+            if key == vae:  # If the LoadImage is connected to the VAEEncode
+                value['inputs']['image'] = params['init_images'][0]
+                logging.debug(f"Found LoadImage: {key}")
+                logging.debug(f"Init image: {value['inputs']['image']}")
     return json_obj
 
 
@@ -259,15 +266,15 @@ def map_params(params):
     params["denoising_strength"] = round(1 - params["image_similarity"], 2)
     params["sampler_index"] = params["sampler"]
 
-    print(Fore.CYAN + "\nPARAMS:")
+    print(Fore.GREEN + "\nLOG PARAMS:" + Style.RESET_ALL)
     pprint(params)
 
     # PARAMS:
     # {'cfg_scale': 7.0,
-    # 'denoising_strength': 1.0,
+    # 'denoising_strength': 0.55,
     # 'height': 256,
-    # 'image_similarity': 0.0,
-    # 'init_images': ['test/ai-render-1712271997-cat-1-before-xio3j52m.png'],
+    # 'image_similarity': 0.44999998807907104,
+    # 'init_images': ['test/ai-render-1712303702-cat-1-before-wpv27cub.png'],
     # 'negative_prompt': 'ugly, bad art, poorly drawn hands, poorly drawn feet, '
     #                     'poorly drawn face, out of frame, extra limbs, disfigured, '
     #                     'deformed, body out of frame, blurry, bad anatomy, '
@@ -287,10 +294,10 @@ def map_params(params):
 
     json_obj = map_KSampler(params, json_obj)
     json_obj = map_prompts(params, json_obj)
-    # json_obj = map_init_image(params, json_obj)
+    json_obj = map_init_image(params, json_obj)
 
     # Save mapped json to local file
-    with open('sd_backends/comfyui/mapped_img2img.json', 'w') as f:
+    with open('sd_backends/comfyui/_mapped.json', 'w') as f:
         json.dump(json_obj, f, indent=4)
 
     return json_obj
@@ -299,8 +306,8 @@ def map_params(params):
 def do_post(url, data):
 
     # send the API request
-    print("\nSending request to: " + url)
-    print("\nRequest body:")
+    print(Fore.GREEN + "\nSENDING REQUEST TO: " + url)
+    print(Fore.GREEN + "\nLOG REQUEST DATA:" + Style.RESET_ALL)
     pprint(data, indent=1)
 
     try:
