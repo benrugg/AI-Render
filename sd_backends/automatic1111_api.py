@@ -194,9 +194,9 @@ def do_post(url, data):
 
 
 def debug_log(response):
-    # print("request body:")
-    # print(response.request.body)
-    # print("\n")
+    print("request body:")
+    print(response.request.body)
+    print("\n")
 
     print("response body:")
     print(response.content)

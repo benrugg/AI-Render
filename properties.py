@@ -7,14 +7,38 @@ from . import (
 )
 from .ui import ui_preset_styles
 from .sd_backends import automatic1111_api
+from .sd_backends import comfyui_api
 
 
 def get_available_samplers(self, context):
     return utils.get_active_backend().get_samplers()
 
 
+def get_available_schedulers(self, context):
+    if utils.sd_backend() == "comfyui":
+        return utils.get_active_backend().get_schedulers()
+    else:
+        return []
+
+
+def get_available_workflows(self, context):
+    if utils.sd_backend() == "comfyui":
+        return utils.get_active_backend().get_workflows()
+    else:
+        return []
+
+
+def get_available_models(self, context):
+    # TODO: Do it
+    pass
+
+
 def get_default_sampler():
     return utils.get_active_backend().default_sampler()
+
+
+def get_default_scheduler():
+    return utils.get_active_backend().default_scheduler()
 
 
 def get_available_upscaler_models(self, context):
@@ -55,6 +79,13 @@ def ensure_sampler(context):
         scene.air_props.sampler = get_default_sampler()
 
 
+def ensure_scheduler(context):
+    # """Ensure that the scheduler is set to a valid value"""
+    scene = context.scene
+    if not scene.air_props.scheduler:
+        scene.air_props.scheduler = get_default_scheduler()
+
+
 def ensure_upscaler_model(context):
     # """Ensure that the upscale model is set to a valid value"""
     scene = context.scene
@@ -65,10 +96,33 @@ def ensure_upscaler_model(context):
         scene.air_props.upscaler_model = get_default_upscaler_model()
 
 
+def update_local_sd_url(context):
+    """
+    If is set to Automatic1111, the url is http://127.0.0.1:7860
+    If is set to ComfyUI, the url is http://127.0.0.1:8188
+    """
+
+    addonprefs = utils.get_addon_preferences(context)
+
+    if utils.sd_backend() == "automatic1111":
+        addonprefs.local_sd_url = "http://127.0.0.1:7860"
+    elif utils.sd_backend() == "comfyui":
+        addonprefs.local_sd_url = "http://127.0.0.1:8188"
+
+
 def ensure_properties(self, context):
     # """Ensure that any properties which could change with a change in preferences are set to valid values"""
     ensure_sampler(context)
+    if utils.sd_backend() == "comfyui":
+        ensure_scheduler(context)
     ensure_upscaler_model(context)
+    update_local_sd_url(context)
+
+
+def update_denoise(self, context):
+    """round(1 - params["image_similarity"], 2)"""
+    context.scene.air_props.denoising_strength = round(
+        1 - context.scene.air_props.image_similarity, 4)
 
 
 class AIRProperties(bpy.types.PropertyGroup):
@@ -92,10 +146,21 @@ class AIRProperties(bpy.types.PropertyGroup):
         name="Image Similarity",
         default=0.4,
         soft_min=0.0,
-        soft_max=0.8,
+        soft_max=0.9,
         min=0.0,
         max=1.0,
         description="How closely the final image will match the initial rendered image. Values around 0.1-0.4 will turn simple renders into new creations. Around 0.5 will keep a lot of the composition, and transform into something like the prompt. 0.6-0.7 keeps things more stable between renders. Higher values may require more steps for best results. You can set this to 0.0 to use only the prompt",
+        update=update_denoise
+    )
+    denoising_strength: bpy.props.FloatProperty(
+        name="Denoising Strength",
+        default=0.6,
+        soft_min=0.0,
+        soft_max=1.0,
+        min=0.0,
+        max=1.0,
+        description="How much to denoise the image. Higher values will remove more noise, but may also remove detail",
+        update=update_denoise
     )
     cfg_scale: bpy.props.FloatProperty(
         name="Prompt Strength",
@@ -136,9 +201,15 @@ class AIRProperties(bpy.types.PropertyGroup):
     )
     sampler: bpy.props.EnumProperty(
         name="Sampler",
-        default=120,  # maps to DPM++ 2M, which is a good, fast sampler
+        default=130,  # maps to DPM++ 2M, which is a good, fast sampler
         items=get_available_samplers,
         description="Which sampler method to use",
+    )
+    scheduler: bpy.props.EnumProperty(
+        name="Scheduler",
+        default=10,
+        items=get_available_schedulers,
+        description="Which scheduler method to use",
     )
     auto_run: bpy.props.BoolProperty(
         name="Run Automatically on Render",
@@ -157,7 +228,7 @@ class AIRProperties(bpy.types.PropertyGroup):
     )
     use_preset: bpy.props.BoolProperty(
         name="Apply a Preset Style",
-        default=True,
+        default=False,
         description="Optionally use a preset style to apply modifier words to your prompt",
     )
     preset_style: bpy.props.EnumProperty(
@@ -203,7 +274,7 @@ class AIRProperties(bpy.types.PropertyGroup):
     )
     do_upscale_automatically: bpy.props.BoolProperty(
         name="Upscale Automatically",
-        default=True,
+        default=False,
         description="When true, will automatically upscale the image after each render",
     )
     upscaler_model: bpy.props.EnumProperty(
@@ -342,6 +413,12 @@ class AIRProperties(bpy.types.PropertyGroup):
         default=0.05,
         step=0.01,
         name="Outpaint Color Variation",
+    )
+    comfyui_workflows: bpy.props.EnumProperty(
+        name="ComfyUI Workflows",
+        default=1,
+        items=get_available_workflows,
+        description="A list of the available workflows (loaded from the ComfyUI API)",
     )
 
 

@@ -146,8 +146,9 @@ class AIR_PT_setup(bpy.types.Panel):
         # else, show the ready / getting started message and disable and change image size buttons
         else:
             utils.label_multiline(layout, text="You're ready to start rendering!", width=width_guess, alignment="CENTER")
-            row = layout.row()
-            row.operator("wm.url_open", text="Help Getting Started", icon="URL").url = config.VIDEO_TUTORIAL_URL
+
+            # row = layout.row()
+            # row.operator("wm.url_open", text="Help Getting Started", icon="URL").url = config.VIDEO_TUTORIAL_URL
 
             row = layout.row(align=True)
             if utils.is_using_sdxl_1024_model(scene):
@@ -156,6 +157,19 @@ class AIR_PT_setup(bpy.types.Panel):
                 row.operator(operators.AIR_OT_show_other_dimension_options.bl_idname, text="Change Image Size")
             row.separator()
             row.operator(operators.AIR_OT_disable.bl_idname, text="Disable AI Render")
+
+            col = layout.column()
+            col.label(text="Backend")
+            col.prop(utils.get_addon_preferences(context), "sd_backend", text="")
+            col.separator()
+
+            col.label(text="Local SD URL")
+            col.prop(utils.get_addon_preferences(context), "local_sd_url", text="")
+            col.separator()
+
+            if utils.sd_backend(context) == "comfyui":
+                col.label(text="ComfyUI Workflows Path")
+                col.prop(utils.get_addon_preferences(context), "workflows_path", text="")
 
 
 class AIR_PT_prompt(bpy.types.Panel):
@@ -261,6 +275,13 @@ class AIR_PT_advanced_options(bpy.types.Panel):
         sub = row.column()
         sub.prop(props, 'image_similarity', text="", slider=False)
 
+        # Denoising Strength
+        row = layout.row()
+        sub = row.column()
+        sub.label(text="Denoising Strength")
+        sub = row.column()
+        sub.prop(props, 'denoising_strength', text="", slider=False)
+
         # Steps
         row = layout.row()
         sub = row.column()
@@ -289,6 +310,14 @@ class AIR_PT_advanced_options(bpy.types.Panel):
         sub.label(text="Sampler")
         sub = row.column()
         sub.prop(props, 'sampler', text="")
+
+        # Scheduler only if comfyui backend active
+        if utils.sd_backend(context) == "comfyui":
+            row = layout.row()
+            sub = row.column()
+            sub.label(text="Scheduler")
+            sub = row.column()
+            sub.prop(props, 'scheduler', text="")
 
 
 class AIR_PT_controlnet(bpy.types.Panel):
@@ -670,6 +699,30 @@ class AIR_PT_animation(bpy.types.Panel):
             row.operator("wm.url_open", text="Get Animation Tips", icon="URL").url = config.ANIMATION_TIPS_URL
 
 
+class AIR_PT_comfyui(bpy.types.Panel):
+    bl_label = "ComfyUI"
+    bl_idname = "AIR_PT_comfyui"
+    bl_parent_id = "AIR_PT_main"
+    bl_space_type = "PROPERTIES"
+    bl_region_type = "WINDOW"
+    bl_context = "render"
+    bl_options = {'DEFAULT_CLOSED'}
+
+    @classmethod
+    def poll(cls, context):
+        return utils.is_installation_valid() and context.scene.air_props.is_enabled and utils.sd_backend(context) == "comfyui"
+
+    def draw(self, context):
+        layout = self.layout
+        scene = context.scene
+        props = scene.air_props
+
+        # ComfyUI Workflows
+        col = layout.column()
+        col.label(text="Workflows")
+        col.prop(props, 'comfyui_workflows', text="")
+
+
 classes = [
     AIR_PT_main,
     AIR_PT_setup,
@@ -681,6 +734,7 @@ classes = [
     AIR_PT_inpaint,
     AIR_PT_outpaint,
     AIR_PT_animation,
+    AIR_PT_comfyui,
 ]
 
 

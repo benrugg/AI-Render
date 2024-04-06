@@ -27,6 +27,7 @@ if "bpy" in locals():
     imp.reload(ui_panels)
     imp.reload(ui_preset_styles)
     imp.reload(utils)
+    imp.reload(comfyui_api)
     imp.reload(automatic1111_api)
     imp.reload(stability_api)
     imp.reload(stablehorde_api)
@@ -48,6 +49,7 @@ else:
         ui_preset_styles,
     )
     from .sd_backends import (
+        comfyui_api,
         automatic1111_api,
         stability_api,
         stablehorde_api,

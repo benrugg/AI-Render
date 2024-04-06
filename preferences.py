@@ -31,17 +31,18 @@ class AIRPreferences(bpy.types.AddonPreferences):
     is_local_sd_enabled: bpy.props.BoolProperty(
         name="Enable Rendering with Local Stable Diffusion",
         description="NOTE: This is now legacy, but is used to set sd_backend for anyone who was previously using Automatic1111",
-        default=False,
+        default=True,
         update=properties.ensure_properties,
     )
 
     sd_backend: bpy.props.EnumProperty(
         name="Stable Diffusion Backend",
-        default="dreamstudio",
+        default="comfyui",
         items=[
+            ('comfyui', 'ComfUI (local)', ''),
+            ('automatic1111', 'Automatic1111 (local)', ''),
             ('dreamstudio', 'DreamStudio (cloud)', ''),
             ('stablehorde', 'Stable Horde (cloud)', ''),
-            ('automatic1111', 'Automatic1111 (local)', ''),
             ('shark', 'SHARK by nod.ai (local)', ''),
         ],
         update=properties.ensure_properties,
@@ -51,7 +52,8 @@ class AIRPreferences(bpy.types.AddonPreferences):
     local_sd_url: bpy.props.StringProperty(
         name="URL of the Stable Diffusion Web Server",
         description="The location of the web server that is currently running on your local machine",
-        default="http://127.0.0.1:7860",
+        # WEBUI http://127.0.0.1:7860",  COMFYUI http://127.0.0.1:8188/
+        default="http://127.0.0.1:8188/",
     )
 
     local_sd_timeout: bpy.props.IntProperty(
@@ -65,19 +67,19 @@ class AIRPreferences(bpy.types.AddonPreferences):
     is_opted_out_of_analytics: bpy.props.BoolProperty(
         name="Opt out of analytics",
         description="If this is checked, the add-on will not send or store any analytics data",
-        default=False,
+        default=True,
     )
 
     # Add-on Updater Preferences
     updater_expanded_in_preferences_panel: bpy.props.BoolProperty(
         name="Show the updater preferences",
         description="Updater preferences twirled down when True, twirled up when False",
-        default=False)
+        default=True)
 
     auto_check_update: bpy.props.BoolProperty(
         name="Auto-check for Update",
         description="If enabled, auto-check for updates using an interval",
-        default=True)
+        default=False)
 
     updater_interval_months: bpy.props.IntProperty(
         name='Months',
@@ -105,6 +107,12 @@ class AIRPreferences(bpy.types.AddonPreferences):
         default=0,
         min=0,
         max=59)
+
+    workflows_path: bpy.props.StringProperty(
+        name="Workflow Path",
+        description="Path where the workflows are stored",
+        default=utils.get_default_comfy_workflows_path(),
+        subtype='DIR_PATH')
 
     def draw(self, context):
         layout = self.layout
@@ -139,7 +147,7 @@ class AIRPreferences(bpy.types.AddonPreferences):
                 box.separator()
 
                 row = box.row()
-                row.operator("wm.url_open", text="Sign Up For DreamStudio (free)", icon="URL").url = config.DREAM_STUDIO_URL
+                row.operator("wm.url_open", text="Sign Up For DreamStudio (free)",icon="URL").url = config.DREAM_STUDIO_URL
 
                 row = box.row()
                 row.prop(self, "dream_studio_api_key")
@@ -154,11 +162,11 @@ class AIRPreferences(bpy.types.AddonPreferences):
                 row = box.row()
                 row.prop(self, "stable_horde_api_key")
 
-            # Local Installation with Automatic1111
-            if self.sd_backend == "automatic1111":
+            # Local Installation with Automatic1111 or ComfyUI
+            if self.sd_backend == "automatic1111" or self.sd_backend == "comfyui":
                 box = layout.box()
                 row = box.row()
-                row.label(text="Local Installation with Automatic1111:", icon="INFO")
+                row.label(text="Local Installation with Automatic1111 or comfyui:", icon="INFO")
 
                 utils.label_multiline(box, text="Instead of running in the cloud with DreamStudio, AI Render can hook into an existing local installation of Stable Diffusion. This allows for unlimited, free rendering on your own machine. It requires some advanced setup steps.", width=width_guess)
 
@@ -177,13 +185,18 @@ class AIRPreferences(bpy.types.AddonPreferences):
                 col.prop(self, "local_sd_timeout", text="")
 
                 box.separator()
-                utils.label_multiline(box, text=f"AI Render will use your local Stable Diffusion installation. Please make sure the Web UI is launched and running in a terminal.", icon="KEYTYPE_BREAKDOWN_VEC", width=width_guess)
+                utils.label_multiline(box, text=f"AI Render will use your local Stable Diffusion installation. Please make sure the WebUI or ComfyUI are launched and running in a terminal.",
+                                      icon="KEYTYPE_BREAKDOWN_VEC", width=width_guess)
 
                 box.separator()
                 row = box.row()
                 row.operator("wm.url_open", text="Help with local installation", icon="URL").url \
                     = config.HELP_WITH_LOCAL_INSTALLATION_URL
-            
+
+                if self.sd_backend == 'comfyui':
+                    row = box.row()
+                    row.prop(self, "workflows_path")
+
             # Local Installation with SHARK
             if self.sd_backend == "shark":
                 box = layout.box()
@@ -207,13 +220,14 @@ class AIRPreferences(bpy.types.AddonPreferences):
                 col.prop(self, "local_sd_timeout", text="")
 
                 box.separator()
-                utils.label_multiline(box, text=f"AI Render will use your local Stable Diffusion installation. Please make sure the Web UI is launched and running in a terminal.", icon="KEYTYPE_BREAKDOWN_VEC", width=width_guess)
+                utils.label_multiline(box, text=f"AI Render will use your local Stable Diffusion installation. Please make sure the Web UI is launched and running in a terminal.",
+                                      icon="KEYTYPE_BREAKDOWN_VEC", width=width_guess)
 
                 box.separator()
                 row = box.row()
                 row.operator("wm.url_open", text="Help with local installation", icon="URL").url \
                     = config.HELP_WITH_SHARK_INSTALLATION_URL
-            
+
             # Notes
             box = layout.box()
             box.label(text="Note:")
@@ -234,7 +248,7 @@ class AIRPreferences(bpy.types.AddonPreferences):
 def update_sd_backend_from_previous_installation(context):
     preferences = utils.get_addon_preferences(context)
     if preferences.is_local_sd_enabled:
-        preferences.sd_backend = "automatic1111"
+        preferences.sd_backend = "comfyui"
         preferences.is_local_sd_enabled = False
 
 
