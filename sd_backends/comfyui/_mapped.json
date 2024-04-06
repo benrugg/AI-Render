@@ -1,23 +1,23 @@
 {
     "3": {
         "inputs": {
-            "seed": 1417807297,
-            "steps": 30,
-            "cfg": 7.0,
-            "sampler_name": "dpmpp_2m",
-            "scheduler": "normal",
-            "denoise": 1.0,
+            "seed": 1615376512,
+            "steps": 10,
+            "cfg": 5.0,
+            "sampler_name": "lcm",
+            "scheduler": "sgm_uniform",
+            "denoise": 0.47,
             "model": [
                 "4",
                 0
             ],
             "positive": [
-                "6",
+                "13",
                 0
             ],
             "negative": [
-                "7",
-                0
+                "13",
+                1
             ],
             "latent_image": [
                 "10",
@@ -40,7 +40,7 @@
     },
     "6": {
         "inputs": {
-            "text": "",
+            "text": "Castle mechanincal, robotic, futuristic, high detail, sharp, high contrast",
             "clip": [
                 "4",
                 1
@@ -48,12 +48,12 @@
         },
         "class_type": "CLIPTextEncode",
         "_meta": {
-            "title": "CLIP Text Encode (Prompt)"
+            "title": "positive"
         }
     },
     "7": {
         "inputs": {
-            "text": "ugly, bad art",
+            "text": "<embedding:EasyNegative>",
             "clip": [
                 "4",
                 1
@@ -61,7 +61,7 @@
         },
         "class_type": "CLIPTextEncode",
         "_meta": {
-            "title": "CLIP Text Encode (Prompt)"
+            "title": "negative"
         }
     },
     "8": {
@@ -71,8 +71,8 @@
                 0
             ],
             "vae": [
-                "4",
-                2
+                "11",
+                0
             ]
         },
         "class_type": "VAEDecode",
@@ -111,7 +111,7 @@
     },
     "11": {
         "inputs": {
-            "vae_name": "vae-ft-mse-840000-ema-pruned.safetensors"
+            "vae_name": "vae-ft-ema-560000-ema-pruned.safetensors"
         },
         "class_type": "VAELoader",
         "_meta": {
@@ -120,12 +120,58 @@
     },
     "12": {
         "inputs": {
-            "image": "test/ai-render-1712352651--1-before-h3784hje.png",
+            "image": "test/ai-render-1712422825-Castle mechanincal, robotic, futuristic, high detail, sharp, high contrast-1-before-_47a49_8.png",
             "upload": "image"
         },
         "class_type": "LoadImage",
         "_meta": {
             "title": "Load Image"
+        }
+    },
+    "13": {
+        "inputs": {
+            "strength": 1,
+            "start_percent": 0,
+            "end_percent": 1,
+            "positive": [
+                "6",
+                0
+            ],
+            "negative": [
+                "7",
+                0
+            ],
+            "control_net": [
+                "14",
+                0
+            ],
+            "image": [
+                "15",
+                0
+            ]
+        },
+        "class_type": "ControlNetApplyAdvanced",
+        "_meta": {
+            "title": "Apply ControlNet (Advanced)"
+        }
+    },
+    "14": {
+        "inputs": {
+            "control_net_name": "SD15\\control_v11\\control_v11f1p_sd15_depth.pth"
+        },
+        "class_type": "ControlNetLoader",
+        "_meta": {
+            "title": "Load ControlNet Model"
+        }
+    },
+    "15": {
+        "inputs": {
+            "image": "pose.png",
+            "upload": "image"
+        },
+        "class_type": "LoadImage",
+        "_meta": {
+            "title": "depth"
         }
     }
 }

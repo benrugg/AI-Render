@@ -9,8 +9,11 @@ from .. import (
     operators,
     utils,
 )
-from colorama import Fore
+import pprint
+from colorama import Fore, Style, init
 
+# Initialize Colorama
+init()
 
 # CORE FUNCTIONS:
 
@@ -57,7 +60,7 @@ def generate(params, img_file, filename_prefix, props):
     # Load the workflow
     workflow = load_workflow(bpy.context, get_active_workflow(bpy.context))
     print(f"{Fore.LIGHTWHITE_EX}\nLOG WORKFLOW: {Fore.RESET}{get_active_workflow(bpy.context)}")
-    # pprint(workflow)
+    # pprint.pp(workflow)
 
     params["denoising_strength"] = round(1 - params["image_similarity"], 4)
     params["sampler_index"] = params["sampler"]
@@ -91,53 +94,6 @@ def generate(params, img_file, filename_prefix, props):
         return handle_error(response)
 
 
-def upscale(img_file, filename_prefix, props):
-
-    # prepare the params
-    data = {
-        "resize_mode": 0,
-        "show_extras_results": True,
-        "gfpgan_visibility": 0,
-        "codeformer_visibility": 0,
-        "codeformer_weight": 0,
-        "upscaling_resize": props.upscale_factor,
-        "upscaling_resize_w": utils.sanitized_upscaled_width(max_upscaled_image_size()),
-        "upscaling_resize_h": utils.sanitized_upscaled_height(max_upscaled_image_size()),
-        "upscaling_crop": True,
-        "upscaler_1": props.upscaler_model,
-        "upscaler_2": "None",
-        "extras_upscaler_2_visibility": 0,
-        "upscale_first": True,
-    }
-
-    # add a base 64 encoded image to the params
-    data["image"] = "data:image/png;base64," + \
-        base64.b64encode(img_file.read()).decode()
-    img_file.close()
-
-    # prepare the server url
-    try:
-        server_url = get_server_url("/sdapi/v1/extra-single-image")
-    except:
-        return operators.handle_error(f"You need to specify a location for the local Stable Diffusion server in the add-on preferences. [Get help]({config.HELP_WITH_LOCAL_INSTALLATION_URL})", "local_server_url_missing")
-
-    # send the API request
-    response = do_post(server_url, data)
-
-    # print log info for debugging
-    print("DEBUG COMFY")
-    debug_log(response)
-
-    if response == False:
-        return False
-
-    # handle the response
-    if response.status_code == 200:
-        return handle_success(response, filename_prefix)
-    else:
-        return handle_error(response)
-
-
 def handle_success(response, filename_prefix):
 
     # Get the prompt_id from the response
@@ -147,7 +103,7 @@ def handle_success(response, filename_prefix):
 
         # print(Fore.WHITE + "QUEUE PROMPT RESPONSE OBJECT: " + Fore.RESET)
         # print(json.dumps(response_obj, indent=2))
-        print(Fore.GREEN + "\nPROMPT ID: " + Fore.RESET + prompt_id)
+        print(Fore.LIGHTWHITE_EX + "\nPROMPT ID: " + Fore.RESET + prompt_id)
 
     except:
         print("ComfyUI response content: ")
@@ -175,7 +131,7 @@ def handle_success(response, filename_prefix):
             status_completed = status.get("status_str") == "success"
 
             if status_completed:
-                print(Fore.GREEN + "STATUS: " + Fore.RESET + status.get("status_str"))
+                print(Fore.LIGHTWHITE_EX + "STATUS: " + Fore.RESET + status.get("status_str"))
                 # print(Fore.WHITE + "\nHISTORY RESPONSE OBJECT: " + Fore.RESET)
                 # print(json.dumps(response_obj, indent=2))
 
@@ -189,10 +145,10 @@ def handle_success(response, filename_prefix):
                             # print(json.dumps(value, indent=2))
                             if value.get("class_type") == "SaveImage":
                                 save_image_node = key
-                print(Fore.GREEN + "IMAGE NODE_NUMBER: " + Fore.RESET + save_image_node)
+                print(Fore.LIGHTWHITE_EX + "IMAGE NODE_NUMBER: " + Fore.RESET + save_image_node)
 
                 image_file_name = response_obj[prompt_id]["outputs"][save_image_node]["images"][0]["filename"]
-                print(Fore.GREEN + "IMAGE FILE NAME: " + Fore.RESET + image_file_name)  # ComfyUI_00057_.png
+                print(Fore.LIGHTWHITE_EX + "IMAGE FILE NAME: " + Fore.RESET + image_file_name)  # ComfyUI_00057_.png
                 break
         else:
             return handle_error(response)
@@ -250,43 +206,30 @@ def handle_error(response):
 # PRIVATE SUPPORT FUNCTIONS:
 
 def print_with_colors(json_dict):
-    def find_prompts(data, class_type='KSampler'):
-        for key, value in data.items():
-            if isinstance(value, dict):
-                if value.get('class_type') == class_type:
-                    return value['inputs'].get('positive', [''])[0], value['inputs'].get('negative', [''])[0]
-                positive_key, negative_key = find_prompts(value, class_type)
-                if positive_key or negative_key:
-                    return positive_key, negative_key
-        return None, None
 
-    def recursive_print(data, positive_key=None, negative_key=None, path=""):
-        for key, value in data.items():
-            # Maintain the path traveled in the JSON structure
-            json_traverse_path = f"{path}/{key}"
-            if isinstance(value, dict):
-                recursive_print(value, positive_key,
-                                negative_key, json_traverse_path)
-            elif isinstance(value, list) and all(isinstance(item, dict) for item in value):
-                for item in value:
-                    recursive_print(item, positive_key,
-                                    negative_key, json_traverse_path)
-            else:
-                if key == 'prompt' or (key == 'text' and positive_key and positive_key in json_traverse_path):
-                    print(
-                        Fore.GREEN + f"{key}: {Fore.LIGHTGREEN_EX}{value}" + Fore.RESET)
-                elif key == 'negative_prompt' or (key == 'text' and negative_key and negative_key in json_traverse_path):
-                    print(
-                        Fore.RED + f"{key}: {Fore.LIGHTRED_EX}{value}" + Fore.RESET)
-                elif key in ['sampler', 'scheduler', 'denoising_strength', 'steps', 'seed', 'cfg_scale', 'denoise', 'sampler_name', 'cfg']:
-                    print(
-                        Fore.MAGENTA + f"{key}: {Fore.LIGHTMAGENTA_EX}{value}" + Fore.RESET)
-                elif key in ['init_images', 'image']:
-                    print(
-                        Fore.YELLOW + f"{key}: {Fore.LIGHTYELLOW_EX}{value}" + Fore.RESET)
+    # Loop through all items in the data
+    for key, value in json_dict.items():
+        # Check if value is a dictionary and the class type is CLIPTextEncode
+        if isinstance(value, dict) and value.get("class_type") == "CLIPTextEncode":
+            # Check the _meta title for the color
+            text_color = Fore.GREEN if value["_meta"]["title"] == "positive" else Fore.RED
 
-    positive_node, negative_node = find_prompts(json_dict)
-    recursive_print(json_dict, positive_node, negative_node)
+            # Print the text value in the appropriate color
+            print(text_color + value["inputs"]["text"])
+
+    for key, value in json_dict.items():
+        if isinstance(value, dict):
+            # print(Fore.WHITE + f"{key}: {Fore.LIGHTWHITE_EX}")
+            print_with_colors(value)
+        else:
+            if key in ['sampler', 'scheduler', 'denoising_strength', 'steps', 'seed', 'cfg_scale', 'denoise', 'sampler_name', 'cfg']:
+                print(Fore.MAGENTA + f"{key}: {Fore.LIGHTMAGENTA_EX}{value}" + Fore.RESET)
+            elif key in ['init_images', 'image']:
+                print(Fore.YELLOW + f"{key}: {Fore.LIGHTYELLOW_EX}{value}" + Fore.RESET)
+            elif key == 'prompt':
+                print(Fore.GREEN + f"{key}: {Fore.LIGHTGREEN_EX}{value}" + Fore.RESET)
+            elif key == 'negative_prompt':
+                print(Fore.RED + f"{key}: {Fore.LIGHTRED_EX}{value}" + Fore.RESET)
 
 
 def create_headers():
@@ -306,12 +249,14 @@ def get_server_url(path):
 
 
 def map_KSampler(params, json_obj):
+    """Map the params to the KSampler node in the ComfyUI JSON object."""
+    # TODO: Is not working if multiple KSampler nodes are present in the JSON object
 
-    KSampler = None
+    KSampler_Node = None
 
     for key, value in json_obj.items():
         if value['class_type'] == 'KSampler':
-            KSampler = key
+            KSampler_Node = key
 
             value['inputs']['seed'] = params['seed']
             value['inputs']['steps'] = params['steps']
@@ -320,28 +265,41 @@ def map_KSampler(params, json_obj):
             value['inputs']['scheduler'] = params['scheduler']
             value['inputs']['denoise'] = params['denoising_strength']
 
-    return json_obj, KSampler
+    return json_obj, KSampler_Node
 
 
 def map_prompts(params, json_obj):
+    """Map the params to the positive and negative prompts in the ComfyUI JSON object."""
 
-    positive = None
-    negative = None
+    # Is assuming that the positive and negative prompts are named 'positive' and 'negative' in the JSON object
+    # "6": {
+    #     "inputs": {
+    #       "text": "positive",
+    #       "clip": [
+    #         "4",
+    #         1
+    #       ]
+    #     },
+    #     "class_type": "CLIPTextEncode",
+    #     "_meta": {
+    #       "title": "positive"
+    #     }
+    #   },
 
-    # Get the node number of the positive and negative prompta
-    for key, value in json_obj.items():
-        if value['class_type'] == 'KSampler':
-            positive = value['inputs']['positive'][0]
-            negative = value['inputs']['negative'][0]
+    Positive_Node = None
+    Negative_Node = None
 
     for key, value in json_obj.items():
         if value['class_type'] == 'CLIPTextEncode':
-            if key == positive:
+            if value.get('_meta') and value['_meta'].get('title') == 'positive':
+                Positive_Node = key
                 value['inputs']['text'] = params['prompt']
-            if key == negative:
+
+            elif value.get('_meta') and value['_meta'].get('title') == 'negative':
+                Negative_Node = key
                 value['inputs']['text'] = params['negative_prompt']
 
-    return json_obj, positive, negative
+    return json_obj, Positive_Node, Negative_Node
 
 
 def map_init_image(params, json_obj):
@@ -361,36 +319,37 @@ def map_init_image(params, json_obj):
     return json_obj, connected_image
 
 
-def map_params(params, json_obj):
+def map_params(params, workflow):
 
-    # print("\nLOG PARAMS:")
-    # print_with_colors(params)
+    print("\nLOG PARAMS:")
+    # pprint.pp(params)
+    print_with_colors(params)
 
     # Map the params to the ComfyUI nodes
-    json_obj, KSampler = map_KSampler(params, json_obj)
-    json_obj, positive, negative = map_prompts(params, json_obj)
-    json_obj, connected_image = map_init_image(params, json_obj)
+    workflow, KSampler = map_KSampler(params, workflow)
+    workflow, positive, negative = map_prompts(params, workflow)
+    workflow, connected_image = map_init_image(params, workflow)
 
-    # print("\nMAPPING COMFYUI NODES:")
-    # print(Fore.MAGENTA + "KSAMPLER: " + Fore.RESET + KSampler)
-    # print(Fore.GREEN + "POSITIVE PROMPT: " + Fore.RESET + positive)
-    # print(Fore.RED + "NEGATIVE PROMPT: " + Fore.RESET + negative)
-    # print(Fore.YELLOW + "IMAGE CONNECTED TO VAE ENCODER: " + Fore.RESET + connected_image)
+    print("\nMAPPING COMFYUI NODES:")
+    print(Fore.MAGENTA + "KSAMPLER: " + Fore.RESET + KSampler)
+    print(Fore.GREEN + "POSITIVE PROMPT: " + Fore.RESET + positive)
+    print(Fore.RED + "NEGATIVE PROMPT: " + Fore.RESET + negative)
+    print(Fore.YELLOW + "IMAGE CONNECTED TO VAE ENCODER: " + Fore.RESET + connected_image)
 
     # Save mapped json to local file
     with open('sd_backends/comfyui/_mapped.json', 'w') as f:
-        json.dump(json_obj, f, indent=4)
+        json.dump(workflow, f, indent=4)
 
-    return json_obj
+    # send the API request
+    print("\nLOG MAPPED JSON:")
+    # pprint.pp(json_obj)
+    print_with_colors(workflow)
+
+    return workflow
 
 
 def do_post(url, data):
-
-    # send the API request
     print(Fore.WHITE + "\nREQUEST TO: " + url)
-    # print("\nLOG REQUEST DATA:")
-    # print_with_colors(data)
-
     try:
         return requests.post(url, json=data, headers=create_headers(), timeout=utils.local_sd_timeout())
     except requests.exceptions.ConnectionError:
@@ -506,7 +465,7 @@ def supports_negative_prompts():
 
 def supports_choosing_model():
     # TODO - This should be set to true
-    # and a get_model() shoulb be used to get the model list from the ComfyUI API
+    # and a get_model() should be used to get the model list from the ComfyUI API
     return False
 
 
@@ -543,136 +502,3 @@ def is_using_sdxl_1024_model(props):
     # returning false, because that way the UI will allow the user to select
     # more image size options.
     return False
-
-
-def get_available_controlnet_models(context):
-    models = context.scene.air_props.controlnet_available_models
-
-    if (not models):
-        return []
-    else:
-        enum_list = []
-        for item in models.split("||||"):
-            enum_list.append((item, item, ""))
-        return enum_list
-
-
-def get_available_controlnet_modules(context):
-    modules = context.scene.air_props.controlnet_available_modules
-
-    if (not modules):
-        return []
-    else:
-        enum_list = []
-        for item in modules.split("||||"):
-            enum_list.append((item, item, ""))
-        return enum_list
-
-
-def choose_controlnet_defaults(context):
-    models = get_available_controlnet_models(context)
-    modules = get_available_controlnet_modules(context)
-
-    if (not models) or (not modules):
-        return
-
-    # priority order for models and modules
-    priority_order = ['depth', 'openpose', 'normal', 'canny', 'scribble']
-
-    # choose a matching model and module in the priority order:
-    for item in priority_order:
-        model_selection = None
-        module_selection = None
-
-        for model in models:
-            if item in model[0]:
-                model_selection = model[0]
-                break
-
-        for module in modules:
-            if item in module[0]:
-                module_selection = module[0]
-                break
-
-        if model_selection and module_selection:
-            context.scene.air_props.controlnet_model = model_selection
-            context.scene.air_props.controlnet_module = module_selection
-            return
-
-
-def load_upscaler_models(context):
-    try:
-        # set a flag to indicate whether the list of models has already been loaded
-        was_already_loaded = is_upscaler_model_list_loaded(context)
-
-        # get the list of available upscaler models from the Automatic1111 api
-        server_url = get_server_url("/sdapi/v1/upscalers")
-        headers = {"Accept": "application/json"}
-        response = requests.get(server_url, headers=headers, timeout=5)
-        response_obj = response.json()
-        print("Upscaler models returned from Automatic1111 API:")
-        print(response_obj)
-
-        # store the list of models in the scene properties
-        if not response_obj:
-            return operators.handle_error(f"No upscaler models are installed in Automatic1111. [Get help]({config.HELP_WITH_AUTOMATIC1111_UPSCALING_URL})")
-        else:
-            # map the response object to a list of model names
-            upscaler_models = []
-            for model in response_obj:
-                if (model["name"] != "None"):
-                    upscaler_models.append(model["name"])
-            context.scene.air_props.automatic1111_available_upscaler_models = "||||".join(
-                upscaler_models)
-
-            # if the list of models was not already loaded, set the default model
-            if not was_already_loaded:
-                context.scene.air_props.upscaler_model = default_upscaler_model()
-
-            # return success
-            return True
-    except:
-        return operators.handle_error(f"Couldn't get the list of available upscaler models from the Automatic1111 server. [Get help]({config.HELP_WITH_AUTOMATIC1111_UPSCALING_URL})")
-
-
-def load_controlnet_models(context):
-    try:
-        # get the list of available controlnet models from the Automatic1111 api
-        server_url = get_server_url("/controlnet/model_list")
-        headers = {"Accept": "application/json"}
-        response = requests.get(server_url, headers=headers, timeout=5)
-        response_obj = response.json()
-        print("ControlNet models returned from Automatic1111 API:")
-        print(response_obj)
-
-        # store the list of models in the scene properties
-        models = response_obj["model_list"]
-        if not models:
-            return operators.handle_error(f"You don't have any ControlNet models installed. You will need to download them from Hugging Face. [Get help]({config.HELP_WITH_CONTROLNET_URL})")
-        else:
-            context.scene.air_props.controlnet_available_models = "||||".join(
-                models)
-            return True
-    except:
-        return operators.handle_error(f"Couldn't get the list of available ControlNet models from the Automatic1111 server. Make sure ControlNet is installed and activated. [Get help]({config.HELP_WITH_CONTROLNET_URL})")
-
-
-def load_controlnet_modules(context):
-    try:
-        # get the list of available controlnet modules from the Automatic1111 api
-        server_url = get_server_url("/controlnet/module_list")
-        headers = {"Accept": "application/json"}
-        response = requests.get(server_url, headers=headers, timeout=5)
-        response_obj = response.json()
-        print("ControlNet modules returned from Automatic1111 API:")
-        print(response_obj)
-
-        # sort the modules in alphabetical order, and then store them in the scene
-        # properties
-        modules = response_obj["module_list"]
-        modules.sort()
-        context.scene.air_props.controlnet_available_modules = "||||".join(
-            modules)
-        return True
-    except:
-        return operators.handle_error(f"Couldn't get the list of available ControlNet modules from the Automatic1111 server. Make sure ControlNet is installed and activated. [Get help]({config.HELP_WITH_CONTROLNET_URL})")
