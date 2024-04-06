@@ -10,3 +10,6 @@ ai-render_updater
 
 # client-side config files
 .analytics_client_id
+
+# Temp ComfyUI workflow mapped with params, used for debug
+_mapped.json
