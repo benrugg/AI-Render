@@ -3,6 +3,7 @@ import bpy
 import base64
 import requests
 import json
+from time import sleep
 from .. import (
     config,
     operators,
@@ -27,12 +28,12 @@ def upload_image(img_file):
 
     # Get the image path from _io.BufferedReader
     image_path = img_file.name
-    print("\nLOG IMAGE PATH:")
-    print(image_path)
+    # print("\nLOG IMAGE PATH:")
+    # print(image_path)
 
     # Post the image to the /upload/image endpoint
     server_url = get_server_url("/upload/image")
-    print(Fore.WHITE + "\nSENDING REQUEST TO: " + server_url)
+    print(Fore.WHITE + "\nREQUEST TO: " + server_url)
 
     # prepare the data
     headers = create_headers()
@@ -40,9 +41,9 @@ def upload_image(img_file):
     files = {'image': (os.path.basename(image_path), open(image_path, 'rb'))}
     resp = requests.post(server_url, files=files, data=data, headers=headers)
 
-    print("\nLOG UPLOAD IMAGE RESPONSE:")
-    # b'{"name": "ai-render-1712271170-cat-1-before-y939nzr0.png", "subfolder": "", "type": "input"}'
+    # print(Fore.WHITE + "\nUPLOAD IMAGE RESPONSE OBJECT:" + Fore.RESET)
     print(resp.content)
+    # b'{"name": "ai-render-1712271170-cat-1-before-y939nzr0.png", "subfolder": "", "type": "input"}'
 
     # add a base 64 encoded image to the params
     # params["init_images"] = ["data:image/png;base64," + base64.b64encode(img_file.read()).decode()]
@@ -139,14 +140,74 @@ def upscale(img_file, filename_prefix, props):
 
 def handle_success(response, filename_prefix):
 
-    # ensure we have the type of response we are expecting
+    # Get the prompt_id from the response
     try:
         response_obj = response.json()
-        # base64_img = response_obj.get("images", [False])[0] or response_obj.get("image")
+        prompt_id = response_obj.get("prompt_id")
+
+        # print(Fore.WHITE + "QUEUE PROMPT RESPONSE OBJECT: " + Fore.RESET)
+        # print(json.dumps(response_obj, indent=2))
+        print(Fore.GREEN + "\nPROMPT ID: " + Fore.RESET + prompt_id)
+
     except:
-        print("Automatic1111 response content: ")
+        print("ComfyUI response content: ")
         print(response.content)
-        return operators.handle_error("Received an unexpected response from the Automatic1111 Stable Diffusion server.", "unexpected_response")
+        return operators.handle_error("Received an unexpected response from the ComfyUI.", "unexpected_response")
+
+    # Query the history with the prompt_id until the status.status_str is "success"
+    status_completed = None
+    image_file_name = None
+    server_url = get_server_url(f"/history/{prompt_id}")
+
+    while not status_completed:
+        # print(Fore.WHITE + "\nREQUEST TO: " + server_url)
+
+        response = requests.get(server_url, headers=create_headers(), timeout=utils.local_sd_timeout())
+        response_obj = response.json()
+
+        # Wait 1 second before querying the history again
+        sleep(1)
+
+        if response.status_code == 200:
+            # Access the status object in the response through the prompt_id key, for exmaple:
+            # {"b8c4f253-05e1-44e1-9706-1c9b4456d995": { "status": { "status_str": "success", }}}
+            status = response_obj.get(prompt_id, {}).get("status", {})
+            status_completed = status.get("status_str") == "success"
+
+            if status_completed:
+                print(Fore.GREEN + "STATUS: " + Fore.RESET + status.get("status_str"))
+                # print(Fore.WHITE + "\nHISTORY RESPONSE OBJECT: " + Fore.RESET)
+                # print(json.dumps(response_obj, indent=2))
+
+                # Get the NODE NUMBER of the SaveImage node
+                save_image_node = None
+                for item in response_obj[prompt_id]["prompt"]:
+                    if isinstance(item, dict):
+                        for key, value in item.items():
+                            # print(Fore.WHITE + "\nNODE NUMBER: " + Fore.RESET + key)
+                            # print(Fore.WHITE + "\nNODE VALUE: " + Fore.RESET)
+                            # print(json.dumps(value, indent=2))
+                            if value.get("class_type") == "SaveImage":
+                                save_image_node = key
+                print(Fore.GREEN + "IMAGE NODE_NUMBER: " + Fore.RESET + save_image_node)
+
+                image_file_name = response_obj[prompt_id]["outputs"][save_image_node]["images"][0]["filename"]
+                print(Fore.GREEN + "IMAGE FILE NAME: " + Fore.RESET + image_file_name)  # ComfyUI_00057_.png
+                break
+        else:
+            return handle_error(response)
+
+    # Query the view endpoint with the image_file_name to get the image
+    server_url = get_server_url(f"/view?filename={image_file_name}")
+    print(Fore.WHITE + "\nREQUEST TO: " + server_url)
+
+    response = requests.get(server_url, headers=create_headers(), timeout=utils.local_sd_timeout())
+
+    if response.status_code != 200:
+        return handle_error(response)
+
+    # Assuming the server returns the raw image data, we use response.content
+    img_binary = response.content
 
     # create a temp file
     try:
@@ -154,18 +215,10 @@ def handle_success(response, filename_prefix):
     except:
         return operators.handle_error("Couldn't create a temp file to save image.", "temp_file")
 
-    # decode base64 image
-    try:
-        pass
-        # img_binary = base64.b64decode(base64_img.replace("data:image/png;base64,", ""))
-    except:
-        return operators.handle_error("Couldn't decode base64 image from the ComfyUI Stable Diffusion server.", "base64_decode")
-
     # save the image to the temp file
     try:
         with open(output_file, 'wb') as file:
-            pass
-            # file.write(img_binary)
+            file.write(img_binary)
 
     except:
         return operators.handle_error("Couldn't write to temp file.", "temp_file_write")
@@ -310,8 +363,8 @@ def map_init_image(params, json_obj):
 
 def map_params(params, json_obj):
 
-    print("\nLOG PARAMS:")
-    print_with_colors(params)
+    # print("\nLOG PARAMS:")
+    # print_with_colors(params)
 
     # Map the params to the ComfyUI nodes
     json_obj, KSampler = map_KSampler(params, json_obj)
@@ -334,9 +387,9 @@ def map_params(params, json_obj):
 def do_post(url, data):
 
     # send the API request
-    print(Fore.WHITE + "\nSENDING REQUEST TO: " + url)
-    print("\nLOG REQUEST DATA:")
-    print_with_colors(data)
+    print(Fore.WHITE + "\nREQUEST TO: " + url)
+    # print("\nLOG REQUEST DATA:")
+    # print_with_colors(data)
 
     try:
         return requests.post(url, json=data, headers=create_headers(), timeout=utils.local_sd_timeout())
