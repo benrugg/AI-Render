@@ -15,7 +15,298 @@ from colorama import Fore, Style, init
 # Initialize Colorama
 init()
 
+LOG_REQUEST_TO = True
+LOG_RESPONSE_BODY = True
+LOG_UPLOAD_IMAGE = True
+LOG_DOWNLOAD_IMAGE = True
+LOG_PROPS = False
+LOG_WORKFLOW = False
+LOG_PARAMS = False
+LOG_MAPPED_JSON = False
+LOG_MAPPING_COMFYUI_NODES = False
+ORIGINAL_DATA = {
+    "3": {
+        "inputs": {
+            "seed": 156680208700286,
+            "steps": 20,
+            "cfg": 8,
+            "sampler_name": "euler",
+            "scheduler": "normal",
+            "denoise": 1,
+            "model": [
+                "4",
+                0
+            ],
+            "positive": [
+                "16",
+                0
+            ],
+            "negative": [
+                "16",
+                1
+            ],
+            "latent_image": [
+                "10",
+                0
+            ]
+        },
+        "class_type": "KSampler",
+        "_meta": {
+            "title": "KSampler"
+        }
+    },
+    "4": {
+        "inputs": {
+            "ckpt_name": "v1-5-pruned-emaonly.safetensors"
+        },
+        "class_type": "CheckpointLoaderSimple",
+        "_meta": {
+            "title": "Load Checkpoint"
+        }
+    },
+    "6": {
+        "inputs": {
+            "text": "positive",
+            "clip": [
+                "4",
+                1
+            ]
+        },
+        "class_type": "CLIPTextEncode",
+        "_meta": {
+            "title": "positive"
+        }
+    },
+    "7": {
+        "inputs": {
+            "text": "negative",
+            "clip": [
+                "4",
+                1
+            ]
+        },
+        "class_type": "CLIPTextEncode",
+        "_meta": {
+            "title": "negative"
+        }
+    },
+    "8": {
+        "inputs": {
+            "samples": [
+                "3",
+                0
+            ],
+            "vae": [
+                "11",
+                0
+            ]
+        },
+        "class_type": "VAEDecode",
+        "_meta": {
+            "title": "VAE Decode"
+        }
+    },
+    "9": {
+        "inputs": {
+            "filename_prefix": "ComfyUI",
+            "images": [
+                "8",
+                0
+            ]
+        },
+        "class_type": "SaveImage",
+        "_meta": {
+            "title": "Save Image"
+        }
+    },
+    "10": {
+        "inputs": {
+            "pixels": [
+                "12",
+                0
+            ],
+            "vae": [
+                "11",
+                0
+            ]
+        },
+        "class_type": "VAEEncode",
+        "_meta": {
+            "title": "VAE Encode"
+        }
+    },
+    "11": {
+        "inputs": {
+            "vae_name": "vae-ft-ema-560000-ema-pruned.safetensors"
+        },
+        "class_type": "VAELoader",
+        "_meta": {
+            "title": "Load VAE"
+        }
+    },
+    "12": {
+        "inputs": {
+            "image": "example.png",
+            "upload": "image"
+        },
+        "class_type": "LoadImage",
+        "_meta": {
+            "title": "color"
+        }
+    },
+    "13": {
+        "inputs": {
+            "strength": 1,
+            "start_percent": 0,
+            "end_percent": 1,
+            "positive": [
+                "6",
+                0
+            ],
+            "negative": [
+                "7",
+                0
+            ],
+            "control_net": [
+                "14",
+                0
+            ],
+            "image": [
+                "15",
+                0
+            ]
+        },
+        "class_type": "ControlNetApplyAdvanced",
+        "_meta": {
+            "title": "Apply ControlNet (Advanced)"
+        }
+    },
+    "14": {
+        "inputs": {
+            "control_net_name": "SD15\\control_v11\\control_v11f1p_sd15_depth.pth"
+        },
+        "class_type": "ControlNetLoader",
+        "_meta": {
+            "title": "Load ControlNet Model"
+        }
+    },
+    "15": {
+        "inputs": {
+            "image": "pose.png",
+            "upload": "image"
+        },
+        "class_type": "LoadImage",
+        "_meta": {
+            "title": "depth"
+        }
+    },
+    "16": {
+        "inputs": {
+            "strength": 1,
+            "start_percent": 0,
+            "end_percent": 1,
+            "positive": [
+                "13",
+                0
+            ],
+            "negative": [
+                "13",
+                1
+            ],
+            "control_net": [
+                "17",
+                0
+            ],
+            "image": [
+                "18",
+                0
+            ]
+        },
+        "class_type": "ControlNetApplyAdvanced",
+        "_meta": {
+            "title": "Apply ControlNet (Advanced)"
+        }
+    },
+    "17": {
+        "inputs": {
+            "control_net_name": "SD15\\control_v11\\control_v11p_sd15_normalbae.pth"
+        },
+        "class_type": "ControlNetLoader",
+        "_meta": {
+            "title": "Load ControlNet Model"
+        }
+    },
+    "18": {
+        "inputs": {
+            "image": "pose.png",
+            "upload": "image"
+        },
+        "class_type": "LoadImage",
+        "_meta": {
+            "title": "normal"
+        }
+    }
+}
+PARAM_TO_WORKFLOW = {
+    "seed": {
+        "class_type": "KSampler",
+        "input_key": "seed",
+        "meta_title": "KSampler"
+    },
+    "steps": {
+        "class_type": "KSampler",
+        "input_key": "steps",
+        "meta_title": "KSampler"
+    },
+    "cfg_scale": {
+        "class_type": "KSampler",
+        "input_key": "cfg",
+        "meta_title": "KSampler"
+    },
+    "sampler": {
+        "class_type": "KSampler",
+        "input_key": "sampler_name",
+        "meta_title": "KSampler"
+    },
+    "scheduler": {
+        "class_type": "KSampler",
+        "input_key": "scheduler",
+        "meta_title": "KSampler"
+    },
+    "denoising_strength": {
+        "class_type": "KSampler",
+        "input_key": "denoise",
+        "meta_title": "KSampler"
+    },
+    "prompt": {
+        "class_type": "CLIPTextEncode",
+        "input_key": "text",
+        "meta_title": "positive"
+    },
+    "negative_prompt": {
+        "class_type": "CLIPTextEncode",
+        "input_key": "text",
+        "meta_title": "negative"
+    },
+    "init_images": {
+        "class_type": "LoadImage",
+        "input_key": "image",
+        "meta_title": "color"
+    },
+    "depth_image": {
+        "class_type": "LoadImage",
+        "input_key": "image",
+        "meta_title": "depth"
+    },
+    "normal_image": {
+        "class_type": "LoadImage",
+        "input_key": "image",
+        "meta_title": "normal"
+    }
+}
+
 # CORE FUNCTIONS:
+
 
 def load_workflow(context, workflow_file):
     workflow_path = os.path.join(get_workflows_path(context), workflow_file)
@@ -27,49 +318,64 @@ def get_active_workflow(context):
     return context.scene.air_props.comfyui_workflows
 
 
-def upload_image(img_file):
+def upload_image(img_file, subfolder):
+    """Upload the image to the input folder of ComfyUI"""
 
-    # Get the image path from _io.BufferedReader
+    # Get the image path from the name of _io.BufferedReader
     image_path = img_file.name
-    # print("\nLOG IMAGE PATH:")
-    # print(image_path)
 
-    # Post the image to the /upload/image endpoint
-    server_url = get_server_url("/upload/image")
-    print(Fore.WHITE + "\nREQUEST TO: " + server_url)
+    if LOG_UPLOAD_IMAGE:
+        print(Fore.WHITE + f"\nLOG IMAGE PATH:" + Fore.RESET)
+        print(image_path)
 
     # prepare the data
+    server_url = get_server_url("/upload/image")
     headers = create_headers()
-    data = {"subfolder": "test", "type": "input"}
+    data = {"subfolder": subfolder, "type": "input"}
     files = {'image': (os.path.basename(image_path), open(image_path, 'rb'))}
+
+    if LOG_REQUEST_TO:
+        print(Fore.WHITE + "\nREQUEST TO: " + server_url)
+
     resp = requests.post(server_url, files=files, data=data, headers=headers)
 
-    # print(Fore.WHITE + "\nUPLOAD IMAGE RESPONSE OBJECT:" + Fore.RESET)
-    print(resp.content)
-    # b'{"name": "ai-render-1712271170-cat-1-before-y939nzr0.png", "subfolder": "", "type": "input"}'
+    if LOG_RESPONSE_BODY:
+        print(Fore.WHITE + "\nUPLOAD IMAGE RESPONSE OBJECT:" + Fore.RESET)
+        pprint.pp(resp.content)
 
-    # add a base 64 encoded image to the params
-    # params["init_images"] = ["data:image/png;base64," + base64.b64encode(img_file.read()).decode()]
-    # img_file.close()
+    img_file.close()
 
-    return resp.json()["subfolder"], resp.json()["name"]
+    # return the image name
+    return resp.json().get("name")
 
 
 def generate(params, img_file, filename_prefix, props):
 
+    if LOG_PROPS:
+        print(Fore.WHITE + "\nLOG PROPS:" + Fore.RESET)
+        pprint.pp(props)
+
     # Load the workflow
     workflow = load_workflow(bpy.context, get_active_workflow(bpy.context))
-    print(f"{Fore.LIGHTWHITE_EX}\nLOG WORKFLOW: {Fore.RESET}{get_active_workflow(bpy.context)}")
-    # pprint.pp(workflow)
+
+    if LOG_WORKFLOW:
+        print(f"{Fore.LIGHTWHITE_EX}\nLOG WORKFLOW: {Fore.RESET}{get_active_workflow(bpy.context)}")
+        pprint.pp(workflow)
 
     params["denoising_strength"] = round(1 - params["image_similarity"], 4)
     params["sampler_index"] = params["sampler"]
 
     # upload the image, get the subfolder and image name
-    subfolder, img_name = upload_image(img_file)
+    subfolder = "Session_Name"
+
+    init_image_path = upload_image(img_file, subfolder)
+    depth_image_path = upload_image(img_file, subfolder)
+    normal_image_path = upload_image(img_file, subfolder)
 
     # Add the image path to the params
-    params["init_images"] = [f"{subfolder}/{img_name}"]
+    params["init_images"] = f"{subfolder}/{init_image_path}"
+    params["depth_image"] = f"{subfolder}/{depth_image_path}"
+    params["normal_image"] = f"{subfolder}/{normal_image_path}"
 
     # map the params to the ComfyUI nodes
     json_obj = map_params(params, workflow)
@@ -101,11 +407,13 @@ def handle_success(response, filename_prefix):
         response_obj = response.json()
         prompt_id = response_obj.get("prompt_id")
 
-        # print(Fore.WHITE + "QUEUE PROMPT RESPONSE OBJECT: " + Fore.RESET)
-        # print(json.dumps(response_obj, indent=2))
-        print(Fore.LIGHTWHITE_EX + "\nPROMPT ID: " + Fore.RESET + prompt_id)
+        if LOG_RESPONSE_BODY:
+            print(Fore.WHITE + "\nPROMPT RESPONSE OBJECT: " + Fore.RESET)
+            print(json.dumps(response_obj, indent=2))
+            print(Fore.LIGHTWHITE_EX + "\nPROMPT ID: " + Fore.RESET + prompt_id)
 
     except:
+
         print("ComfyUI response content: ")
         print(response.content)
         return operators.handle_error("Received an unexpected response from the ComfyUI.", "unexpected_response")
@@ -131,9 +439,12 @@ def handle_success(response, filename_prefix):
             status_completed = status.get("status_str") == "success"
 
             if status_completed:
-                print(Fore.LIGHTWHITE_EX + "STATUS: " + Fore.RESET + status.get("status_str"))
-                # print(Fore.WHITE + "\nHISTORY RESPONSE OBJECT: " + Fore.RESET)
-                # print(json.dumps(response_obj, indent=2))
+
+                if LOG_DOWNLOAD_IMAGE:
+                    print(Fore.LIGHTWHITE_EX + "STATUS: " + Fore.RESET + status.get("status_str"))
+                if LOG_RESPONSE_BODY:
+                    print(Fore.WHITE + "\nHISTORY RESPONSE OBJECT: " + Fore.RESET)
+                    print(json.dumps(response_obj, indent=2))
 
                 # Get the NODE NUMBER of the SaveImage node
                 save_image_node = None
@@ -145,17 +456,23 @@ def handle_success(response, filename_prefix):
                             # print(json.dumps(value, indent=2))
                             if value.get("class_type") == "SaveImage":
                                 save_image_node = key
-                print(Fore.LIGHTWHITE_EX + "IMAGE NODE_NUMBER: " + Fore.RESET + save_image_node)
+
+                if LOG_DOWNLOAD_IMAGE:
+                    print(Fore.LIGHTWHITE_EX + "IMAGE NODE_NUMBER: " + Fore.RESET + save_image_node)
 
                 image_file_name = response_obj[prompt_id]["outputs"][save_image_node]["images"][0]["filename"]
-                print(Fore.LIGHTWHITE_EX + "IMAGE FILE NAME: " + Fore.RESET + image_file_name)  # ComfyUI_00057_.png
+
+                if LOG_DOWNLOAD_IMAGE:
+                    print(Fore.LIGHTWHITE_EX + "IMAGE FILE NAME: " + Fore.RESET + image_file_name)  # ComfyUI_00057_.png
                 break
         else:
             return handle_error(response)
 
     # Query the view endpoint with the image_file_name to get the image
     server_url = get_server_url(f"/view?filename={image_file_name}")
-    print(Fore.WHITE + "\nREQUEST TO: " + server_url)
+
+    if LOG_DOWNLOAD_IMAGE:
+        print(Fore.WHITE + "\nREQUEST TO: " + server_url)
 
     response = requests.get(server_url, headers=create_headers(), timeout=utils.local_sd_timeout())
 
@@ -198,7 +515,7 @@ def handle_error(response):
             return operators.handle_error(f"It looks like the Automatic1111 server is running, but it's not in API mode. [Get help]({config.HELP_WITH_AUTOMATIC1111_NOT_IN_API_MODE_URL})", "automatic1111_not_in_api_mode")
 
     else:
-        print(Fore.GREEN + "ERROR DETAILS: " + Fore.RESET)
+        print(Fore.RED + "ERROR DETAILS: " + Fore.RESET)
         print(json.dumps(response.json(), indent=2))
         return operators.handle_error(f"AN ERROR occurred in the ComfyUI server.", "unknown_error_response")
 
@@ -248,108 +565,58 @@ def get_server_url(path):
         return base_url + path
 
 
-def map_KSampler(params, json_obj):
-    """Map the params to the KSampler node in the ComfyUI JSON object."""
-    # TODO: Is not working if multiple KSampler nodes are present in the JSON object
-
-    KSampler_Node = None
-
-    for key, value in json_obj.items():
-        if value['class_type'] == 'KSampler':
-            KSampler_Node = key
-
-            value['inputs']['seed'] = params['seed']
-            value['inputs']['steps'] = params['steps']
-            value['inputs']['cfg'] = params['cfg_scale']
-            value['inputs']['sampler_name'] = params['sampler']
-            value['inputs']['scheduler'] = params['scheduler']
-            value['inputs']['denoise'] = params['denoising_strength']
-
-    return json_obj, KSampler_Node
+def find_node_by_title(workflow, class_type, meta_title):
+    """Find the node key based on class_type and meta_title."""
+    for key, value in workflow.items():
+        if value['class_type'] == class_type:
+            if value.get('_meta', {}).get('title') == meta_title:
+                return key
+    return None
 
 
-def map_prompts(params, json_obj):
-    """Map the params to the positive and negative prompts in the ComfyUI JSON object."""
+def map_param_to_workflow(params, workflow):
+    """Map parameters to the appropriate nodes in the workflow JSON."""
+    for param_name, param_info in PARAM_TO_WORKFLOW.items():
+        # Continue only if the parameter is in the params dictionary
+        if param_name in params:
+            class_type = param_info["class_type"]
+            input_key = param_info["input_key"]
+            meta_title = param_info["meta_title"]
 
-    # Is assuming that the positive and negative prompts are named 'positive' and 'negative' in the JSON object
-    # "6": {
-    #     "inputs": {
-    #       "text": "positive",
-    #       "clip": [
-    #         "4",
-    #         1
-    #       ]
-    #     },
-    #     "class_type": "CLIPTextEncode",
-    #     "_meta": {
-    #       "title": "positive"
-    #     }
-    #   },
+            # Find the node by title in the workflow
+            node_key = find_node_by_title(workflow, class_type, meta_title)
 
-    Positive_Node = None
-    Negative_Node = None
-
-    for key, value in json_obj.items():
-        if value['class_type'] == 'CLIPTextEncode':
-            if value.get('_meta') and value['_meta'].get('title') == 'positive':
-                Positive_Node = key
-                value['inputs']['text'] = params['prompt']
-
-            elif value.get('_meta') and value['_meta'].get('title') == 'negative':
-                Negative_Node = key
-                value['inputs']['text'] = params['negative_prompt']
-
-    return json_obj, Positive_Node, Negative_Node
-
-
-def map_init_image(params, json_obj):
-
-    connected_image = None
-
-    # Get the node number of the VAEEncode
-    for key, value in json_obj.items():
-        if value['class_type'] == 'VAEEncode':
-            connected_image = value['inputs']['pixels'][0]
-
-    for key, value in json_obj.items():
-        if value['class_type'] == 'LoadImage':
-            if key == connected_image:  # If the LoadImage is connected to the VAEEncode
-                value['inputs']['image'] = params['init_images'][0]
-
-    return json_obj, connected_image
-
-
-def map_params(params, workflow):
-
-    print("\nLOG PARAMS:")
-    # pprint.pp(params)
-    print_with_colors(params)
-
-    # Map the params to the ComfyUI nodes
-    workflow, KSampler = map_KSampler(params, workflow)
-    workflow, positive, negative = map_prompts(params, workflow)
-    workflow, connected_image = map_init_image(params, workflow)
-
-    print("\nMAPPING COMFYUI NODES:")
-    print(Fore.MAGENTA + "KSAMPLER: " + Fore.RESET + KSampler)
-    print(Fore.GREEN + "POSITIVE PROMPT: " + Fore.RESET + positive)
-    print(Fore.RED + "NEGATIVE PROMPT: " + Fore.RESET + negative)
-    print(Fore.YELLOW + "IMAGE CONNECTED TO VAE ENCODER: " + Fore.RESET + connected_image)
-
-    # Save mapped json to local file
-    with open('sd_backends/comfyui/_mapped.json', 'w') as f:
-        json.dump(workflow, f, indent=4)
-
-    # send the API request
-    print("\nLOG MAPPED JSON:")
-    # pprint.pp(json_obj)
-    print_with_colors(workflow)
-
+            # If the node is found, update the input_key with the parameter's value
+            if node_key is not None:
+                workflow[node_key]["inputs"][input_key] = params[param_name]
     return workflow
 
 
+def map_params(params, workflow_json):
+
+
+    if LOG_PARAMS:
+        print(Fore.WHITE + "\nLOG PARAMS:" + Fore.RESET)
+        # pprint.pp(params)
+        print_with_colors(params)
+
+    updated_workflow_json = map_param_to_workflow(params, workflow_json)
+
+    # Save mapped json to local file
+    with open('sd_backends/comfyui/_mapped.json', 'w') as f:
+        json.dump(updated_workflow_json, f, indent=4)
+
+    if LOG_MAPPED_JSON:
+        print("\nLOG MAPPED JSON:")
+        # pprint.pp(json_obj)
+        print_with_colors(updated_workflow_json)
+
+    return updated_workflow_json
+
+
 def do_post(url, data):
-    print(Fore.WHITE + "\nREQUEST TO: " + url)
+    if LOG_REQUEST_TO:
+        print(Fore.WHITE + "\nREQUEST TO: " + url)
     try:
         return requests.post(url, json=data, headers=create_headers(), timeout=utils.local_sd_timeout())
     except requests.exceptions.ConnectionError:
@@ -465,7 +732,7 @@ def supports_negative_prompts():
 
 def supports_choosing_model():
     # TODO - This should be set to true
-    # and a get_model() should be used to get the model list from the ComfyUI API
+    # and a get_models() should be used to get the model list from the ComfyUI API
     return False
 
 

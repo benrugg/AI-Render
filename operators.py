@@ -135,7 +135,9 @@ def render_frame(context, current_frame, prompts):
 def save_render_to_file(scene, filename_prefix):
     try:
         temp_file = utils.create_temp_file(
-            filename_prefix + "-", suffix=f".{utils.get_image_format()}")
+            filename_prefix + "-",
+            suffix=f".{utils.get_image_format()}"
+        )
     except:
         return handle_error("Couldn't create temp file for image", "temp_file")
 
@@ -144,8 +146,7 @@ def save_render_to_file(scene, filename_prefix):
         orig_render_color_mode = scene.render.image_settings.color_mode
         orig_render_color_depth = scene.render.image_settings.color_depth
 
-        scene.render.image_settings.file_format = utils.get_image_format(
-            to_lower=False)
+        scene.render.image_settings.file_format = utils.get_image_format(to_lower=False)
         scene.render.image_settings.color_mode = 'RGBA'
         scene.render.image_settings.color_depth = '8'
 
@@ -343,6 +344,7 @@ def validate_and_process_animated_prompt_text_for_single_frame(scene, frame):
 
 def sd_generate(scene, prompts=None, use_last_sd_image=False):
     """Post to the API to generate a Stable Diffusion image and then process it"""
+
     props = scene.air_props
 
     # get the prompt if we haven't been given one
@@ -369,8 +371,10 @@ def sd_generate(scene, prompts=None, use_last_sd_image=False):
     # prepare the output filenames
     before_output_filename_prefix = utils.get_image_filename(
         scene, prompt, negative_prompt, "-1-before")
+
     after_output_filename_prefix = utils.get_image_filename(
         scene, prompt, negative_prompt, "-2-after")
+
     animation_output_filename_prefix = "ai-render-"
 
     # if we want to use the last SD image, try loading it now
@@ -385,10 +389,11 @@ def sd_generate(scene, prompts=None, use_last_sd_image=False):
         # else, use the rendered image...
 
         # save the rendered image and then read it back in
-        temp_input_file = save_render_to_file(
-            scene, before_output_filename_prefix)
+        temp_input_file = save_render_to_file(scene, before_output_filename_prefix)
+
         if not temp_input_file:
             return False
+
         img_file = open(temp_input_file, 'rb')
 
         # autosave the before image, if we want that, and we're not rendering an animation
@@ -420,7 +425,10 @@ def sd_generate(scene, prompts=None, use_last_sd_image=False):
     # send to whichever API we're using
     start_time = time.time()
     generated_image_file = sd_backend.generate(
-        params, img_file, after_output_filename_prefix, props)
+        params,
+        img_file,
+        after_output_filename_prefix,
+        props)
 
     # if we didn't get a successful image, stop here (an error will have been handled by the api function)
     if not generated_image_file:
@@ -428,6 +436,7 @@ def sd_generate(scene, prompts=None, use_last_sd_image=False):
 
     # autosave the after image, if we should
     if utils.should_autosave_after_image(props):
+
         generated_image_file = save_after_image(
             scene, after_output_filename_prefix, generated_image_file)
 
