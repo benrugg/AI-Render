@@ -17,13 +17,14 @@ init()
 
 LOG_REQUEST_TO = True
 LOG_RESPONSE_BODY = True
+LOG_HISTORY_RESPONSE = False
 LOG_UPLOAD_IMAGE = True
 LOG_DOWNLOAD_IMAGE = True
 LOG_PROPS = False
 LOG_WORKFLOW = False
-LOG_PARAMS = False
+LOG_PARAMS = True
 LOG_MAPPED_JSON = False
-LOG_MAPPING_COMFYUI_NODES = False
+
 ORIGINAL_DATA = {
     "3": {
         "inputs": {
@@ -307,7 +308,6 @@ PARAM_TO_WORKFLOW = {
 
 # CORE FUNCTIONS:
 
-
 def load_workflow(context, workflow_file):
     workflow_path = os.path.join(get_workflows_path(context), workflow_file)
     with open(workflow_path, 'r') as file:
@@ -337,7 +337,15 @@ def upload_image(img_file, subfolder):
     if LOG_REQUEST_TO:
         print(Fore.WHITE + "\nREQUEST TO: " + server_url)
 
-    resp = requests.post(server_url, files=files, data=data, headers=headers)
+    # send the API request
+    try:
+        resp = requests.post(server_url, files=files, data=data, headers=headers)
+    except requests.exceptions.ConnectionError:
+        return operators.handle_error(f"The local Stable Diffusion server couldn't be found. It's either not running, or it's running at a different location than what you specified in the add-on preferences. [Get help]({config.HELP_WITH_LOCAL_INSTALLATION_URL})", "local_server_not_found")
+    except requests.exceptions.MissingSchema:
+        return operators.handle_error(f"The url for your local Stable Diffusion server is invalid. Please set it correctly in the add-on preferences. [Get help]({config.HELP_WITH_LOCAL_INSTALLATION_URL})", "local_server_url_invalid")
+    except requests.exceptions.ReadTimeout:
+        return operators.handle_error("The local Stable Diffusion server timed out. Set a longer timeout in AI Render preferences, or use a smaller image size.", "timeout")
 
     if LOG_RESPONSE_BODY:
         print(Fore.WHITE + "\nUPLOAD IMAGE RESPONSE OBJECT:" + Fore.RESET)
@@ -442,7 +450,7 @@ def handle_success(response, filename_prefix):
 
                 if LOG_DOWNLOAD_IMAGE:
                     print(Fore.LIGHTWHITE_EX + "STATUS: " + Fore.RESET + status.get("status_str"))
-                if LOG_RESPONSE_BODY:
+                if LOG_HISTORY_RESPONSE:
                     print(Fore.WHITE + "\nHISTORY RESPONSE OBJECT: " + Fore.RESET)
                     print(json.dumps(response_obj, indent=2))
 
@@ -451,9 +459,9 @@ def handle_success(response, filename_prefix):
                 for item in response_obj[prompt_id]["prompt"]:
                     if isinstance(item, dict):
                         for key, value in item.items():
-                            # print(Fore.WHITE + "\nNODE NUMBER: " + Fore.RESET + key)
-                            # print(Fore.WHITE + "\nNODE VALUE: " + Fore.RESET)
-                            # print(json.dumps(value, indent=2))
+                            print(Fore.WHITE + "\nNODE NUMBER: " + Fore.RESET + key)
+                            print(Fore.WHITE + "\nNODE VALUE: " + Fore.RESET)
+                            print(json.dumps(value, indent=2))
                             if value.get("class_type") == "SaveImage":
                                 save_image_node = key
 
@@ -522,33 +530,6 @@ def handle_error(response):
 
 # PRIVATE SUPPORT FUNCTIONS:
 
-def print_with_colors(json_dict):
-
-    # Loop through all items in the data
-    for key, value in json_dict.items():
-        # Check if value is a dictionary and the class type is CLIPTextEncode
-        if isinstance(value, dict) and value.get("class_type") == "CLIPTextEncode":
-            # Check the _meta title for the color
-            text_color = Fore.GREEN if value["_meta"]["title"] == "positive" else Fore.RED
-
-            # Print the text value in the appropriate color
-            print(text_color + value["inputs"]["text"])
-
-    for key, value in json_dict.items():
-        if isinstance(value, dict):
-            # print(Fore.WHITE + f"{key}: {Fore.LIGHTWHITE_EX}")
-            print_with_colors(value)
-        else:
-            if key in ['sampler', 'scheduler', 'denoising_strength', 'steps', 'seed', 'cfg_scale', 'denoise', 'sampler_name', 'cfg']:
-                print(Fore.MAGENTA + f"{key}: {Fore.LIGHTMAGENTA_EX}{value}" + Fore.RESET)
-            elif key in ['init_images', 'image']:
-                print(Fore.YELLOW + f"{key}: {Fore.LIGHTYELLOW_EX}{value}" + Fore.RESET)
-            elif key == 'prompt':
-                print(Fore.GREEN + f"{key}: {Fore.LIGHTGREEN_EX}{value}" + Fore.RESET)
-            elif key == 'negative_prompt':
-                print(Fore.RED + f"{key}: {Fore.LIGHTRED_EX}{value}" + Fore.RESET)
-
-
 def create_headers():
     return {
         "User-Agent": f"Blender/{bpy.app.version_string}",
@@ -594,11 +575,9 @@ def map_param_to_workflow(params, workflow):
 
 def map_params(params, workflow_json):
 
-
     if LOG_PARAMS:
         print(Fore.WHITE + "\nLOG PARAMS:" + Fore.RESET)
-        # pprint.pp(params)
-        print_with_colors(params)
+        pprint.pp(params)
 
     updated_workflow_json = map_param_to_workflow(params, workflow_json)
 
@@ -608,8 +587,7 @@ def map_params(params, workflow_json):
 
     if LOG_MAPPED_JSON:
         print("\nLOG MAPPED JSON:")
-        # pprint.pp(json_obj)
-        print_with_colors(updated_workflow_json)
+        pprint.pp(updated_workflow_json)
 
     return updated_workflow_json
 
