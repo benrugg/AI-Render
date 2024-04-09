@@ -1,12 +1,12 @@
 {
     "3": {
         "inputs": {
-            "seed": 1528237879,
-            "steps": 30,
+            "seed": 1209858313,
+            "steps": 10,
             "cfg": 7.0,
-            "sampler_name": "dpmpp_2m",
+            "sampler_name": "dpm_fast",
             "scheduler": "normal",
-            "denoise": 0.6,
+            "denoise": 1.0,
             "model": [
                 "4",
                 0
@@ -40,7 +40,7 @@
     },
     "6": {
         "inputs": {
-            "text": "cube",
+            "text": "pinocchio",
             "clip": [
                 "4",
                 1
@@ -120,7 +120,7 @@
     },
     "12": {
         "inputs": {
-            "image": "C:\\Users\\ROBESA~1\\AppData\\Local\\Temp\\ai-render-1712652030-cube-1-before-zqtqyne5.png",
+            "image": "E:/COMFY/ComfyUI/input/color/Image0011.png",
             "upload": "image"
         },
         "class_type": "LoadImage",
@@ -166,7 +166,7 @@
     },
     "15": {
         "inputs": {
-            "image": "C:\\Users\\ROBESA~1\\AppData\\Local\\Temp\\ai-render-1712652030-cube-1-before-zqtqyne5.png",
+            "image": "E:/COMFY/ComfyUI/input/depth/Image0011.png",
             "upload": "image"
         },
         "class_type": "LoadImage",
@@ -212,7 +212,7 @@
     },
     "18": {
         "inputs": {
-            "image": "C:\\Users\\ROBESA~1\\AppData\\Local\\Temp\\ai-render-1712652030-cube-1-before-zqtqyne5.png",
+            "image": "E:/COMFY/ComfyUI/input/normal/Image0011.png",
             "upload": "image"
         },
         "class_type": "LoadImage",

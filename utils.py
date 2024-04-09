@@ -536,3 +536,7 @@ def get_default_comfy_workflows_path():
     workflows_path = os.path.join(os.path.dirname(__file__),"sd_backends", "comfyui", "workflows")
     return workflows_path
 
+def get_comfyui_input_path(context):
+    comfyui_path = get_addon_preferences(context).comfyui_path
+    return comfyui_path + "input/"
+

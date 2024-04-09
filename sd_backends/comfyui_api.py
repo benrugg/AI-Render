@@ -368,12 +368,7 @@ def upload_image(img_file, subfolder):
     return resp.json().get("name")
 
 
-def generate(params,
-             color_file_name,
-             depth_file_name,
-             normal_file_name,
-             filename_prefix,
-             props):
+def generate(params, img_file, filename_prefix, props):
 
     if LOG_PROPS:
         print(Fore.WHITE + "\nLOG PROPS:" + Fore.RESET)
@@ -389,9 +384,22 @@ def generate(params,
     params["denoising_strength"] = round(1 - params["image_similarity"], 4)
     params["sampler_index"] = params["sampler"]
 
-    params['color_image'] = color_file_name
-    params['depth_image'] = depth_file_name
-    params['normal_image'] = depth_file_name
+    # Get the input path of local ComfyUI
+    comfyui_input_path = utils.get_comfyui_input_path(bpy.context)
+
+    # get the frame number for the filename
+    frame_number = bpy.context.scene.frame_current
+
+    # format the frame number to 4 digits
+    frame_number = str(frame_number).zfill(4)
+
+    color_image_path = comfyui_input_path + "color/Image" + frame_number + ".png"
+    depth_image_path = comfyui_input_path + "depth/Image" + frame_number + ".png"
+    normal_image_path = comfyui_input_path + "normal/Image" + frame_number + ".png"
+
+    params['color_image'] = color_image_path
+    params['depth_image'] = depth_image_path
+    params['normal_image'] = normal_image_path
 
     # map the params to the ComfyUI nodes
     json_obj = map_params(params, workflow)
@@ -528,8 +536,9 @@ def handle_error(response):
             return operators.handle_error(f"It looks like the Automatic1111 server is running, but it's not in API mode. [Get help]({config.HELP_WITH_AUTOMATIC1111_NOT_IN_API_MODE_URL})", "automatic1111_not_in_api_mode")
 
     else:
-        print(Fore.RED + "ERROR DETAILS: " + Fore.RESET)
-        print(json.dumps(response.json(), indent=2))
+        print(Fore.RED + "ERROR DETAILS:")
+        pprint.pp(response.json(), indent=2)
+        print(Fore.RESET)
         return operators.handle_error(f"AN ERROR occurred in the ComfyUI server.", "unknown_error_response")
 
 
