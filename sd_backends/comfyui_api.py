@@ -21,8 +21,8 @@ LOG_HISTORY_RESPONSE = False
 LOG_UPLOAD_IMAGE = True
 LOG_DOWNLOAD_IMAGE = True
 LOG_PROPS = False
-LOG_WORKFLOW = False
 LOG_PARAMS = True
+LOG_WORKFLOW = False
 LOG_MAPPED_JSON = False
 
 ORIGINAL_DATA = {
@@ -289,7 +289,7 @@ PARAM_TO_WORKFLOW = {
         "input_key": "text",
         "meta_title": "negative"
     },
-    "init_images": {
+    "color_image": {
         "class_type": "LoadImage",
         "input_key": "image",
         "meta_title": "color"
@@ -308,6 +308,7 @@ PARAM_TO_WORKFLOW = {
 
 # CORE FUNCTIONS:
 
+
 def load_workflow(context, workflow_file):
     workflow_path = os.path.join(get_workflows_path(context), workflow_file)
     with open(workflow_path, 'r') as file:
@@ -315,11 +316,21 @@ def load_workflow(context, workflow_file):
 
 
 def get_active_workflow(context):
+
+    if LOG_WORKFLOW:
+        print(Fore.WHITE + "\nLOG ACTIVE WORKFLOW:" + Fore.RESET)
+        print(context.scene.air_props.comfyui_workflows)
+
     return context.scene.air_props.comfyui_workflows
 
 
 def upload_image(img_file, subfolder):
     """Upload the image to the input folder of ComfyUI"""
+
+    # At the moment we're not using this function:
+    # ComfyUI is running local and we can render the image directly
+    # from Blender to the ComfyUI input path without the need to upload it.
+    # This function is here for future use if we decide to use a remote ComfyUI server.
 
     # Get the image path from the name of _io.BufferedReader
     image_path = img_file.name
@@ -357,7 +368,12 @@ def upload_image(img_file, subfolder):
     return resp.json().get("name")
 
 
-def generate(params, img_file, filename_prefix, props):
+def generate(params,
+             color_file_name,
+             depth_file_name,
+             normal_file_name,
+             filename_prefix,
+             props):
 
     if LOG_PROPS:
         print(Fore.WHITE + "\nLOG PROPS:" + Fore.RESET)
@@ -373,17 +389,9 @@ def generate(params, img_file, filename_prefix, props):
     params["denoising_strength"] = round(1 - params["image_similarity"], 4)
     params["sampler_index"] = params["sampler"]
 
-    # upload the image, get the subfolder and image name
-    subfolder = "Session_Name"
-
-    init_image_path = upload_image(img_file, subfolder)
-    depth_image_path = upload_image(img_file, subfolder)
-    normal_image_path = upload_image(img_file, subfolder)
-
-    # Add the image path to the params
-    params["init_images"] = f"{subfolder}/{init_image_path}"
-    params["depth_image"] = f"{subfolder}/{depth_image_path}"
-    params["normal_image"] = f"{subfolder}/{normal_image_path}"
+    params['color_image'] = color_file_name
+    params['depth_image'] = depth_file_name
+    params['normal_image'] = depth_file_name
 
     # map the params to the ComfyUI nodes
     json_obj = map_params(params, workflow)
@@ -459,9 +467,6 @@ def handle_success(response, filename_prefix):
                 for item in response_obj[prompt_id]["prompt"]:
                     if isinstance(item, dict):
                         for key, value in item.items():
-                            print(Fore.WHITE + "\nNODE NUMBER: " + Fore.RESET + key)
-                            print(Fore.WHITE + "\nNODE VALUE: " + Fore.RESET)
-                            print(json.dumps(value, indent=2))
                             if value.get("class_type") == "SaveImage":
                                 save_image_node = key
 

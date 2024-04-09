@@ -720,7 +720,7 @@ class AIR_PT_comfyui(bpy.types.Panel):
         # ComfyUI Input Path
         col = layout.column()
         col.label(text="ComfyUI")
-        col.prop(utils.get_addon_preferences(context), 'comfyui_input_path', text="")
+        col.prop(utils.get_addon_preferences(context), 'comfyui_path', text="")
 
         # ComfyUI Workflows Path
         col = layout.column()

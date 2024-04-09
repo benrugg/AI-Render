@@ -1,12 +1,12 @@
 {
     "3": {
         "inputs": {
-            "seed": 1493560259,
-            "steps": 15,
+            "seed": 1528237879,
+            "steps": 30,
             "cfg": 7.0,
-            "sampler_name": "lcm",
-            "scheduler": "sgm_uniform",
-            "denoise": 1.0,
+            "sampler_name": "dpmpp_2m",
+            "scheduler": "normal",
+            "denoise": 0.6,
             "model": [
                 "4",
                 0
@@ -40,7 +40,7 @@
     },
     "6": {
         "inputs": {
-            "text": "A 3d monkey",
+            "text": "cube",
             "clip": [
                 "4",
                 1
@@ -120,7 +120,7 @@
     },
     "12": {
         "inputs": {
-            "image": "Session_Name/ai-render-1712584968-A 3d monkey-1-before-2jrdfj3d.png",
+            "image": "C:\\Users\\ROBESA~1\\AppData\\Local\\Temp\\ai-render-1712652030-cube-1-before-zqtqyne5.png",
             "upload": "image"
         },
         "class_type": "LoadImage",
@@ -166,7 +166,7 @@
     },
     "15": {
         "inputs": {
-            "image": "Session_Name/ai-render-1712584968-A 3d monkey-1-before-2jrdfj3d (1).png",
+            "image": "C:\\Users\\ROBESA~1\\AppData\\Local\\Temp\\ai-render-1712652030-cube-1-before-zqtqyne5.png",
             "upload": "image"
         },
         "class_type": "LoadImage",
@@ -212,7 +212,7 @@
     },
     "18": {
         "inputs": {
-            "image": "Session_Name/ai-render-1712584968-A 3d monkey-1-before-2jrdfj3d (2).png",
+            "image": "C:\\Users\\ROBESA~1\\AppData\\Local\\Temp\\ai-render-1712652030-cube-1-before-zqtqyne5.png",
             "upload": "image"
         },
         "class_type": "LoadImage",

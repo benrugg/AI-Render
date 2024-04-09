@@ -16,6 +16,9 @@ from . import (
 from .sd_backends import automatic1111_api
 from .sd_backends import comfyui_api
 
+from colorama import Fore, Style, init
+init(autoreset=True)
+
 
 example_dimensions_tuple_list = utils.generate_example_dimensions_tuple_list()
 sdxl_1024_dimensions_tuple_list = utils.generate_sdxl_1024_dimensions_tuple_list()
@@ -342,6 +345,244 @@ def validate_and_process_animated_prompt_text_for_single_frame(scene, frame):
         return get_prompt_at_frame(positive_lines, frame), get_prompt_at_frame(negative_lines, frame)
 
 
+def ensure_use_passes(context):
+    """Ensure that the render passes are enabled"""
+
+    # Get active ViewLayer
+    view_layer = context.view_layer
+
+    # Activate needed use_passes
+    view_layer.use_pass_combined = True
+    view_layer.use_pass_z = True
+    view_layer.use_pass_normal = True
+    view_layer.use_pass_mist = True
+
+
+def ensure_film_transparent(context):
+    context.scene.render.film_transparent = True
+
+
+def normalpass2normalmap_node_group(context):
+
+    # Create a new node tree
+    normalpass2normalmap = bpy.data.node_groups.new(
+        type="CompositorNodeTree", name="NormalPass2NormalMap")
+
+    # start with a clean node tree
+    for node in normalpass2normalmap.nodes:
+        normalpass2normalmap.nodes.remove(node)
+
+    # normalpass2normalmap interface
+    # Socket Image
+    image_socket = normalpass2normalmap.interface.new_socket(name="Image", in_out='OUTPUT', socket_type='NodeSocketColor')
+    image_socket.attribute_domain = 'POINT'
+
+    # Socket Image
+    image_socket_1 = normalpass2normalmap.interface.new_socket(name="Image", in_out='INPUT', socket_type='NodeSocketColor')
+    image_socket_1.attribute_domain = 'POINT'
+
+    # Socket Alpha
+    alpha_socket = normalpass2normalmap.interface.new_socket(name="Alpha", in_out='INPUT', socket_type='NodeSocketFloat')
+    alpha_socket.subtype = 'FACTOR'
+    alpha_socket.default_value = 1.0
+    alpha_socket.min_value = 0.0
+    alpha_socket.max_value = 1.0
+    alpha_socket.attribute_domain = 'POINT'
+
+    # initialize normalpass2normalmap nodes
+    # node Group Output
+    group_output = normalpass2normalmap.nodes.new("NodeGroupOutput")
+    group_output.name = "Group Output"
+    group_output.is_active_output = True
+
+    # node Mix
+    mix = normalpass2normalmap.nodes.new("CompositorNodeMixRGB")
+    mix.name = "Mix"
+    mix.blend_type = 'MULTIPLY'
+    mix.use_alpha = False
+    mix.use_clamp = False
+    # Fac
+    mix.inputs[0].default_value = 1.0
+    # Image_001
+    mix.inputs[2].default_value = (1.0, 1.0, 1.0, 1.0)
+
+    # node Mix.001
+    mix_001 = normalpass2normalmap.nodes.new("CompositorNodeMixRGB")
+    mix_001.name = "Mix.001"
+    mix_001.blend_type = 'ADD'
+    mix_001.use_alpha = False
+    mix_001.use_clamp = False
+    # Fac
+    mix_001.inputs[0].default_value = 1.0
+    # Image_001
+    mix_001.inputs[2].default_value = (1.0, 1.0, 1.0, 1.0)
+
+    # node Invert Color
+    invert_color = normalpass2normalmap.nodes.new("CompositorNodeInvert")
+    invert_color.name = "Invert Color"
+    invert_color.invert_alpha = False
+    invert_color.invert_rgb = True
+    # Fac
+    invert_color.inputs[0].default_value = 1.0
+
+    # node Combine Color
+    combine_color = normalpass2normalmap.nodes.new("CompositorNodeCombineColor")
+    combine_color.name = "Combine Color"
+    combine_color.mode = 'RGB'
+    combine_color.ycc_mode = 'ITUBT709'
+
+    # node Separate Color
+    separate_color = normalpass2normalmap.nodes.new("CompositorNodeSeparateColor")
+    separate_color.name = "Separate Color"
+    separate_color.mode = 'RGB'
+    separate_color.ycc_mode = 'ITUBT709'
+
+    # node Group Input
+    group_input = normalpass2normalmap.nodes.new("NodeGroupInput")
+    group_input.name = "Group Input"
+
+    # Set locations
+    group_output.location = (590.0, 0.0)
+    mix.location = (-399.99993896484375, 0.0)
+    mix_001.location = (-199.99993896484375, 0.0)
+    invert_color.location = (6.103515625e-05, 0.0)
+    combine_color.location = (400.0, 0.0)
+    separate_color.location = (200.0, 0.0)
+    group_input.location = (-622.678955078125, -0.7322563529014587)
+
+    # Set dimensions
+    group_output.width, group_output.height = 140.0, 100.0
+    mix.width, mix.height = 140.0, 100.0
+    mix_001.width, mix_001.height = 140.0, 100.0
+    invert_color.width, invert_color.height = 140.0, 100.0
+    combine_color.width, combine_color.height = 140.0, 100.0
+    separate_color.width, separate_color.height = 140.0, 100.0
+    group_input.width, group_input.height = 140.0, 100.0
+
+    # initialize normalpass2normalmap links
+    # invert_color.Color -> separate_color.Image
+    normalpass2normalmap.links.new(invert_color.outputs[0], separate_color.inputs[0])
+    # separate_color.Blue -> combine_color.Green
+    normalpass2normalmap.links.new(separate_color.outputs[2], combine_color.inputs[1])
+    # mix_001.Image -> invert_color.Color
+    normalpass2normalmap.links.new(mix_001.outputs[0], invert_color.inputs[1])
+    # separate_color.Red -> combine_color.Red
+    normalpass2normalmap.links.new(separate_color.outputs[0], combine_color.inputs[0])
+    # separate_color.Green -> combine_color.Blue
+    normalpass2normalmap.links.new(separate_color.outputs[1], combine_color.inputs[2])
+    # mix.Image -> mix_001.Image
+    normalpass2normalmap.links.new(mix.outputs[0], mix_001.inputs[1])
+    # group_input.Image -> mix.Image
+    normalpass2normalmap.links.new(group_input.outputs[0], mix.inputs[1])
+    # combine_color.Image -> group_output.Image
+    normalpass2normalmap.links.new(combine_color.outputs[0], group_output.inputs[0])
+    # group_input.Alpha -> combine_color.Alpha
+    normalpass2normalmap.links.new(group_input.outputs[1], combine_color.inputs[3])
+    return normalpass2normalmap
+
+
+def ensure_compositor_nodes(self, context, prompt, negative_prompt):
+    """Ensure that use nodes is enabled and the compositor nodes are set up correctly"""
+
+    print(Fore.YELLOW + "CREATING COMPOSITOR NODES")
+
+    # Ensure that the render passes are enabled
+    ensure_use_passes(context)
+    ensure_film_transparent(context)
+
+    scene = context.scene
+    if not scene.use_nodes:
+        scene.use_nodes = True
+
+    tree = scene.node_tree
+    nodes = tree.nodes
+
+    # remove all nodes except the render layers and the Composite node
+    for node in nodes:
+        if node.name != "Render Layers" and node.name != "Composite":
+            nodes.remove(node)
+
+    # Check if Render Layers and Composite nodes exist, if not add them
+    if not any(node for node in nodes if node.name == "Render Layers"):
+        render_layers_node = nodes.new("CompositorNodeRLayers")
+        render_layers_node.name = "Render Layers"
+        render_layers_node.label = "Render Layers"
+
+    if not any(node for node in nodes if node.name == "Composite"):
+        composite_node = nodes.new("CompositorNodeComposite")
+        composite_node.name = "Composite"
+        composite_node.label = "Composite"
+
+    # Set the position of the Render Layers and Composite nodes
+    render_layers_node = nodes.get("Render Layers")
+    render_layers_node.location = (0, 0)
+    composite_node = nodes.get("Composite")
+    composite_node.location = (500, 400)
+
+
+    before_output_filename_prefix = utils.get_image_filename(
+        scene, prompt, negative_prompt, "-1-before")
+
+
+    # Color
+    ColorOutputNode = nodes.new("CompositorNodeOutputFile")
+    ColorOutputNode.name = "color_file_output"
+    ColorOutputNode.label = "Color"
+    ColorOutputNode.base_path = "//tmp_color/"
+    ColorOutputNode.location = (500, 200)
+    ColorOutputNode.format.file_format = "PNG"
+
+    # Depth
+    MistOutputNode = nodes.new("CompositorNodeOutputFile")
+    MistOutputNode.name = "depth_file_output"
+    MistOutputNode.label = "Depth"
+    MistOutputNode.base_path = "//tmp_depth/"
+    MistOutputNode.location = (500, 0)
+    MistOutputNode.format.file_format = "PNG"
+
+    # Invert Node for Mist
+    InvertNode = nodes.new("CompositorNodeInvert")
+    InvertNode.name = "Invert"
+    InvertNode.label = "Invert"
+    InvertNode.location = (300, 0)
+
+    # Normal
+    NormalOutputNode = nodes.new("CompositorNodeOutputFile")
+    NormalOutputNode.name = "normal_file_output"
+    NormalOutputNode.label = "Normal"
+    NormalOutputNode.base_path = "//tmp_normal/"
+    NormalOutputNode.location = (500, -200)
+    NormalOutputNode.format.file_format = "PNG"
+
+    # Create a new node group
+    NormalNodeGroup = nodes.new("CompositorNodeGroup")
+    NormalNodeGroup.name = "NormalPass2NormalMap"
+    NormalNodeGroup.label = "NormalPass  2NormalMap"
+    NormalNodeGroup.location = (300, -200)
+
+    # Create a new Normal NodeTree if there is not one already
+    if not bpy.data.node_groups.get("NormalPass2NormalMap"):
+        Normal_Node_Tree = normalpass2normalmap_node_group(context)
+    else:
+        Normal_Node_Tree = bpy.data.node_groups.get("NormalPass2NormalMap")
+
+    # Set the node group to the normalpass2normalmap node group
+    NormalNodeGroup.node_tree = Normal_Node_Tree
+
+    # Link the nodes
+    links = tree.links
+    links.new(render_layers_node.outputs["Image"], ColorOutputNode.inputs[0])
+    links.new(render_layers_node.outputs["Mist"], InvertNode.inputs[1])
+    links.new(InvertNode.outputs[0], MistOutputNode.inputs[0])
+    links.new(render_layers_node.outputs["Normal"], NormalNodeGroup.inputs[0])
+    links.new(render_layers_node.outputs["Alpha"], NormalNodeGroup.inputs[1])
+    links.new(NormalNodeGroup.outputs[0], NormalOutputNode.inputs[0])
+
+    # Deselect all nodes
+    for node in nodes:
+        node.select = False
+
+
 def sd_generate(scene, prompts=None, use_last_sd_image=False):
     """Post to the API to generate a Stable Diffusion image and then process it"""
 
@@ -422,13 +663,22 @@ def sd_generate(scene, prompts=None, use_last_sd_image=False):
     # get the backend we're using
     sd_backend = utils.get_active_backend()
 
+
     # send to whichever API we're using
     start_time = time.time()
-    generated_image_file = sd_backend.generate(
-        params,
-        img_file,
-        after_output_filename_prefix,
-        props)
+    if utils.sd_backend() == "comfyui":
+        print(Fore.YELLOW + "COMFY UI")
+        generated_image_file = sd_backend.generate(
+            params,
+            img_file,
+            after_output_filename_prefix,
+            props)
+    else:
+        generated_image_file = sd_backend.generate(
+            params,
+            img_file,
+            after_output_filename_prefix,
+            props)
 
     # if we didn't get a successful image, stop here (an error will have been handled by the api function)
     if not generated_image_file:
@@ -437,6 +687,7 @@ def sd_generate(scene, prompts=None, use_last_sd_image=False):
     # autosave the after image, if we should
     if utils.should_autosave_after_image(props):
 
+        print(Fore.YELLOW + "Autosaving after image")
         generated_image_file = save_after_image(
             scene, after_output_filename_prefix, generated_image_file)
 
