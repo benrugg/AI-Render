@@ -227,6 +227,11 @@ def do_pre_render_setup(scene):
     # mute the legacy compositor node group, if it exists
     mute_legacy_compositor_node_group(scene)
 
+    # ensure the compositor nodes are set up correctly
+    # This is not necessary every render, Initially I put it here because
+    # I supposed to be able to change the node_tree.nodes["normal_file_output"].base_path
+    ensure_compositor_nodes(None, bpy.context)
+
 
 def do_pre_api_setup(scene):
     # TODO: does nothing at the moment - INTERESTING
@@ -480,11 +485,12 @@ def normalpass2normalmap_node_group(context):
     return normalpass2normalmap
 
 
-def ensure_compositor_nodes(self, context, prompt, negative_prompt):
+def ensure_compositor_nodes(self, context):
     """Ensure that use nodes is enabled and the compositor nodes are set up correctly"""
 
     print(Fore.YELLOW + "CREATING COMPOSITOR NODES")
 
+    comfyui_input_path = utils.get_comfyui_input_path(context)
     # Ensure that the render passes are enabled
     ensure_use_passes(context)
     ensure_film_transparent(context)
@@ -518,26 +524,23 @@ def ensure_compositor_nodes(self, context, prompt, negative_prompt):
     composite_node = nodes.get("Composite")
     composite_node.location = (500, 400)
 
-
-    before_output_filename_prefix = utils.get_image_filename(
-        scene, prompt, negative_prompt, "-1-before")
-
-
     # Color
     ColorOutputNode = nodes.new("CompositorNodeOutputFile")
     ColorOutputNode.name = "color_file_output"
     ColorOutputNode.label = "Color"
-    ColorOutputNode.base_path = "//tmp_color/"
+    ColorOutputNode.base_path = comfyui_input_path + "color/"
     ColorOutputNode.location = (500, 200)
     ColorOutputNode.format.file_format = "PNG"
+    ColorOutputNode.width = 300
 
     # Depth
     MistOutputNode = nodes.new("CompositorNodeOutputFile")
     MistOutputNode.name = "depth_file_output"
     MistOutputNode.label = "Depth"
-    MistOutputNode.base_path = "//tmp_depth/"
+    MistOutputNode.base_path = comfyui_input_path + "depth/"
     MistOutputNode.location = (500, 0)
     MistOutputNode.format.file_format = "PNG"
+    MistOutputNode.width = 300
 
     # Invert Node for Mist
     InvertNode = nodes.new("CompositorNodeInvert")
@@ -549,9 +552,10 @@ def ensure_compositor_nodes(self, context, prompt, negative_prompt):
     NormalOutputNode = nodes.new("CompositorNodeOutputFile")
     NormalOutputNode.name = "normal_file_output"
     NormalOutputNode.label = "Normal"
-    NormalOutputNode.base_path = "//tmp_normal/"
+    NormalOutputNode.base_path = comfyui_input_path + "normal/"
     NormalOutputNode.location = (500, -200)
     NormalOutputNode.format.file_format = "PNG"
+    NormalOutputNode.width = 300
 
     # Create a new node group
     NormalNodeGroup = nodes.new("CompositorNodeGroup")
@@ -662,22 +666,14 @@ def sd_generate(scene, prompts=None, use_last_sd_image=False):
     # get the backend we're using
     sd_backend = utils.get_active_backend()
 
-
     # send to whichever API we're using
     start_time = time.time()
-    if utils.sd_backend() == "comfyui":
-        print(Fore.YELLOW + "COMFY UI")
-        generated_image_file = sd_backend.generate(
-            params,
-            img_file,
-            after_output_filename_prefix,
-            props)
-    else:
-        generated_image_file = sd_backend.generate(
-            params,
-            img_file,
-            after_output_filename_prefix,
-            props)
+
+    generated_image_file = sd_backend.generate(
+        params,
+        img_file,
+        after_output_filename_prefix,
+        props)
 
     # if we didn't get a successful image, stop here (an error will have been handled by the api function)
     if not generated_image_file:
