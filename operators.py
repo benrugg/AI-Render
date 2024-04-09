@@ -16,8 +16,7 @@ from . import (
 from .sd_backends import automatic1111_api
 from .sd_backends import comfyui_api
 
-from colorama import Fore, Style, init
-init(autoreset=True)
+from colorama import Fore, Style
 
 
 example_dimensions_tuple_list = utils.generate_example_dimensions_tuple_list()
