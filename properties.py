@@ -420,7 +420,7 @@ class AIRProperties(bpy.types.PropertyGroup):
     )
     comfyui_workflows: bpy.props.EnumProperty(
         name="ComfyUI Workflows",
-        default=1,
+        default=0,
         items=get_available_workflows,
         description="A list of the available workflows (loaded from the ComfyUI API)",
     )

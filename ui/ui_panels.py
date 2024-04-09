@@ -121,9 +121,11 @@ class AIR_PT_setup(bpy.types.Panel):
             if not AIR_PT_setup.are_dimensions_valid(context):
                 utils.label_multiline(layout, text="Adjust Image Size: \nStable Diffusion only works on certain image dimensions.", icon="INFO", width=width_guess)
             elif not AIR_PT_setup.are_dimensions_small_enough(context):
-                utils.label_multiline(layout, text=f"Adjust Image Size: \nImage dimensions are too large. Please decrease width and/or height. Total pixel area must be at most {round(utils.get_active_backend().max_image_size() / (1024*1024), 1)} megapixels.", icon="INFO", width=width_guess)
+                utils.label_multiline(
+                    layout, text=f"Adjust Image Size: \nImage dimensions are too large. Please decrease width and/or height. Total pixel area must be at most {round(utils.get_active_backend().max_image_size() / (1024*1024), 1)} megapixels.", icon="INFO", width=width_guess)
             else:
-                utils.label_multiline(layout, text=f"Adjust Image Size: \nImage dimensions are too small. Please increase width and/or height. Total pixel area must be at least {round(utils.get_active_backend().min_image_size() / (1024*1024), 1)} megapixels.", icon="INFO", width=width_guess)
+                utils.label_multiline(
+                    layout, text=f"Adjust Image Size: \nImage dimensions are too small. Please increase width and/or height. Total pixel area must be at least {round(utils.get_active_backend().min_image_size() / (1024*1024), 1)} megapixels.", icon="INFO", width=width_guess)
 
             layout.separator()
 
@@ -169,8 +171,16 @@ class AIR_PT_setup(bpy.types.Panel):
             col.separator()
 
             if utils.sd_backend(context) == "comfyui":
-                col.label(text="ComfyUI Path")
-                col.prop(utils.get_addon_preferences(context), "comfyui_path", text="")
+
+                # ComfyUI Input Path
+                col = layout.column()
+                col.label(text="ComfyUI")
+                col.prop(utils.get_addon_preferences(context), 'comfyui_path', text="")
+
+                # ComfyUI Workflows Path
+                col = layout.column()
+                col.label(text="ComfyUI Workflows")
+                col.prop(utils.get_addon_preferences(context), 'workflows_path', text="")
 
 
 class AIR_PT_prompt(bpy.types.Panel):
@@ -500,7 +510,8 @@ class AIR_PT_upscale(bpy.types.Panel):
         # if backend does not support upscaling, show message
         if not AIR_PT_upscale.does_backend_support_upscaling(context):
             box = layout.box()
-            utils.label_multiline(box, text=f"Upscaling is not supported by {utils.sd_backend_formatted_name()}. If you'd like to upscale your image, switch to DreamStudio or Automatic1111 in AI Render's preferences.", icon="ERROR", width=width_guess)
+            utils.label_multiline(
+                box, text=f"Upscaling is not supported by {utils.sd_backend_formatted_name()}. If you'd like to upscale your image, switch to DreamStudio or Automatic1111 in AI Render's preferences.", icon="ERROR", width=width_guess)
             return
 
         # if the upscaler model list hasn't been loaded, show message and button
@@ -717,20 +728,11 @@ class AIR_PT_comfyui(bpy.types.Panel):
         scene = context.scene
         props = scene.air_props
 
-        # ComfyUI Input Path
-        col = layout.column()
-        col.label(text="ComfyUI")
-        col.prop(utils.get_addon_preferences(context), 'comfyui_path', text="")
-
-        # ComfyUI Workflows Path
-        col = layout.column()
-        col.label(text="ComfyUI Workflows")
-        col.prop(utils.get_addon_preferences(context), 'workflows_path', text="")
-
         # ComfyUI Workflows
         col = layout.column()
         col.label(text="Workflows")
         col.prop(props, 'comfyui_workflows', text="")
+
 
 classes = [
     AIR_PT_main,
