@@ -108,6 +108,13 @@ class AIRPreferences(bpy.types.AddonPreferences):
         min=0,
         max=59)
 
+    comfyui_path: bpy.props.StringProperty(
+        name="ComfyUI Path",
+        default="E:/COMFY/ComfyUI/",
+        description="The path to the ComfyUI Installation",
+        subtype="DIR_PATH",
+    )
+
     workflows_path: bpy.props.StringProperty(
         name="Workflow Path",
         description="Path where the workflows are stored",
@@ -147,7 +154,7 @@ class AIRPreferences(bpy.types.AddonPreferences):
                 box.separator()
 
                 row = box.row()
-                row.operator("wm.url_open", text="Sign Up For DreamStudio (free)",icon="URL").url = config.DREAM_STUDIO_URL
+                row.operator("wm.url_open", text="Sign Up For DreamStudio (free)", icon="URL").url = config.DREAM_STUDIO_URL
 
                 row = box.row()
                 row.prop(self, "dream_studio_api_key")

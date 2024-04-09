@@ -62,6 +62,7 @@ class AIR_PT_setup(bpy.types.Panel):
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
     bl_context = "render"
+    bl_options = {'DEFAULT_CLOSED'}
 
     @classmethod
     def is_api_key_valid(cls, context):
@@ -168,8 +169,8 @@ class AIR_PT_setup(bpy.types.Panel):
             col.separator()
 
             if utils.sd_backend(context) == "comfyui":
-                col.label(text="ComfyUI Workflows Path")
-                col.prop(utils.get_addon_preferences(context), "workflows_path", text="")
+                col.label(text="ComfyUI Path")
+                col.prop(utils.get_addon_preferences(context), "comfyui_path", text="")
 
 
 class AIR_PT_prompt(bpy.types.Panel):
@@ -706,7 +707,6 @@ class AIR_PT_comfyui(bpy.types.Panel):
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
     bl_context = "render"
-    bl_options = {'DEFAULT_CLOSED'}
 
     @classmethod
     def poll(cls, context):
@@ -717,11 +717,20 @@ class AIR_PT_comfyui(bpy.types.Panel):
         scene = context.scene
         props = scene.air_props
 
+        # ComfyUI Input Path
+        col = layout.column()
+        col.label(text="ComfyUI")
+        col.prop(utils.get_addon_preferences(context), 'comfyui_input_path', text="")
+
+        # ComfyUI Workflows Path
+        col = layout.column()
+        col.label(text="ComfyUI Workflows")
+        col.prop(utils.get_addon_preferences(context), 'workflows_path', text="")
+
         # ComfyUI Workflows
         col = layout.column()
         col.label(text="Workflows")
         col.prop(props, 'comfyui_workflows', text="")
-
 
 classes = [
     AIR_PT_main,
