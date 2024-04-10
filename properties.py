@@ -21,14 +21,6 @@ def get_available_schedulers(self, context):
         return [("none", "None", "", 0)]
 
 
-
-def get_available_workflows(self, context):
-    if utils.sd_backend() == "comfyui":
-        return comfyui_api.get_workflows()
-    else:
-        return [("none", "None", "", 0)]
-
-
 def get_available_models(self, context):
     current_sd_backend = utils.sd_backend()
     if current_sd_backend == "comfyui" and comfyui_api.supports_choosing_model():
@@ -424,12 +416,34 @@ class AIRProperties(bpy.types.PropertyGroup):
         step=0.01,
         name="Outpaint Color Variation",
     )
-    # ComfyUI
+
+
+def get_available_workflows(self, context):
+    if utils.sd_backend() == "comfyui":
+        return comfyui_api.get_workflows()
+    else:
+        return [("none", "None", "", 0)]
+
+
+def get_controlnet_in_workflow(self, context):
+    if utils.sd_backend() == "comfyui":
+        return comfyui_api.get_controlnet_in_workflow(context)
+    else:
+        return [("none", "None", "", 0)]
+
+
+class AIRPropertiesComfyUI(bpy.types.PropertyGroup):
     comfyui_workflows: bpy.props.EnumProperty(
         name="ComfyUI Workflows",
         default=0,
         items=get_available_workflows,
         description="A list of the available workflows in the path specified in the addon preferences",
+    )
+    comfyui_controlnets: bpy.props.EnumProperty(
+        name="ComfyUI ControlNets",
+        default=0,
+        items=get_controlnet_in_workflow,
+        description="A list of the available controlnets in the selected workflow",
     )
     comfyui_controlnet_depth_strength: bpy.props.FloatProperty(
         name="ControlNet Depth Strength",
@@ -450,7 +464,8 @@ class AIRProperties(bpy.types.PropertyGroup):
         description="Normal Map Strength",
     )
 
-classes = [AIRProperties]
+
+classes = [AIRProperties, AIRPropertiesComfyUI]
 
 
 def register():
@@ -458,10 +473,12 @@ def register():
         bpy.utils.register_class(cls)
 
     bpy.types.Scene.air_props = bpy.props.PointerProperty(type=AIRProperties)
+    bpy.types.Scene.comfyui_props = bpy.props.PointerProperty(type=AIRPropertiesComfyUI)
 
 
 def unregister():
     for cls in classes:
         bpy.utils.unregister_class(cls)
 
+    del bpy.types.Scene.comfyui_props
     del bpy.types.Scene.air_props

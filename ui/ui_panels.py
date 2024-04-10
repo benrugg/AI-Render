@@ -726,7 +726,7 @@ class AIR_PT_comfyui(bpy.types.Panel):
     def draw(self, context):
         layout = self.layout
         scene = context.scene
-        props = scene.air_props
+        props = scene.comfyui_props
 
         # ComfyUI Workflows
         col = layout.column()

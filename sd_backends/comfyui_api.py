@@ -16,7 +16,7 @@ LOG_REQUEST_TO = True
 LOG_RESPONSE_BODY = True
 LOG_HISTORY_RESPONSE = False
 LOG_UPLOAD_IMAGE = False
-LOG_DOWNLOAD_IMAGE = False
+LOG_DOWNLOAD_IMAGE = True
 LOG_PROPS = True
 LOG_PARAMS = True
 LOG_WORKFLOW = False
@@ -351,9 +351,40 @@ def get_active_workflow(context):
 
     if LOG_WORKFLOW:
         print(Fore.WHITE + "\nLOG ACTIVE WORKFLOW:" + Fore.RESET)
-        print(context.scene.air_props.comfyui_workflows)
+        print(context.scene.comfyui_props.comfyui_workflows)
 
-    return context.scene.air_props.comfyui_workflows
+    return context.scene.comfyui_props.comfyui_workflows
+
+
+def find_controlnets(workflow):
+    """ Return a list of the node keys of type ControlNetApplyAdvanced."""
+    controlnets = []
+    for key, value in workflow.items():
+        if value['class_type'] == 'ControlNetApplyAdvanced':
+            controlnets.append(key)
+    return controlnets
+
+
+def get_controlnet_model_name(context, controlnet_key):
+    workflow = load_workflow(context, get_active_workflow(context))
+    connected_control_key = workflow[controlnet_key]['inputs']["control_net"][0]
+
+    return workflow[connected_control_key]['inputs']["control_net_name"]
+
+
+def get_controlnet_in_workflow(context):
+
+    found_controlnets = find_controlnets(load_workflow(context, get_active_workflow(context)))
+    model_names = [get_controlnet_model_name(context, key) for key in found_controlnets]
+
+    models_tuple = [(name, name, "", i) for i, name in enumerate(model_names)]
+
+    if found_controlnets:
+        return models_tuple
+    else:
+        return [
+            ('None', 'None', '', 0),
+    ]
 
 
 def upload_image(img_file, subfolder):
@@ -448,11 +479,12 @@ def map_params(params, workflow_json):
     return updated_workflow_json
 
 
-def generate(params, img_file, filename_prefix, props):
+def generate(params, img_file, filename_prefix, props, comfyui_props):
 
     if LOG_PROPS:
         print(Fore.WHITE + "\nLOG PROPS:" + Fore.RESET)
         pprint.pp(props)
+        pprint.pp(comfyui_props)
 
     # Load the workflow
     workflow = load_workflow(bpy.context, get_active_workflow(bpy.context))
@@ -481,8 +513,8 @@ def generate(params, img_file, filename_prefix, props):
     params['depth_image'] = depth_image_path
     params['normal_image'] = normal_image_path
 
-    params['comfyui_controlnet_depth_strength'] = props.comfyui_controlnet_depth_strength
-    params['comfyui_controlnet_normal_strength'] = props.comfyui_controlnet_normal_strength
+    params['comfyui_controlnet_depth_strength'] = comfyui_props.comfyui_controlnet_depth_strength
+    params['comfyui_controlnet_normal_strength'] = comfyui_props.comfyui_controlnet_normal_strength
 
     # map the params to the ComfyUI nodes
     json_obj = map_params(params, workflow)

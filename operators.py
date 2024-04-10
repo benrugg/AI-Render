@@ -208,10 +208,14 @@ def load_image(filename, data_block_name=None):
     if name in bpy.data.images:
         existing_img = bpy.data.images[name]
         existing_img.filepath = filename
+
+        print(Fore.YELLOW + f"Existing image: {filename}")
         return existing_img
 
     img_file = bpy.data.images.load(filename, check_existing=False)
     img_file.name = name
+
+    print(Fore.YELLOW + f"Loaded image: {filename}")
     return img_file
 
 
@@ -590,6 +594,7 @@ def sd_generate(scene, prompts=None, use_last_sd_image=False):
     """Post to the API to generate a Stable Diffusion image and then process it"""
 
     props = scene.air_props
+    comfyui_props = scene.comfyui_props
 
     # get the prompt if we haven't been given one
     if not prompts:
@@ -665,15 +670,25 @@ def sd_generate(scene, prompts=None, use_last_sd_image=False):
 
     # get the backend we're using
     sd_backend = utils.get_active_backend()
+    sd_backend_name = utils.sd_backend()
 
     # send to whichever API we're using
     start_time = time.time()
 
-    generated_image_file = sd_backend.generate(
-        params,
-        img_file,
-        after_output_filename_prefix,
-        props)
+
+    if sd_backend_name == "comfyui":
+        generated_image_file = comfyui_api.generate(
+            params,
+            img_file,
+            after_output_filename_prefix,
+            props,
+            comfyui_props)
+    else:
+        generated_image_file = sd_backend.generate(
+            params,
+            img_file,
+            after_output_filename_prefix,
+            props)
 
     # if we didn't get a successful image, stop here (an error will have been handled by the api function)
     if not generated_image_file:
@@ -714,6 +729,8 @@ def sd_generate(scene, prompts=None, use_last_sd_image=False):
 
     # if we're rendering an animation manually, save the image to the animation output path
     if props.is_rendering_animation_manually:
+
+        print(Fore.YELLOW + "Rendering animation manually")
         generated_image_file = save_animation_image(
             scene, animation_output_filename_prefix, generated_image_file)
 
