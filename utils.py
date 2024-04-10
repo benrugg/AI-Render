@@ -540,3 +540,7 @@ def get_comfyui_input_path(context):
     comfyui_path = get_addon_preferences(context).comfyui_path
     return comfyui_path + "input/"
 
+def get_comfyui_output_path(context):
+    comfyui_path = get_addon_preferences(context).comfyui_path
+    return comfyui_path + "output/"
+

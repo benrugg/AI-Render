@@ -169,18 +169,6 @@ class AIR_PT_setup(bpy.types.Panel):
             col.prop(utils.get_addon_preferences(context), "local_sd_url", text="")
             col.separator()
 
-            if utils.sd_backend(context) == "comfyui":
-
-                # ComfyUI Input Path
-                col = layout.column()
-                col.label(text="ComfyUI")
-                col.prop(utils.get_addon_preferences(context), 'comfyui_path', text="")
-
-                # ComfyUI Workflows Path
-                col = layout.column()
-                col.label(text="ComfyUI Workflows")
-                col.prop(utils.get_addon_preferences(context), 'workflows_path', text="")
-
 
 class AIR_PT_prompt(bpy.types.Panel):
     bl_label = "Prompt"
@@ -711,6 +699,8 @@ class AIR_PT_animation(bpy.types.Panel):
             row.operator("wm.url_open", text="Get Animation Tips", icon="URL").url = config.ANIMATION_TIPS_URL
 
 # ComfyUI Panel
+
+
 class AIR_PT_comfyui(bpy.types.Panel):
     bl_label = "ComfyUI"
     bl_idname = "AIR_PT_comfyui"
@@ -728,16 +718,30 @@ class AIR_PT_comfyui(bpy.types.Panel):
         scene = context.scene
         props = scene.comfyui_props
 
-        # ComfyUI Workflows
+        # ComfyUI Path
         col = layout.column()
-        col.label(text="Workflows")
-        col.prop(props, 'comfyui_workflows', text="")
+        col.prop(utils.get_addon_preferences(context), 'comfyui_path', text="Comfy")
+
+        # ComfyUI Workflows Path
+        col.prop(utils.get_addon_preferences(context), 'workflows_path', text="Workflows")
+
+        # Open ComfyUI workflow, input and output folder operator
+        row = layout.row()
+        row.operator(operators.AIR_OT_open_comfyui_workflow_folder.bl_idname, text="Workflow Folder")
+        row.operator(operators.AIR_OT_open_comfyui_input_folder.bl_idname, text="Input Folder")
+        row.operator(operators.AIR_OT_open_comfyui_output_folder.bl_idname, text="Output Folder")
+
+        # ComfyUI Workflows
+        row = layout.row()
+        row.label(text="Workflows")
+        row.prop(props, 'comfyui_workflows', text="")
 
         # ControlNet
         col = layout.column()
         col.label(text="ControlNet")
         col.prop(props, 'comfyui_controlnet_depth_strength', text="Depth Strength")
         col.prop(props, 'comfyui_controlnet_normal_strength', text="Normal Strength")
+
 
 classes = [
     AIR_PT_main,
