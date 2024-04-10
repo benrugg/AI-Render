@@ -16,21 +16,27 @@ def get_available_samplers(self, context):
 
 def get_available_schedulers(self, context):
     if utils.sd_backend() == "comfyui":
-        return utils.get_active_backend().get_schedulers()
+        return comfyui_api.get_schedulers()
     else:
-        return []
+        return [("none", "None", "", 0)]
+
 
 
 def get_available_workflows(self, context):
     if utils.sd_backend() == "comfyui":
-        return utils.get_active_backend().get_workflows()
+        return comfyui_api.get_workflows()
     else:
-        return []
+        return [("none", "None", "", 0)]
 
 
 def get_available_models(self, context):
-    # TODO: Do it in the backend
-    pass
+    current_sd_backend = utils.sd_backend()
+    if current_sd_backend == "comfyui" and comfyui_api.supports_choosing_model():
+        return comfyui_api.get_models()
+    else:
+        return [
+            ("stable-diffusion-xl-1024-v1-0", "SDXL 1.0", "", 120),
+        ]
 
 
 def get_default_sampler():
@@ -81,13 +87,16 @@ def ensure_sampler(context):
 
 def ensure_scheduler(context):
     # """Ensure that the scheduler is set to a valid value"""
-    scene = context.scene
-    if not scene.air_props.scheduler:
-        scene.air_props.scheduler = get_default_scheduler()
+    print("ensure_scheduler")
+    if utils.sd_backend() == "comfyui":
+        scene = context.scene
+        if not scene.air_props.scheduler:
+            scene.air_props.scheduler = get_default_scheduler()
 
 
 def ensure_upscaler_model(context):
     # """Ensure that the upscale model is set to a valid value"""
+    print("ensure_upscaler_model")
     scene = context.scene
     if (
         utils.get_active_backend().is_upscaler_model_list_loaded(context)
@@ -102,6 +111,7 @@ def update_local_sd_url(context):
     If is set to ComfyUI, the url is http://127.0.0.1:8188
     """
 
+    print("update_local_sd_url")
     addonprefs = utils.get_addon_preferences(context)
 
     if utils.sd_backend() == "automatic1111":
@@ -112,14 +122,12 @@ def update_local_sd_url(context):
 
 def ensure_properties(self, context):
     """Ensure that any properties which could change with a change in preferences are set to valid values"""
-
     print("ensure_properties")
-
     ensure_sampler(context)
-    if utils.sd_backend() == "comfyui":
-        ensure_scheduler(context)
     ensure_upscaler_model(context)
     update_local_sd_url(context)
+    if utils.sd_backend() == "comfyui":
+        ensure_scheduler(context)
 
 
 def update_denoise(self, context):
@@ -198,9 +206,7 @@ class AIRProperties(bpy.types.PropertyGroup):
     sd_model: bpy.props.EnumProperty(
         name="Stable Diffusion Model",
         default=120,
-        items=[
-            ("stable-diffusion-xl-1024-v1-0", "SDXL 1.0", "", 120),
-        ],
+        items=get_available_models,
         description="The Stable Diffusion model to use. SDXL is comparable to Midjourney. Older versions have now been removed, but newer versions may be added in the future",
     )
     sampler: bpy.props.EnumProperty(

@@ -685,6 +685,11 @@ def get_workflows():
     return workflow_tuples
 
 
+def get_models():
+    # TODO - get the models from the ComfyUI API
+    return []
+
+
 def get_samplers():
     # NOTE: Keep the number values (fourth item in the tuples) in sync with DreamStudio's
     # values (in stability_api.py). These act like an internal unique ID for Blender
@@ -760,8 +765,7 @@ def supports_negative_prompts():
 
 
 def supports_choosing_model():
-    # TODO - This should be set to true
-    # and a get_models() should be used to get the model list from the ComfyUI API
+    # TODO: False until a get_models() function is implemented
     return False
 
 

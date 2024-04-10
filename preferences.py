@@ -108,6 +108,7 @@ class AIRPreferences(bpy.types.AddonPreferences):
         min=0,
         max=59)
 
+    # ComfyUI
     comfyui_path: bpy.props.StringProperty(
         name="ComfyUI Path",
         default="E:/COMFY/ComfyUI/",
@@ -191,6 +192,12 @@ class AIRPreferences(bpy.types.AddonPreferences):
                 col = row.column()
                 col.prop(self, "local_sd_timeout", text="")
 
+                if self.sd_backend == 'comfyui':
+                    row = box.row()
+                    row.prop(self, "comfyui_path")
+                    row = box.row()
+                    row.prop(self, "workflows_path")
+
                 box.separator()
                 utils.label_multiline(box, text=f"AI Render will use your local Stable Diffusion installation. Please make sure the WebUI or ComfyUI are launched and running in a terminal.",
                                       icon="KEYTYPE_BREAKDOWN_VEC", width=width_guess)
@@ -199,10 +206,6 @@ class AIRPreferences(bpy.types.AddonPreferences):
                 row = box.row()
                 row.operator("wm.url_open", text="Help with local installation", icon="URL").url \
                     = config.HELP_WITH_LOCAL_INSTALLATION_URL
-
-                if self.sd_backend == 'comfyui':
-                    row = box.row()
-                    row.prop(self, "workflows_path")
 
             # Local Installation with SHARK
             if self.sd_backend == "shark":
