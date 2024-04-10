@@ -1,7 +1,7 @@
 {
   "3": {
     "inputs": {
-      "seed": 1515392161020,
+      "seed": 925732691918506,
       "steps": 5,
       "cfg": 2,
       "sampler_name": "dpmpp_sde_gpu",
@@ -120,7 +120,7 @@
   },
   "12": {
     "inputs": {
-      "image": "example.png",
+      "image": "castel-3dscan-color.png",
       "upload": "image"
     },
     "class_type": "LoadImage",
@@ -166,7 +166,7 @@
   },
   "15": {
     "inputs": {
-      "image": "pose.png",
+      "image": "castle-3dmodel-depth.png",
       "upload": "image"
     },
     "class_type": "LoadImage",
@@ -212,7 +212,7 @@
   },
   "18": {
     "inputs": {
-      "image": "pose.png",
+      "image": "castle-3dmodel-normal.png",
       "upload": "image"
     },
     "class_type": "LoadImage",

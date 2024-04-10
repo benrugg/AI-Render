@@ -1,12 +1,12 @@
 {
     "3": {
         "inputs": {
-            "seed": 1744190080,
-            "steps": 15,
-            "cfg": 2.0,
-            "sampler_name": "dpmpp_2m",
+            "seed": 1423868211,
+            "steps": 30,
+            "cfg": 7.0,
+            "sampler_name": "euler",
             "scheduler": "normal",
-            "denoise": 1.0,
+            "denoise": 0.6,
             "model": [
                 "4",
                 0
@@ -40,7 +40,7 @@
     },
     "6": {
         "inputs": {
-            "text": "Abstract colorful vector art background, rainbow colors, vibrant, music scores, instruments, 8k render",
+            "text": "",
             "clip": [
                 "4",
                 1
@@ -53,7 +53,7 @@
     },
     "7": {
         "inputs": {
-            "text": "watermark, text",
+            "text": "ugly, bad art",
             "clip": [
                 "4",
                 1
@@ -120,7 +120,7 @@
     },
     "12": {
         "inputs": {
-            "image": "E:/COMFY/ComfyUI/input/color/Image0039.png",
+            "image": "E:/COMFY/ComfyUI/input/color/Image0011.png",
             "upload": "image"
         },
         "class_type": "LoadImage",
@@ -166,7 +166,7 @@
     },
     "15": {
         "inputs": {
-            "image": "E:/COMFY/ComfyUI/input/depth/Image0039.png",
+            "image": "E:/COMFY/ComfyUI/input/depth/Image0011.png",
             "upload": "image"
         },
         "class_type": "LoadImage",
@@ -212,7 +212,7 @@
     },
     "18": {
         "inputs": {
-            "image": "E:/COMFY/ComfyUI/input/normal/Image0039.png",
+            "image": "E:/COMFY/ComfyUI/input/normal/Image0011.png",
             "upload": "image"
         },
         "class_type": "LoadImage",
