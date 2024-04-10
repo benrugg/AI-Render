@@ -1,12 +1,12 @@
 {
     "3": {
         "inputs": {
-            "seed": 1423868211,
-            "steps": 30,
+            "seed": 1735782763,
+            "steps": 15,
             "cfg": 7.0,
-            "sampler_name": "euler",
+            "sampler_name": "dpmpp_2m",
             "scheduler": "normal",
-            "denoise": 0.6,
+            "denoise": 0.7,
             "model": [
                 "4",
                 0
@@ -16,7 +16,7 @@
                 0
             ],
             "negative": [
-                "16",
+                "13",
                 1
             ],
             "latent_image": [
@@ -31,7 +31,7 @@
     },
     "4": {
         "inputs": {
-            "ckpt_name": "SD15\\28DSTABLEBESTVERSION_v6.safetensors"
+            "ckpt_name": "SDXL\\juggernautXL_v9Rdphoto2Lightning.safetensors"
         },
         "class_type": "CheckpointLoaderSimple",
         "_meta": {
@@ -40,7 +40,7 @@
     },
     "6": {
         "inputs": {
-            "text": "",
+            "text": "A magic cube . in the style of Leonid Afremov",
             "clip": [
                 "4",
                 1
@@ -53,7 +53,7 @@
     },
     "7": {
         "inputs": {
-            "text": "ugly, bad art",
+            "text": "ugly, bad art, rubik",
             "clip": [
                 "4",
                 1
@@ -111,7 +111,7 @@
     },
     "11": {
         "inputs": {
-            "vae_name": "vae-ft-mse-840000-ema-pruned.safetensors"
+            "vae_name": "sdxl_vae.safetensors"
         },
         "class_type": "VAELoader",
         "_meta": {
@@ -120,7 +120,7 @@
     },
     "12": {
         "inputs": {
-            "image": "E:/COMFY/ComfyUI/input/color/Image0011.png",
+            "image": "E:/COMFY/ComfyUI/input/color/Image0001.png",
             "upload": "image"
         },
         "class_type": "LoadImage",
@@ -130,7 +130,7 @@
     },
     "13": {
         "inputs": {
-            "strength": 1,
+            "strength": 0.5,
             "start_percent": 0,
             "end_percent": 1,
             "positive": [
@@ -152,12 +152,12 @@
         },
         "class_type": "ControlNetApplyAdvanced",
         "_meta": {
-            "title": "Apply ControlNet (Advanced)"
+            "title": "ControlNet"
         }
     },
     "14": {
         "inputs": {
-            "control_net_name": "SD15\\control_v11\\control_v11f1p_sd15_depth.pth"
+            "control_net_name": "SDXL\\diffusers_xl_depth_small.safetensors"
         },
         "class_type": "ControlNetLoader",
         "_meta": {
@@ -166,7 +166,7 @@
     },
     "15": {
         "inputs": {
-            "image": "E:/COMFY/ComfyUI/input/depth/Image0011.png",
+            "image": "E:/COMFY/ComfyUI/input/depth/Image0001.png",
             "upload": "image"
         },
         "class_type": "LoadImage",
@@ -174,75 +174,14 @@
             "title": "depth"
         }
     },
-    "16": {
-        "inputs": {
-            "strength": 1,
-            "start_percent": 0,
-            "end_percent": 1,
-            "positive": [
-                "13",
-                0
-            ],
-            "negative": [
-                "13",
-                1
-            ],
-            "control_net": [
-                "17",
-                0
-            ],
-            "image": [
-                "18",
-                0
-            ]
-        },
-        "class_type": "ControlNetApplyAdvanced",
-        "_meta": {
-            "title": "Apply ControlNet (Advanced)"
-        }
-    },
-    "17": {
-        "inputs": {
-            "control_net_name": "SD15\\control_v11\\control_v11p_sd15_normalbae.pth"
-        },
-        "class_type": "ControlNetLoader",
-        "_meta": {
-            "title": "Load ControlNet Model"
-        }
-    },
     "18": {
         "inputs": {
-            "image": "E:/COMFY/ComfyUI/input/normal/Image0011.png",
+            "image": "E:/COMFY/ComfyUI/input/normal/Image0001.png",
             "upload": "image"
         },
         "class_type": "LoadImage",
         "_meta": {
             "title": "normal"
-        }
-    },
-    "22": {
-        "inputs": {
-            "resolution": 512,
-            "image": [
-                "12",
-                0
-            ]
-        },
-        "class_type": "BAE-NormalMapPreprocessor",
-        "_meta": {
-            "title": "BAE Normal Map"
-        }
-    },
-    "25": {
-        "inputs": {
-            "images": [
-                "22",
-                0
-            ]
-        },
-        "class_type": "PreviewImage",
-        "_meta": {
-            "title": "Preview Image"
         }
     }
 }

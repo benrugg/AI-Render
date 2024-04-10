@@ -418,67 +418,17 @@ class AIRProperties(bpy.types.PropertyGroup):
     )
 
 
-def get_available_workflows(self, context):
-    if utils.sd_backend() == "comfyui":
-        return comfyui_api.get_workflows()
-    else:
-        return [("none", "None", "", 0)]
-
-
-def get_controlnet_in_workflow(self, context):
-    if utils.sd_backend() == "comfyui":
-        return comfyui_api.get_controlnet_in_workflow(context)
-    else:
-        return [("none", "None", "", 0)]
-
-
-class AIRPropertiesComfyUI(bpy.types.PropertyGroup):
-    comfyui_workflows: bpy.props.EnumProperty(
-        name="ComfyUI Workflows",
-        default=0,
-        items=get_available_workflows,
-        description="A list of the available workflows in the path specified in the addon preferences",
-    )
-    comfyui_controlnets: bpy.props.EnumProperty(
-        name="ComfyUI ControlNets",
-        default=0,
-        items=get_controlnet_in_workflow,
-        description="A list of the available controlnets in the selected workflow",
-    )
-    comfyui_controlnet_depth_strength: bpy.props.FloatProperty(
-        name="ControlNet Depth Strength",
-        default=0.5,
-        soft_min=0.0,
-        soft_max=1.0,
-        min=0.0,
-        max=10.0,
-        description="Depth Map Strength",
-    )
-    comfyui_controlnet_normal_strength: bpy.props.FloatProperty(
-        name="ControlNet Normal Strength",
-        default=0.5,
-        soft_min=0.0,
-        soft_max=1.0,
-        min=0.0,
-        max=10.0,
-        description="Normal Map Strength",
-    )
-
-
-classes = [AIRProperties, AIRPropertiesComfyUI]
+classes = [AIRProperties]
 
 
 def register():
     for cls in classes:
         bpy.utils.register_class(cls)
-
     bpy.types.Scene.air_props = bpy.props.PointerProperty(type=AIRProperties)
-    bpy.types.Scene.comfyui_props = bpy.props.PointerProperty(type=AIRPropertiesComfyUI)
 
 
 def unregister():
     for cls in classes:
         bpy.utils.unregister_class(cls)
 
-    del bpy.types.Scene.comfyui_props
     del bpy.types.Scene.air_props

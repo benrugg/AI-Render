@@ -25,7 +25,7 @@ LOG_MAPPED_JSON = False
 ORIGINAL_DATA = {
     "3": {
         "inputs": {
-            "seed": 1515392161020,
+            "seed": 925732691918506,
             "steps": 5,
             "cfg": 2,
             "sampler_name": "dpmpp_sde_gpu",
@@ -144,7 +144,7 @@ ORIGINAL_DATA = {
     },
     "12": {
         "inputs": {
-            "image": "example.png",
+            "image": "castel-3dscan-color.png",
             "upload": "image"
         },
         "class_type": "LoadImage",
@@ -190,7 +190,7 @@ ORIGINAL_DATA = {
     },
     "15": {
         "inputs": {
-            "image": "pose.png",
+            "image": "castle-3dmodel-depth.png",
             "upload": "image"
         },
         "class_type": "LoadImage",
@@ -236,7 +236,7 @@ ORIGINAL_DATA = {
     },
     "18": {
         "inputs": {
-            "image": "pose.png",
+            "image": "castle-3dmodel-normal.png",
             "upload": "image"
         },
         "class_type": "LoadImage",
@@ -347,13 +347,17 @@ def load_workflow(context, workflow_file):
         return json.load(file)
 
 
+def set_active_workflow(context, value):
+
+        if LOG_WORKFLOW:
+            print(Fore.WHITE + "\nLOG ACTIVE WORKFLOW:" + Fore.RESET)
+            print(value)
+
+        context.scene.comfyui_props.comfyui_active_workflow = value
+
+
 def get_active_workflow(context):
-
-    if LOG_WORKFLOW:
-        print(Fore.WHITE + "\nLOG ACTIVE WORKFLOW:" + Fore.RESET)
-        print(context.scene.comfyui_props.comfyui_workflows)
-
-    return context.scene.comfyui_props.comfyui_workflows
+    return context.scene.comfyui_props.comfyui_active_workflow
 
 
 def find_controlnets(workflow):
@@ -384,7 +388,7 @@ def get_controlnet_in_workflow(context):
     else:
         return [
             ('None', 'None', '', 0),
-    ]
+        ]
 
 
 def upload_image(img_file, subfolder):
@@ -513,8 +517,8 @@ def generate(params, img_file, filename_prefix, props, comfyui_props):
     params['depth_image'] = depth_image_path
     params['normal_image'] = normal_image_path
 
-    params['comfyui_controlnet_depth_strength'] = comfyui_props.comfyui_controlnet_depth_strength
-    params['comfyui_controlnet_normal_strength'] = comfyui_props.comfyui_controlnet_normal_strength
+    # params['comfyui_controlnet_depth_strength'] = comfyui_props.comfyui_controlnet_depth_strength
+    # params['comfyui_controlnet_normal_strength'] = comfyui_props.comfyui_controlnet_normal_strength
 
     # map the params to the ComfyUI nodes
     json_obj = map_params(params, workflow)

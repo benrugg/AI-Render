@@ -23,6 +23,7 @@ if "bpy" in locals():
     imp.reload(preferences)
     imp.reload(progress_bar)
     imp.reload(properties)
+    imp.reload(properties_comfy)
     imp.reload(task_queue)
     imp.reload(ui_panels)
     imp.reload(ui_preset_styles)
@@ -41,6 +42,7 @@ else:
         preferences,
         progress_bar,
         properties,
+        properties_comfy,
         task_queue,
         utils,
     )
@@ -66,6 +68,7 @@ def register():
     preferences.register()
     progress_bar.register()
     properties.register()
+    properties_comfy.register()
     task_queue.register()
     ui_panels.register()
     ui_preset_styles.register()
@@ -78,6 +81,7 @@ def unregister():
     operators.unregister()
     preferences.unregister()
     progress_bar.unregister()
+    properties_comfy.unregister()
     properties.unregister()
     task_queue.unregister()
     ui_panels.unregister()
