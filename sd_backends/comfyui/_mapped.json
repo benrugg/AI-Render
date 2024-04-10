@@ -1,10 +1,10 @@
 {
     "3": {
         "inputs": {
-            "seed": 1209858313,
-            "steps": 10,
-            "cfg": 7.0,
-            "sampler_name": "dpm_fast",
+            "seed": 1744190080,
+            "steps": 15,
+            "cfg": 2.0,
+            "sampler_name": "dpmpp_2m",
             "scheduler": "normal",
             "denoise": 1.0,
             "model": [
@@ -12,7 +12,7 @@
                 0
             ],
             "positive": [
-                "16",
+                "13",
                 0
             ],
             "negative": [
@@ -31,7 +31,7 @@
     },
     "4": {
         "inputs": {
-            "ckpt_name": "v1-5-pruned-emaonly.safetensors"
+            "ckpt_name": "SD15\\28DSTABLEBESTVERSION_v6.safetensors"
         },
         "class_type": "CheckpointLoaderSimple",
         "_meta": {
@@ -40,7 +40,7 @@
     },
     "6": {
         "inputs": {
-            "text": "pinocchio",
+            "text": "Abstract colorful vector art background, rainbow colors, vibrant, music scores, instruments, 8k render",
             "clip": [
                 "4",
                 1
@@ -53,7 +53,7 @@
     },
     "7": {
         "inputs": {
-            "text": "ugly, bad art",
+            "text": "watermark, text",
             "clip": [
                 "4",
                 1
@@ -111,7 +111,7 @@
     },
     "11": {
         "inputs": {
-            "vae_name": "vae-ft-ema-560000-ema-pruned.safetensors"
+            "vae_name": "vae-ft-mse-840000-ema-pruned.safetensors"
         },
         "class_type": "VAELoader",
         "_meta": {
@@ -120,7 +120,7 @@
     },
     "12": {
         "inputs": {
-            "image": "E:/COMFY/ComfyUI/input/color/Image0011.png",
+            "image": "E:/COMFY/ComfyUI/input/color/Image0039.png",
             "upload": "image"
         },
         "class_type": "LoadImage",
@@ -166,7 +166,7 @@
     },
     "15": {
         "inputs": {
-            "image": "E:/COMFY/ComfyUI/input/depth/Image0011.png",
+            "image": "E:/COMFY/ComfyUI/input/depth/Image0039.png",
             "upload": "image"
         },
         "class_type": "LoadImage",
@@ -212,12 +212,37 @@
     },
     "18": {
         "inputs": {
-            "image": "E:/COMFY/ComfyUI/input/normal/Image0011.png",
+            "image": "E:/COMFY/ComfyUI/input/normal/Image0039.png",
             "upload": "image"
         },
         "class_type": "LoadImage",
         "_meta": {
             "title": "normal"
+        }
+    },
+    "22": {
+        "inputs": {
+            "resolution": 512,
+            "image": [
+                "12",
+                0
+            ]
+        },
+        "class_type": "BAE-NormalMapPreprocessor",
+        "_meta": {
+            "title": "BAE Normal Map"
+        }
+    },
+    "25": {
+        "inputs": {
+            "images": [
+                "22",
+                0
+            ]
+        },
+        "class_type": "PreviewImage",
+        "_meta": {
+            "title": "Preview Image"
         }
     }
 }

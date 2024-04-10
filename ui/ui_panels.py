@@ -62,7 +62,6 @@ class AIR_PT_setup(bpy.types.Panel):
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
     bl_context = "render"
-    bl_options = {'DEFAULT_CLOSED'}
 
     @classmethod
     def is_api_key_valid(cls, context):
@@ -190,6 +189,7 @@ class AIR_PT_prompt(bpy.types.Panel):
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
     bl_context = "render"
+    bl_options = {'DEFAULT_CLOSED'}
 
     @classmethod
     def poll(cls, context):
@@ -710,7 +710,7 @@ class AIR_PT_animation(bpy.types.Panel):
             row = box.row()
             row.operator("wm.url_open", text="Get Animation Tips", icon="URL").url = config.ANIMATION_TIPS_URL
 
-
+# ComfyUI Panel
 class AIR_PT_comfyui(bpy.types.Panel):
     bl_label = "ComfyUI"
     bl_idname = "AIR_PT_comfyui"
@@ -733,6 +733,11 @@ class AIR_PT_comfyui(bpy.types.Panel):
         col.label(text="Workflows")
         col.prop(props, 'comfyui_workflows', text="")
 
+        # ControlNet
+        col = layout.column()
+        col.label(text="ControlNet")
+        col.prop(props, 'comfyui_controlnet_depth_strength', text="Depth Strength")
+        col.prop(props, 'comfyui_controlnet_normal_strength', text="Normal Strength")
 
 classes = [
     AIR_PT_main,

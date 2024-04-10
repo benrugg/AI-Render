@@ -10,17 +10,14 @@ from .. import (
     utils,
 )
 import pprint
-from colorama import Fore, Style, init
-
-# Initialize Colorama
-init()
+from colorama import Fore
 
 LOG_REQUEST_TO = True
 LOG_RESPONSE_BODY = True
 LOG_HISTORY_RESPONSE = False
-LOG_UPLOAD_IMAGE = True
-LOG_DOWNLOAD_IMAGE = True
-LOG_PROPS = False
+LOG_UPLOAD_IMAGE = False
+LOG_DOWNLOAD_IMAGE = False
+LOG_PROPS = True
 LOG_PARAMS = True
 LOG_WORKFLOW = False
 LOG_MAPPED_JSON = False
@@ -28,18 +25,18 @@ LOG_MAPPED_JSON = False
 ORIGINAL_DATA = {
     "3": {
         "inputs": {
-            "seed": 156680208700286,
-            "steps": 20,
-            "cfg": 8,
-            "sampler_name": "euler",
-            "scheduler": "normal",
+            "seed": 1515392161020,
+            "steps": 5,
+            "cfg": 2,
+            "sampler_name": "dpmpp_sde_gpu",
+            "scheduler": "karras",
             "denoise": 1,
             "model": [
                 "4",
                 0
             ],
             "positive": [
-                "16",
+                "13",
                 0
             ],
             "negative": [
@@ -58,7 +55,7 @@ ORIGINAL_DATA = {
     },
     "4": {
         "inputs": {
-            "ckpt_name": "v1-5-pruned-emaonly.safetensors"
+            "ckpt_name": "SD15\\28DSTABLEBESTVERSION_v6.safetensors"
         },
         "class_type": "CheckpointLoaderSimple",
         "_meta": {
@@ -138,7 +135,7 @@ ORIGINAL_DATA = {
     },
     "11": {
         "inputs": {
-            "vae_name": "vae-ft-ema-560000-ema-pruned.safetensors"
+            "vae_name": "vae-ft-mse-840000-ema-pruned.safetensors"
         },
         "class_type": "VAELoader",
         "_meta": {
@@ -246,6 +243,31 @@ ORIGINAL_DATA = {
         "_meta": {
             "title": "normal"
         }
+    },
+    "22": {
+        "inputs": {
+            "resolution": 512,
+            "image": [
+                "12",
+                0
+            ]
+        },
+        "class_type": "BAE-NormalMapPreprocessor",
+        "_meta": {
+            "title": "BAE Normal Map"
+        }
+    },
+    "25": {
+        "inputs": {
+            "images": [
+                "22",
+                0
+            ]
+        },
+        "class_type": "PreviewImage",
+        "_meta": {
+            "title": "Preview Image"
+        }
     }
 }
 PARAM_TO_WORKFLOW = {
@@ -303,7 +325,17 @@ PARAM_TO_WORKFLOW = {
         "class_type": "LoadImage",
         "input_key": "image",
         "meta_title": "normal"
-    }
+    },
+    "comfyui_controlnet_depth_strength": {
+        "class_type": "ControlNetApplyAdvanced",
+        "input_key": "strength",
+        "meta_title": "ControlNet"
+    },
+    "comfyui_controlnet_normal_strength": {
+        "class_type": "ControlNetApplyAdvanced",
+        "input_key": "strength",
+        "meta_title": "ControlNet"
+    },
 }
 
 # CORE FUNCTIONS:
@@ -331,6 +363,8 @@ def upload_image(img_file, subfolder):
     # ComfyUI is running local and we can render the image directly
     # from Blender to the ComfyUI input path without the need to upload it.
     # This function is here for future use if we decide to use a remote ComfyUI server.
+
+    # TODO: Create the logic to upload images to a remote ComfyUI server
 
     # Get the image path from the name of _io.BufferedReader
     image_path = img_file.name
@@ -368,6 +402,52 @@ def upload_image(img_file, subfolder):
     return resp.json().get("name")
 
 
+def find_node_by_title(workflow, class_type, meta_title):
+    """Find the node key based on class_type and meta_title."""
+    for key, value in workflow.items():
+        if value['class_type'] == class_type:
+            if value.get('_meta', {}).get('title') == meta_title:
+                return key
+    return None
+
+
+def map_param_to_workflow(params, workflow):
+    """Map parameters to the appropriate nodes in the workflow JSON."""
+    for param_name, param_info in PARAM_TO_WORKFLOW.items():
+        # Continue only if the parameter is in the params dictionary
+        if param_name in params:
+            class_type = param_info["class_type"]
+            input_key = param_info["input_key"]
+            meta_title = param_info["meta_title"]
+
+            # Find the node by title in the workflow
+            node_key = find_node_by_title(workflow, class_type, meta_title)
+
+            # If the node is found, update the input_key with the parameter's value
+            if node_key is not None:
+                workflow[node_key]["inputs"][input_key] = params[param_name]
+    return workflow
+
+
+def map_params(params, workflow_json):
+
+    if LOG_PARAMS:
+        print(Fore.WHITE + "\nLOG PARAMS:" + Fore.RESET)
+        pprint.pp(params)
+
+    updated_workflow_json = map_param_to_workflow(params, workflow_json)
+
+    # Save mapped json to local file
+    with open('sd_backends/comfyui/_mapped.json', 'w') as f:
+        json.dump(updated_workflow_json, f, indent=4)
+
+    if LOG_MAPPED_JSON:
+        print("\nLOG MAPPED JSON:")
+        pprint.pp(updated_workflow_json)
+
+    return updated_workflow_json
+
+
 def generate(params, img_file, filename_prefix, props):
 
     if LOG_PROPS:
@@ -400,6 +480,9 @@ def generate(params, img_file, filename_prefix, props):
     params['color_image'] = color_image_path
     params['depth_image'] = depth_image_path
     params['normal_image'] = normal_image_path
+
+    params['comfyui_controlnet_depth_strength'] = props.comfyui_controlnet_depth_strength
+    params['comfyui_controlnet_normal_strength'] = props.comfyui_controlnet_normal_strength
 
     # map the params to the ComfyUI nodes
     json_obj = map_params(params, workflow)
@@ -558,52 +641,6 @@ def get_server_url(path):
         raise Exception("Couldn't get the Automatic1111 server url")
     else:
         return base_url + path
-
-
-def find_node_by_title(workflow, class_type, meta_title):
-    """Find the node key based on class_type and meta_title."""
-    for key, value in workflow.items():
-        if value['class_type'] == class_type:
-            if value.get('_meta', {}).get('title') == meta_title:
-                return key
-    return None
-
-
-def map_param_to_workflow(params, workflow):
-    """Map parameters to the appropriate nodes in the workflow JSON."""
-    for param_name, param_info in PARAM_TO_WORKFLOW.items():
-        # Continue only if the parameter is in the params dictionary
-        if param_name in params:
-            class_type = param_info["class_type"]
-            input_key = param_info["input_key"]
-            meta_title = param_info["meta_title"]
-
-            # Find the node by title in the workflow
-            node_key = find_node_by_title(workflow, class_type, meta_title)
-
-            # If the node is found, update the input_key with the parameter's value
-            if node_key is not None:
-                workflow[node_key]["inputs"][input_key] = params[param_name]
-    return workflow
-
-
-def map_params(params, workflow_json):
-
-    if LOG_PARAMS:
-        print(Fore.WHITE + "\nLOG PARAMS:" + Fore.RESET)
-        pprint.pp(params)
-
-    updated_workflow_json = map_param_to_workflow(params, workflow_json)
-
-    # Save mapped json to local file
-    with open('sd_backends/comfyui/_mapped.json', 'w') as f:
-        json.dump(updated_workflow_json, f, indent=4)
-
-    if LOG_MAPPED_JSON:
-        print("\nLOG MAPPED JSON:")
-        pprint.pp(updated_workflow_json)
-
-    return updated_workflow_json
 
 
 def do_post(url, data):

@@ -1,11 +1,11 @@
 {
   "3": {
     "inputs": {
-      "seed": 1515392161020,
-      "steps": 5,
-      "cfg": 2,
-      "sampler_name": "dpmpp_sde_gpu",
-      "scheduler": "karras",
+      "seed": 455832518554534,
+      "steps": 20,
+      "cfg": 8,
+      "sampler_name": "euler",
+      "scheduler": "normal",
       "denoise": 1,
       "model": [
         "4",
@@ -16,7 +16,7 @@
         0
       ],
       "negative": [
-        "16",
+        "13",
         1
       ],
       "latent_image": [
@@ -31,7 +31,7 @@
   },
   "4": {
     "inputs": {
-      "ckpt_name": "SD15\\28DSTABLEBESTVERSION_v6.safetensors"
+      "ckpt_name": "SDXL\\juggernautXL_v9Rdphoto2Lightning.safetensors"
     },
     "class_type": "CheckpointLoaderSimple",
     "_meta": {
@@ -111,7 +111,7 @@
   },
   "11": {
     "inputs": {
-      "vae_name": "vae-ft-mse-840000-ema-pruned.safetensors"
+      "vae_name": "sdxl_vae.safetensors"
     },
     "class_type": "VAELoader",
     "_meta": {
@@ -130,7 +130,7 @@
   },
   "13": {
     "inputs": {
-      "strength": 1,
+      "strength": 0.5,
       "start_percent": 0,
       "end_percent": 1,
       "positive": [
@@ -152,12 +152,12 @@
     },
     "class_type": "ControlNetApplyAdvanced",
     "_meta": {
-      "title": "Apply ControlNet (Advanced)"
+      "title": "ControlNet"
     }
   },
   "14": {
     "inputs": {
-      "control_net_name": "SD15\\control_v11\\control_v11f1p_sd15_depth.pth"
+      "control_net_name": "SDXL\\diffusers_xl_depth_small.safetensors"
     },
     "class_type": "ControlNetLoader",
     "_meta": {
@@ -174,42 +174,6 @@
       "title": "depth"
     }
   },
-  "16": {
-    "inputs": {
-      "strength": 1,
-      "start_percent": 0,
-      "end_percent": 1,
-      "positive": [
-        "13",
-        0
-      ],
-      "negative": [
-        "13",
-        1
-      ],
-      "control_net": [
-        "17",
-        0
-      ],
-      "image": [
-        "18",
-        0
-      ]
-    },
-    "class_type": "ControlNetApplyAdvanced",
-    "_meta": {
-      "title": "Apply ControlNet (Advanced)"
-    }
-  },
-  "17": {
-    "inputs": {
-      "control_net_name": "SD15\\control_v11\\control_v11p_sd15_normalbae.pth"
-    },
-    "class_type": "ControlNetLoader",
-    "_meta": {
-      "title": "Load ControlNet Model"
-    }
-  },
   "18": {
     "inputs": {
       "image": "pose.png",
@@ -218,31 +182,6 @@
     "class_type": "LoadImage",
     "_meta": {
       "title": "normal"
-    }
-  },
-  "22": {
-    "inputs": {
-      "resolution": 512,
-      "image": [
-        "12",
-        0
-      ]
-    },
-    "class_type": "BAE-NormalMapPreprocessor",
-    "_meta": {
-      "title": "BAE Normal Map"
-    }
-  },
-  "25": {
-    "inputs": {
-      "images": [
-        "22",
-        0
-      ]
-    },
-    "class_type": "PreviewImage",
-    "_meta": {
-      "title": "Preview Image"
     }
   }
 }

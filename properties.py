@@ -418,13 +418,31 @@ class AIRProperties(bpy.types.PropertyGroup):
         step=0.01,
         name="Outpaint Color Variation",
     )
+    # ComfyUI
     comfyui_workflows: bpy.props.EnumProperty(
         name="ComfyUI Workflows",
         default=0,
         items=get_available_workflows,
-        description="A list of the available workflows (loaded from the ComfyUI API)",
+        description="A list of the available workflows in the path specified in the addon preferences",
     )
-
+    comfyui_controlnet_depth_strength: bpy.props.FloatProperty(
+        name="ControlNet Depth Strength",
+        default=0.5,
+        soft_min=0.0,
+        soft_max=1.0,
+        min=0.0,
+        max=10.0,
+        description="Depth Map Strength",
+    )
+    comfyui_controlnet_normal_strength: bpy.props.FloatProperty(
+        name="ControlNet Normal Strength",
+        default=0.5,
+        soft_min=0.0,
+        soft_max=1.0,
+        min=0.0,
+        max=10.0,
+        description="Normal Map Strength",
+    )
 
 classes = [AIRProperties]
 
