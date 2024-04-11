@@ -42,11 +42,20 @@ class AIR_PT_comfyui(bpy.types.Panel):
 
         # Cycle all the PropertyGroups inside the comfyui_props
         for prop in props.keys():
-            pprint(prop)
+            # if the property is a type PropertyGroup
+            if isinstance(getattr(props, prop), bpy.types.PropertyGroup):
+                # Access each property inside the PropertyGroup and display it in a box
+                box = layout.box()
+                box.label(text=prop)
+                for subprop in getattr(props, prop).__annotations__.items():
+                    # Create a row for each property inside the PropertyGroup
+                    box.prop(getattr(props, prop), subprop[0], text=subprop[0])
+
 
 classes = [
     AIR_PT_comfyui,
 ]
+
 
 def register():
     for cls in classes:

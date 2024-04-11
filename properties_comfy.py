@@ -344,8 +344,8 @@ def create_property_group_classes(json_data):
                 new_class_dict = {"__annotations__": annotations}
                 new_class = type(class_name, (bpy.types.PropertyGroup,), new_class_dict)
                 classes[class_name] = new_class
-                print(Fore.GREEN + f"Created class {class_name}" + Fore.RESET)
-                pprint(f"Created class {class_name} with properties: {new_class.__annotations__}")
+                # print(Fore.GREEN + f"Created class {class_name}" + Fore.RESET)
+                # pprint(f"Created class {class_name} with properties: {new_class.__annotations__}")
 
     return classes
 
