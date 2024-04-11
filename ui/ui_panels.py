@@ -7,7 +7,6 @@ from .. import (
     utils,
 )
 
-
 def show_error_if_it_exists(layout, context, width_guess):
     props = context.scene.air_props
     if (props.error_message):
@@ -698,50 +697,6 @@ class AIR_PT_animation(bpy.types.Panel):
             row = box.row()
             row.operator("wm.url_open", text="Get Animation Tips", icon="URL").url = config.ANIMATION_TIPS_URL
 
-# ComfyUI Panel
-
-
-class AIR_PT_comfyui(bpy.types.Panel):
-    bl_label = "ComfyUI"
-    bl_idname = "AIR_PT_comfyui"
-    bl_parent_id = "AIR_PT_main"
-    bl_space_type = "PROPERTIES"
-    bl_region_type = "WINDOW"
-    bl_context = "render"
-
-    @classmethod
-    def poll(cls, context):
-        return utils.is_installation_valid() and context.scene.air_props.is_enabled and utils.sd_backend(context) == "comfyui"
-
-    def draw(self, context):
-        layout = self.layout
-        scene = context.scene
-        props = scene.comfyui_props
-
-        # ComfyUI Path
-        col = layout.column()
-        col.prop(utils.get_addon_preferences(context), 'comfyui_path', text="Comfy")
-
-        # ComfyUI Workflows Path
-        col.prop(utils.get_addon_preferences(context), 'workflows_path', text="Workflows")
-
-        # Open ComfyUI workflow, input and output folder operator
-        row = layout.row()
-        row.operator(operators.AIR_OT_open_comfyui_workflow_folder.bl_idname, text="Workflow Folder")
-        row.operator(operators.AIR_OT_open_comfyui_input_folder.bl_idname, text="Input Folder")
-        row.operator(operators.AIR_OT_open_comfyui_output_folder.bl_idname, text="Output Folder")
-
-        # ComfyUI Workflows
-        row = layout.row()
-        row.label(text="Workflows")
-        row.prop(props, 'comfyui_workflows', text="")
-
-        # ControlNet
-        col = layout.column()
-        col.label(text="ControlNet")
-        col.prop(props, 'comfyui_controlnet_depth_strength', text="Depth Strength")
-        col.prop(props, 'comfyui_controlnet_normal_strength', text="Normal Strength")
-
 
 classes = [
     AIR_PT_main,
@@ -754,7 +709,6 @@ classes = [
     AIR_PT_inpaint,
     AIR_PT_outpaint,
     AIR_PT_animation,
-    AIR_PT_comfyui,
 ]
 
 
