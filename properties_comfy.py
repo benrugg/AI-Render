@@ -263,27 +263,9 @@ def get_available_workflows(self, context):
         return [("none", "None", "", 0)]
 
 
-class AIRPropertiesComfyUI(bpy.types.PropertyGroup):
-    comfyui_workflows: bpy.props.EnumProperty(
-        name="comfyui_workflows",
-        default=1,
-        items=get_available_workflows,
-        description="A list of the available workflows in the path specified in the addon preferences",
-    )
-    comfyui_nodes: bpy.props.CollectionProperty(
-        type=bpy.types.PropertyGroup)
-
-
 def get_filename_from_path(path):
     # Extracts the filename without extension from a given path
     return os.path.splitext(os.path.basename(path))[0]
-
-
-def create_class(class_name, properties):
-    # Create a class with the given properties
-    class_dict = {name: prop for name, prop in properties.items()}
-    new_class = type(class_name, (bpy.types.PropertyGroup,), class_dict)
-    return new_class
 
 
 def create_property_group_classes(json_data):
@@ -360,16 +342,32 @@ def unregister_generated_classes(generated_classes):
             delattr(bpy.types, cls_name)
 
 
-# generated_classes = create_property_group_classes(WORKFLOW_JSON)
+def create_property_from_workflow(self, context):
+    print(Fore.GREEN + f"Selected workflow: {self.comfyui_workflows}" + Fore.RESET)
+
+    # generated_classes = create_property_group_classes(WORKFLOW_JSON)
+    # unregister_generated_classes(generated_classes)
+    # register_generated_classes(generated_classes)
+
+
+class AIRPropertiesComfyUI(bpy.types.PropertyGroup):
+    comfyui_workflows: bpy.props.EnumProperty(
+        name="comfyui_workflows",
+        default=1,
+        items=get_available_workflows,
+        description="A list of the available workflows in the path specified in the addon preferences",
+        update=create_property_from_workflow
+    )
+    comfyui_nodes: bpy.props.CollectionProperty(
+        type=bpy.types.PropertyGroup)
 
 
 def register():
     bpy.utils.register_class(AIRPropertiesComfyUI)
     bpy.types.Scene.comfyui_props = bpy.props.PointerProperty(type=AIRPropertiesComfyUI)
-    # register_generated_classes(generated_classes)
 
 
 def unregister():
-    # unregister_generated_classes(generated_classes)
+
     bpy.utils.unregister_class(AIRPropertiesComfyUI)
     del bpy.types.Scene.comfyui_props
