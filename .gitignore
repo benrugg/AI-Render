@@ -3,6 +3,7 @@
 # blender/python
 __pycache__
 ai-render_updater
+ai-render-comfyui-support_updater
 
 # misc
 .DS_Store
