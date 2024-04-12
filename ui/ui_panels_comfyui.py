@@ -1,5 +1,5 @@
 import bpy
-from .. import operators, utils
+from .. import utils
 from pprint import pprint
 
 
@@ -21,17 +21,19 @@ class AIR_PT_comfyui(bpy.types.Panel):
         props = scene.comfyui_props
 
         # ComfyUI Path
-        col = layout.column()
-        col.prop(utils.get_addon_preferences(context), 'comfyui_path', text="Comfy")
+        box = layout.box()
+        box.label(text="Addon Preferences")
+        box.prop(utils.get_addon_preferences(context), 'comfyui_path', text="Comfy")
 
         # ComfyUI Workflows Path
-        col.prop(utils.get_addon_preferences(context), 'workflows_path', text="Workflows")
+        box.prop(utils.get_addon_preferences(context), 'workflows_path', text="Workflows")
 
         # Open ComfyUI workflow, input and output folder operator
-        row = layout.row()
-        row.operator(operators.AIR_OT_open_comfyui_workflow_folder.bl_idname, text="Workflow Folder")
-        row.operator(operators.AIR_OT_open_comfyui_input_folder.bl_idname, text="Input Folder")
-        row.operator(operators.AIR_OT_open_comfyui_output_folder.bl_idname, text="Output Folder")
+        box = layout.box()
+        row = box.row()
+        row.operator("ai_render.open_comfyui_workflow_folder", text="Workflow Folder")  # Had to do this to fix the circular import error
+        row.operator("ai_render.open_comfyui_input_folder", text="Input Folder")  # Had to do this to fix the circular import error
+        row.operator("ai_render.open_comfyui_output_folder", text="Output Folder")  # Had to do this to fix the circular import error
 
         # ComfyUI Workflows
         row = layout.row()

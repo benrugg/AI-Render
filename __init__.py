@@ -32,6 +32,7 @@ if "bpy" in locals():
     imp.reload(stability_api)
     imp.reload(stablehorde_api)
     imp.reload(properties_comfy)
+    imp.reload(operators_comfyui)
     imp.reload(ui_panels_comfyui)
 else:
     from . import (
@@ -46,6 +47,7 @@ else:
         task_queue,
         utils,
         properties_comfy,
+        operators_comfyui,
     )
     from .ui import (
         ui_panels,
@@ -74,6 +76,7 @@ def register():
     ui_panels.register()
     ui_preset_styles.register()
     properties_comfy.register()
+    operators_comfyui.register()
     ui_panels_comfyui.register()
 
 
@@ -89,6 +92,7 @@ def unregister():
     ui_panels.unregister()
     ui_preset_styles.unregister()
     properties_comfy.unregister()
+    operators_comfyui.unregister()
     ui_panels_comfyui.unregister()
 
 
