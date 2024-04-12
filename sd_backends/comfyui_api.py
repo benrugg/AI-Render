@@ -347,15 +347,6 @@ def load_workflow(context, workflow_file):
         return json.load(file)
 
 
-def set_active_workflow(context, value):
-
-        if LOG_WORKFLOW:
-            print(Fore.WHITE + "\nLOG ACTIVE WORKFLOW:" + Fore.RESET)
-            print(value)
-
-        context.scene.comfyui_props.comfyui_active_workflow = value
-
-
 def get_active_workflow(context):
     return context.scene.comfyui_props.comfyui_active_workflow
 
@@ -709,7 +700,7 @@ def debug_log(response):
 # PUBLIC SUPPORT FUNCTIONS:
 
 def get_workflows_path(context):
-    return utils.get_addon_preferences().workflows_path
+    return utils.get_addon_preferences().comfyui_workflows_path
 
 
 def get_workflows():

@@ -116,8 +116,8 @@ class AIRPreferences(bpy.types.AddonPreferences):
         subtype="DIR_PATH",
     )
 
-    workflows_path: bpy.props.StringProperty(
-        name="Workflow Path",
+    comfyui_workflows_path: bpy.props.StringProperty(
+        name="Workflows Path",
         description="Path where the workflows are stored",
         default=utils.get_default_comfy_workflows_path(),
         subtype='DIR_PATH')

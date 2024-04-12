@@ -263,26 +263,15 @@ def get_available_workflows(self, context):
         return [("none", "None", "", 0)]
 
 
-def set_active_workflow(self, context):
-    if utils.sd_backend() == "comfyui":
-        comfyui_api.set_active_workflow(context, self.comfyui_workflows)
-    else:
-        return
-
-
 class AIRPropertiesComfyUI(bpy.types.PropertyGroup):
     comfyui_workflows: bpy.props.EnumProperty(
-        name="ComfyUI Workflows",
+        name="comfyui_workflows",
         default=1,
         items=get_available_workflows,
         description="A list of the available workflows in the path specified in the addon preferences",
-        update=set_active_workflow,
     )
-    comfyui_active_workflow: bpy.props.StringProperty(
-        name="Active Workflow",
-        default="",
-        description="The active workflow",
-    )
+    comfyui_nodes: bpy.props.CollectionProperty(
+        type=bpy.types.PropertyGroup)
 
 
 def get_filename_from_path(path):
@@ -344,10 +333,11 @@ def create_property_group_classes(json_data):
                 new_class_dict = {"__annotations__": annotations}
                 new_class = type(class_name, (bpy.types.PropertyGroup,), new_class_dict)
                 classes[class_name] = new_class
-                # print(Fore.GREEN + f"Created class {class_name}" + Fore.RESET)
-                # pprint(f"Created class {class_name} with properties: {new_class.__annotations__}")
+                print(Fore.GREEN + f"Created class {class_name}" + Fore.RESET)
+                pprint(new_class.__annotations__.keys())
 
     return classes
+
 
 def register_generated_classes(generated_classes):
     for cls_name, cl in generated_classes.items():
@@ -357,6 +347,7 @@ def register_generated_classes(generated_classes):
             # Create a PointerProperty for the class
             prop_name = cls_name.lower()
             setattr(AIRPropertiesComfyUI, prop_name, bpy.props.PointerProperty(type=cl))
+
 
 def unregister_generated_classes(generated_classes):
     for cls_name, cl in generated_classes.items():
@@ -368,16 +359,17 @@ def unregister_generated_classes(generated_classes):
             bpy.utils.unregister_class(cl)
             delattr(bpy.types, cls_name)
 
-generated_classes = create_property_group_classes(WORKFLOW_JSON)
+
+# generated_classes = create_property_group_classes(WORKFLOW_JSON)
 
 
 def register():
     bpy.utils.register_class(AIRPropertiesComfyUI)
     bpy.types.Scene.comfyui_props = bpy.props.PointerProperty(type=AIRPropertiesComfyUI)
-    register_generated_classes(generated_classes)
+    # register_generated_classes(generated_classes)
 
 
 def unregister():
-    unregister_generated_classes(generated_classes)
+    # unregister_generated_classes(generated_classes)
     bpy.utils.unregister_class(AIRPropertiesComfyUI)
     del bpy.types.Scene.comfyui_props

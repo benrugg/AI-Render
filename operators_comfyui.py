@@ -284,17 +284,17 @@ class AIR_OT_open_comfyui_output_folder(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class AIR_OT_open_comfyui_workflow_folder(bpy.types.Operator):
+class AIR_OT_open_comfyui_workflows_folder(bpy.types.Operator):
     "Open the workflow folder in the windows explorer or macOSfinder"
-    bl_idname = "ai_render.open_comfyui_workflow_folder"
+    bl_idname = "ai_render.open_comfyui_workflows_folder"
     bl_label = "Open Workflow Folder"
 
     def execute(self, context):
-        workflow_folder = get_addon_preferences().workflows_path
+        workflow_folder = get_addon_preferences().comfyui_workflows_path
         print(f"Opening folder: {workflow_folder}")
 
         if platform.system() == "Windows":
-            os.system(f'start "{workflow_folder}"')
+            os.system(f'explorer "{workflow_folder}"')
         elif platform.system() == "Darwin":
             os.system(f"open {workflow_folder}")
 
@@ -304,7 +304,7 @@ class AIR_OT_open_comfyui_workflow_folder(bpy.types.Operator):
 classes = [
     AIR_OT_open_comfyui_input_folder,
     AIR_OT_open_comfyui_output_folder,
-    AIR_OT_open_comfyui_workflow_folder
+    AIR_OT_open_comfyui_workflows_folder
 ]
 
 
