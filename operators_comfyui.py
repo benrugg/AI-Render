@@ -2,12 +2,8 @@ import os
 import platform
 import bpy
 
-from .utils import (
-    get_addon_preferences,
-    get_comfyui_input_path,
-    get_comfyui_output_path,
-
-)
+from . import utils
+from .sd_backends import comfyui_api
 
 from colorama import Fore
 
@@ -148,12 +144,12 @@ def normalpass2normalmap_node_group(context):
     return normalpass2normalmap
 
 
-def ensure_compositor_nodes(self, context):
+def ensure_compositor_nodes(context):
     """Ensure that use nodes is enabled and the compositor nodes are set up correctly"""
 
     print(Fore.YELLOW + "ENSURE COMPOSITOR NODES")
 
-    comfyui_input_path = get_comfyui_input_path(context)
+    comfyui_input_path = comfyui_api.get_comfyui_input_path(context)
     # Ensure that the render passes are enabled
     ensure_use_passes(context)
     ensure_film_transparent(context)
@@ -256,7 +252,7 @@ class AIR_OT_open_comfyui_input_folder(bpy.types.Operator):
     bl_label = "Open Output Folder"
 
     def execute(self, context):
-        input_folder = get_comfyui_input_path(context)
+        input_folder = comfyui_api.get_comfyui_input_path(context)
         print(f"Opening folder: {input_folder}")
 
         if platform.system() == "Windows":
@@ -273,7 +269,7 @@ class AIR_OT_open_comfyui_output_folder(bpy.types.Operator):
     bl_label = "Open Output Folder"
 
     def execute(self, context):
-        output_folder = get_comfyui_output_path(context)
+        output_folder = comfyui_api.get_comfyui_output_path(context)
         print(f"Opening folder: {output_folder}")
 
         if platform.system() == "Windows":
@@ -290,7 +286,7 @@ class AIR_OT_open_comfyui_workflows_folder(bpy.types.Operator):
     bl_label = "Open Workflow Folder"
 
     def execute(self, context):
-        workflow_folder = get_addon_preferences().comfyui_workflows_path
+        workflow_folder = utils.get_addon_preferences().comfyui_workflows_path
         print(f"Opening folder: {workflow_folder}")
 
         if platform.system() == "Windows":

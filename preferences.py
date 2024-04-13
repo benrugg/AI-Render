@@ -1,4 +1,5 @@
 import bpy
+import os
 from . import (
     addon_updater_ops,
     config,
@@ -6,6 +7,11 @@ from . import (
     properties,
     utils,
 )
+
+
+def get_default_comfy_workflows_path():
+    workflows_path = os.path.join(os.path.dirname(__file__), "sd_backends", "comfyui", "workflows_api")
+    return workflows_path
 
 
 class AIRPreferences(bpy.types.AddonPreferences):
@@ -119,7 +125,7 @@ class AIRPreferences(bpy.types.AddonPreferences):
     comfyui_workflows_path: bpy.props.StringProperty(
         name="Workflows Path",
         description="Path where the workflows are stored",
-        default=utils.get_default_comfy_workflows_path(),
+        default=get_default_comfy_workflows_path(),
         subtype='DIR_PATH')
 
     def draw(self, context):
@@ -257,7 +263,6 @@ class AIRPreferences(bpy.types.AddonPreferences):
                 row.prop(self, "comfyui_path")
                 row = box.row()
                 row.prop(self, "workflows_path")
-
 
             # Notes
             box = layout.box()

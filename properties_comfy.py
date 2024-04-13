@@ -9,14 +9,14 @@ from colorama import Fore
 WORKFLOW_JSON = {
     "3": {
         "inputs": {
-            "seed": 925732691918506,
+            "seed": 265216098348317,
             "steps": 5,
             "cfg": 2,
             "sampler_name": "dpmpp_sde_gpu",
             "scheduler": "karras",
             "denoise": 1,
             "model": [
-                "4",
+                "26",
                 0
             ],
             "positive": [
@@ -39,7 +39,7 @@ WORKFLOW_JSON = {
     },
     "4": {
         "inputs": {
-            "ckpt_name": "SD15\\28DSTABLEBESTVERSION_v6.safetensors"
+            "ckpt_name": "SD15\\openjourney-v2.ckpt"
         },
         "class_type": "CheckpointLoaderSimple",
         "_meta": {
@@ -50,7 +50,7 @@ WORKFLOW_JSON = {
         "inputs": {
             "text": "positive",
             "clip": [
-                "4",
+                "26",
                 1
             ]
         },
@@ -63,7 +63,7 @@ WORKFLOW_JSON = {
         "inputs": {
             "text": "negative",
             "clip": [
-                "4",
+                "26",
                 1
             ]
         },
@@ -138,7 +138,7 @@ WORKFLOW_JSON = {
     },
     "13": {
         "inputs": {
-            "strength": 1,
+            "strength": 1.1,
             "start_percent": 0,
             "end_percent": 1,
             "positive": [
@@ -228,29 +228,23 @@ WORKFLOW_JSON = {
             "title": "normal"
         }
     },
-    "22": {
+    "26": {
         "inputs": {
-            "resolution": 512,
-            "image": [
-                "12",
+            "lora_name": "SD15\\AS style_Mechanical disc.safetensors",
+            "strength_model": 1,
+            "strength_clip": 1,
+            "model": [
+                "4",
                 0
+            ],
+            "clip": [
+                "4",
+                1
             ]
         },
-        "class_type": "BAE-NormalMapPreprocessor",
+        "class_type": "LoraLoader",
         "_meta": {
-            "title": "BAE Normal Map"
-        }
-    },
-    "25": {
-        "inputs": {
-            "images": [
-                "22",
-                0
-            ]
-        },
-        "class_type": "PreviewImage",
-        "_meta": {
-            "title": "Preview Image"
+            "title": "Load LoRA"
         }
     }
 }
@@ -258,7 +252,7 @@ WORKFLOW_JSON = {
 
 def get_available_workflows(self, context):
     if utils.sd_backend() == "comfyui":
-        return comfyui_api.get_workflows()
+        return comfyui_api.create_workflows_tuples()
     else:
         return [("none", "None", "", 0)]
 
@@ -269,13 +263,18 @@ def get_filename_from_path(path):
 
 
 def create_property_group_classes(json_data):
+
     classes = {}
     controls = {}
 
+    print(Fore.YELLOW + "CREATING CLASSES" + Fore.RESET)
+
+    # Searcg for ControlNetLoader classes and store their names
     for key, val in json_data.items():
         if val["class_type"] == "ControlNetLoader":
             controls[key] = get_filename_from_path(val["inputs"]["control_net_name"])
 
+    # Create classes for ControlNetApplyAdvanced
     for key, val in json_data.items():
         if val["class_type"] == "ControlNetApplyAdvanced" and "control_net" in val["inputs"]:
             control_net_key = val["inputs"]["control_net"][0]
@@ -315,8 +314,7 @@ def create_property_group_classes(json_data):
                 new_class_dict = {"__annotations__": annotations}
                 new_class = type(class_name, (bpy.types.PropertyGroup,), new_class_dict)
                 classes[class_name] = new_class
-                print(Fore.GREEN + f"Created class {class_name}" + Fore.RESET)
-                pprint(new_class.__annotations__.keys())
+                print(Fore.GREEN + f"Created class {class_name}" + Fore.RESET, new_class.__annotations__.keys())
 
     return classes
 
@@ -343,23 +341,32 @@ def unregister_generated_classes(generated_classes):
 
 
 def create_property_from_workflow(self, context):
-    print(Fore.GREEN + f"Selected workflow: {self.comfyui_workflows}" + Fore.RESET)
 
-    # generated_classes = create_property_group_classes(WORKFLOW_JSON)
+    # Create the file parh for the selected workflow
+    comfyui_workflows_path = utils.get_addon_preferences(context).comfyui_workflows_path
+    workflow_name = self.comfyui_workflow
+    workflow_filepath = os.path.join(comfyui_workflows_path, workflow_name)
+
+    json_workflow = comfyui_api.load_workflow(context, workflow_filepath)
+
+    generated_classes = create_property_group_classes(json_workflow)
     # unregister_generated_classes(generated_classes)
-    # register_generated_classes(generated_classes)
+    register_generated_classes(generated_classes)
 
 
 class AIRPropertiesComfyUI(bpy.types.PropertyGroup):
-    comfyui_workflows: bpy.props.EnumProperty(
-        name="comfyui_workflows",
+    comfyui_workflow: bpy.props.EnumProperty(
+        name="comfyui_workflow",
         default=1,
         items=get_available_workflows,
         description="A list of the available workflows in the path specified in the addon preferences",
         update=create_property_from_workflow
     )
     comfyui_nodes: bpy.props.CollectionProperty(
-        type=bpy.types.PropertyGroup)
+        type=bpy.types.PropertyGroup,
+        name="comfyui_nodes",
+        description="Nodes in the selected workflow"
+    )
 
 
 def register():

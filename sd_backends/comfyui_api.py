@@ -347,10 +347,6 @@ def load_workflow(context, workflow_file):
         return json.load(file)
 
 
-def get_active_workflow(context):
-    return context.scene.comfyui_props.comfyui_active_workflow
-
-
 def upload_image(img_file, subfolder):
     """Upload the image to the input folder of ComfyUI"""
 
@@ -433,7 +429,7 @@ def map_params(params, workflow_json):
     updated_workflow_json = map_param_to_workflow(params, workflow_json)
 
     # Save mapped json to local file
-    with open('sd_backends/comfyui/_mapped.json', 'w') as f:
+    with open('sd_backends/comfyui/example_api_mapped.json', 'w') as f:
         json.dump(updated_workflow_json, f, indent=4)
 
     if LOG_MAPPED_JSON:
@@ -454,14 +450,14 @@ def generate(params, img_file, filename_prefix, props, comfyui_props):
     selected_workflow = load_workflow(bpy.context, comfyui_props.comfyui_workflow)
 
     if LOG_WORKFLOW:
-        print(f"{Fore.LIGHTWHITE_EX}\nLOG WORKFLOW: {Fore.RESET}{get_active_workflow(bpy.context)}")
+        print(f"{Fore.LIGHTWHITE_EX}\nLOG WORKFLOW: {Fore.RESET}{1(bpy.context)}")
         pprint.pp(selected_workflow)
 
     params["denoising_strength"] = round(1 - params["image_similarity"], 4)
     params["sampler_index"] = params["sampler"]
 
     # Get the input path of local ComfyUI
-    comfyui_input_path = utils.get_comfyui_input_path(bpy.context)
+    comfyui_input_path = get_comfyui_input_path(bpy.context)
 
     # get the frame number for the filename
     frame_number = bpy.context.scene.frame_current
@@ -672,13 +668,23 @@ def get_workflows_path(context):
     return utils.get_addon_preferences().comfyui_workflows_path
 
 
-def get_workflows():
+def create_workflows_tuples():
     workflows_path = get_workflows_path(bpy.context)
     workflow_files = [f for f in os.listdir(workflows_path) if os.path.isfile(
         os.path.join(workflows_path, f)) and f.endswith(".json")]
-    workflow_tuples = [(f, f, "", i) for i, f in enumerate(workflow_files)]
+    workflows_tuples = [(f, f, "", i) for i, f in enumerate(workflow_files)]
 
-    return workflow_tuples
+    return workflows_tuples
+
+
+def get_comfyui_input_path(context):
+    comfyui_path = utils.get_addon_preferences(context).comfyui_path
+    return comfyui_path + "input/"
+
+
+def get_comfyui_output_path(context):
+    comfyui_path = utils.get_addon_preferences(context).comfyui_path
+    return comfyui_path + "output/"
 
 
 def get_models():

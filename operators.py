@@ -235,10 +235,14 @@ def do_pre_render_setup(scene):
     # mute the legacy compositor node group, if it exists
     mute_legacy_compositor_node_group(scene)
 
-    # ensure the compositor nodes are set up correctly
-    # This is not necessary every render, Initially I put it here because
-    # I supposed to be able to change the node_tree.nodes["normal_file_output"].base_path
-    ensure_compositor_nodes(None, bpy.context)
+    # ensure the compositor nodes are set up correctly to send color,
+    # depth, and normal data to comfyui.
+
+    # It seems that it is not possible to change the base_path of the
+    # file output node, cause it takes only the path and saves the file
+    # with the name of 'Image0001' and the extension of the file format.
+    if utils.sd_backend() == "comfyui":
+        ensure_compositor_nodes(bpy.context)
 
 
 def do_pre_api_setup(scene):

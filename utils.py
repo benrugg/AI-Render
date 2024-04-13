@@ -527,20 +527,5 @@ def show_invalid_installation_message(layout, width):
     box = layout.box()
     box.label(text="Installation Error:")
 
-    label_multiline(box, text=f"It looks like this add-on wasn't installed correctly. Please remove it and get a new copy. [Get AI Render]({config.ADDON_DOWNLOAD_URL})", icon="ERROR", alert=True, width=width)
-
-
-# COMFY UI
-
-def get_default_comfy_workflows_path():
-    workflows_path = os.path.join(os.path.dirname(__file__),"sd_backends", "comfyui", "workflows")
-    return workflows_path
-
-def get_comfyui_input_path(context):
-    comfyui_path = get_addon_preferences(context).comfyui_path
-    return comfyui_path + "input/"
-
-def get_comfyui_output_path(context):
-    comfyui_path = get_addon_preferences(context).comfyui_path
-    return comfyui_path + "output/"
-
+    label_multiline(
+        box, text=f"It looks like this add-on wasn't installed correctly. Please remove it and get a new copy. [Get AI Render]({config.ADDON_DOWNLOAD_URL})", icon="ERROR", alert=True, width=width)

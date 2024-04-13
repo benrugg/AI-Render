@@ -9,6 +9,8 @@ from .ui import ui_preset_styles
 from .sd_backends import automatic1111_api
 from .sd_backends import comfyui_api
 
+from colorama import Fore
+
 
 def get_available_samplers(self, context):
     return utils.get_active_backend().get_samplers()
@@ -71,7 +73,8 @@ def get_outpaint_directions(self, context):
 
 
 def ensure_sampler(context):
-    # """Ensure that the sampler is set to a valid value"""
+    """Ensure that the sampler is set to a valid value"""
+    print(Fore.GREEN + "ENSURE SAMPLER" + Fore.RESET)
     scene = context.scene
     if not scene.air_props.sampler:
         scene.air_props.sampler = get_default_sampler()
@@ -79,7 +82,7 @@ def ensure_sampler(context):
 
 def ensure_scheduler(context):
     # """Ensure that the scheduler is set to a valid value"""
-    print("ensure_scheduler")
+    print(Fore.GREEN + "ENSURE SCHEDULER" + Fore.RESET)
     if utils.sd_backend() == "comfyui":
         scene = context.scene
         if not scene.air_props.scheduler:
@@ -88,7 +91,7 @@ def ensure_scheduler(context):
 
 def ensure_upscaler_model(context):
     # """Ensure that the upscale model is set to a valid value"""
-    print("ensure_upscaler_model")
+    print(Fore.GREEN + "ENSURE UPSCALER MODEL" + Fore.RESET)
     scene = context.scene
     if (
         utils.get_active_backend().is_upscaler_model_list_loaded(context)
@@ -103,7 +106,8 @@ def update_local_sd_url(context):
     If is set to ComfyUI, the url is http://127.0.0.1:8188
     """
 
-    print("update_local_sd_url")
+    print(Fore.GREEN + "UPDATE LOCAL SD URL TO:" + Fore.RESET)
+    print(utils.sd_backend())
     addonprefs = utils.get_addon_preferences(context)
 
     if utils.sd_backend() == "automatic1111":
@@ -114,7 +118,7 @@ def update_local_sd_url(context):
 
 def ensure_properties(self, context):
     """Ensure that any properties which could change with a change in preferences are set to valid values"""
-    print("ensure_properties")
+    print(Fore.GREEN + "ENSURE PROPERTIES" + Fore.RESET)
     ensure_sampler(context)
     ensure_upscaler_model(context)
     update_local_sd_url(context)
@@ -188,7 +192,7 @@ class AIRProperties(bpy.types.PropertyGroup):
     )
     steps: bpy.props.IntProperty(
         name="Steps",
-        default=30,
+        default=15,
         soft_min=1,
         soft_max=50,
         min=1,
