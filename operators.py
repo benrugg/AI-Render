@@ -219,7 +219,7 @@ def load_image(filename, data_block_name=None):
     img_file = bpy.data.images.load(filename, check_existing=False)
     img_file.name = name
 
-    print(Fore.YELLOW + f"Loaded image: {filename}")
+    print(Fore.YELLOW + f"\nLOADED IMAGE: {filename}")
     return img_file
 
 

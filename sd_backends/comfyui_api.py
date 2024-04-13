@@ -12,15 +12,17 @@ from .. import (
 import pprint
 from colorama import Fore
 
+LOG_PROPS = True
+LOG_WORKFLOW = False
+LOG_PARAMS = True
+LOG_MAPPED_WORKFLOW = False
+
 LOG_REQUEST_TO = True
-LOG_RESPONSE_BODY = True
+LOG_RESPONSE = True
 LOG_HISTORY_RESPONSE = False
+
 LOG_UPLOAD_IMAGE = False
 LOG_DOWNLOAD_IMAGE = True
-LOG_PROPS = True
-LOG_PARAMS = True
-LOG_WORKFLOW = False
-LOG_MAPPED_JSON = False
 
 ORIGINAL_DATA = {
     "3": {
@@ -368,9 +370,9 @@ def upload_image(img_file, subfolder):
     except requests.exceptions.ReadTimeout:
         return operators.handle_error("The local Stable Diffusion server timed out. Set a longer timeout in AI Render preferences, or use a smaller image size.", "timeout")
 
-    if LOG_RESPONSE_BODY:
-        print(Fore.WHITE + "\nUPLOAD IMAGE RESPONSE OBJECT:" + Fore.RESET)
-        pprint.pp(resp.content)
+    # if LOG_RESPONSE:
+        # print(Fore.WHITE + "\nUPLOAD IMAGE RESPONSE:" + Fore.RESET)
+        # pprint.pp(resp.content)
 
     img_file.close()
 
@@ -422,8 +424,8 @@ def map_params(params, workflow):
     with open('sd_backends/comfyui/example_api_mapped.json', 'w') as f:
         json.dump(updated_workflow, f, indent=4)
 
-    if LOG_MAPPED_JSON:
-        print("\nLOG MAPPED JSON:")
+    if LOG_MAPPED_WORKFLOW:
+        print(Fore.WHITE + "\LOG_MAPPED_WORKFLOW:" + Fore.RESET)
         pprint.pp(updated_workflow)
 
     return updated_workflow
@@ -493,8 +495,8 @@ def handle_success(response, filename_prefix):
         response_obj = response.json()
         prompt_id = response_obj.get("prompt_id")
 
-        if LOG_RESPONSE_BODY:
-            print(Fore.WHITE + "\nPROMPT RESPONSE OBJECT: " + Fore.RESET)
+        if LOG_RESPONSE:
+            print(Fore.WHITE + "\nPROMPT RESPONSE: " + Fore.RESET)
             print(json.dumps(response_obj, indent=2))
             print(Fore.LIGHTWHITE_EX + "\nPROMPT ID: " + Fore.RESET + prompt_id)
 
@@ -529,7 +531,7 @@ def handle_success(response, filename_prefix):
                 if LOG_DOWNLOAD_IMAGE:
                     print(Fore.LIGHTWHITE_EX + "STATUS: " + Fore.RESET + status.get("status_str"))
                 if LOG_HISTORY_RESPONSE:
-                    print(Fore.WHITE + "\nHISTORY RESPONSE OBJECT: " + Fore.RESET)
+                    print(Fore.WHITE + "\nHISTORY RESPONSE: " + Fore.RESET)
                     print(json.dumps(response_obj, indent=2))
 
                 # Get the NODE NUMBER of the SaveImage node
