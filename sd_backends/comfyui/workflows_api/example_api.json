@@ -90,7 +90,7 @@
     },
     "class_type": "SaveImage",
     "_meta": {
-      "title": "Save Image"
+      "title": "output_image"
     }
   },
   "10": {

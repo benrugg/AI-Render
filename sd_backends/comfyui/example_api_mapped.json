@@ -1,7 +1,7 @@
 {
     "3": {
         "inputs": {
-            "seed": 1056103577,
+            "seed": 1601765370,
             "steps": 15,
             "cfg": 7.0,
             "sampler_name": "dpmpp_2m",
@@ -90,7 +90,7 @@
         },
         "class_type": "SaveImage",
         "_meta": {
-            "title": "Save Image"
+            "title": "output_image"
         }
     },
     "10": {

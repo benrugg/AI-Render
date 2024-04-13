@@ -468,29 +468,6 @@
       ]
     },
     {
-      "id": 27,
-      "type": "Note",
-      "pos": [
-        662,
-        193
-      ],
-      "size": [
-        502.6061492919919,
-        369.36840820312466
-      ],
-      "flags": {},
-      "order": 6,
-      "mode": 0,
-      "properties": {
-        "text": ""
-      },
-      "widgets_values": [
-        "Note that the following node title has been renamed from the Property Panel:\n\npositive\nnegative\n\ncolor\ndepth\nnormal\n\nmain_sampler\n\n\n\n\n\n"
-      ],
-      "color": "#432",
-      "bgcolor": "#653"
-    },
-    {
       "id": 6,
       "type": "CLIPTextEncode",
       "pos": [
@@ -573,32 +550,6 @@
       }
     },
     {
-      "id": 9,
-      "type": "SaveImage",
-      "pos": [
-        2285,
-        1
-      ],
-      "size": {
-        "0": 315,
-        "1": 270
-      },
-      "flags": {},
-      "order": 16,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "images",
-          "type": "IMAGE",
-          "link": 9
-        }
-      ],
-      "properties": {},
-      "widgets_values": [
-        "ComfyUI"
-      ]
-    },
-    {
       "id": 11,
       "type": "VAELoader",
       "pos": [
@@ -610,7 +561,7 @@
         60
       ],
       "flags": {},
-      "order": 7,
+      "order": 6,
       "mode": 0,
       "outputs": [
         {
@@ -732,6 +683,56 @@
       ],
       "color": "#323",
       "bgcolor": "#535"
+    },
+    {
+      "id": 9,
+      "type": "SaveImage",
+      "pos": [
+        2285,
+        1
+      ],
+      "size": {
+        "0": 315,
+        "1": 270
+      },
+      "flags": {},
+      "order": 16,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 9
+        }
+      ],
+      "title": "output_image",
+      "properties": {},
+      "widgets_values": [
+        "ComfyUI"
+      ]
+    },
+    {
+      "id": 27,
+      "type": "Note",
+      "pos": [
+        662,
+        193
+      ],
+      "size": [
+        502.6061492919919,
+        369.36840820312466
+      ],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "properties": {
+        "text": ""
+      },
+      "widgets_values": [
+        "Note that the following node title has been renamed from the Property Panel:\n\npositive\nnegative\n\ncolor\ndepth\nnormal\n\nmain_sampler\noutput_image\n\n\n"
+      ],
+      "color": "#432",
+      "bgcolor": "#653"
     }
   ],
   "links": [

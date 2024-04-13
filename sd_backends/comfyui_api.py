@@ -26,9 +26,9 @@ ORIGINAL_DATA = {
     "3": {
         "inputs": {
             "seed": 265216098348317,
-            "steps": 5,
-            "cfg": 2,
-            "sampler_name": "dpmpp_sde_gpu",
+            "steps": 10,
+            "cfg": 7.5,
+            "sampler_name": "dpmpp_2m_sde_gpu",
             "scheduler": "karras",
             "denoise": 1,
             "model": [
@@ -114,7 +114,7 @@ ORIGINAL_DATA = {
         },
         "class_type": "SaveImage",
         "_meta": {
-            "title": "Save Image"
+            "title": "output_image"
         }
     },
     "10": {
@@ -322,6 +322,7 @@ PARAM_TO_WORKFLOW = {
     }
 }
 
+
 # CORE FUNCTIONS:
 def load_workflow(context, workflow_file):
     workflow_path = os.path.join(get_workflows_path(context), workflow_file)
@@ -377,12 +378,16 @@ def upload_image(img_file, subfolder):
     return resp.json().get("name")
 
 
-def find_node_by_title(workflow, class_type, meta_title):
+def find_node_by_title(workflow: dict,
+                       class_type: str,
+                       meta_title: str):
     """Find the node key based on class_type and meta_title."""
+
     for key, value in workflow.items():
         if value['class_type'] == class_type:
             if value.get('_meta', {}).get('title') == meta_title:
                 return key
+
     return None
 
 
@@ -404,23 +409,24 @@ def map_param_to_workflow(params, workflow):
     return workflow
 
 
-def map_params(params, workflow_json):
+def map_params(params, workflow):
+    """Map the parameters to the workflow."""
 
     if LOG_PARAMS:
         print(Fore.WHITE + "\nLOG PARAMS:" + Fore.RESET)
         pprint.pp(params)
 
-    updated_workflow_json = map_param_to_workflow(params, workflow_json)
+    updated_workflow = map_param_to_workflow(params, workflow)
 
     # Save mapped json to local file
     with open('sd_backends/comfyui/example_api_mapped.json', 'w') as f:
-        json.dump(updated_workflow_json, f, indent=4)
+        json.dump(updated_workflow, f, indent=4)
 
     if LOG_MAPPED_JSON:
         print("\nLOG MAPPED JSON:")
-        pprint.pp(updated_workflow_json)
+        pprint.pp(updated_workflow)
 
-    return updated_workflow_json
+    return updated_workflow
 
 
 def generate(params, img_file, filename_prefix, props, comfyui_props):
@@ -456,9 +462,6 @@ def generate(params, img_file, filename_prefix, props, comfyui_props):
     params['color_image'] = color_image_path
     params['depth_image'] = depth_image_path
     params['normal_image'] = normal_image_path
-
-    # params['comfyui_controlnet_depth_strength'] = comfyui_props.comfyui_controlnet_depth_strength
-    # params['comfyui_controlnet_normal_strength'] = comfyui_props.comfyui_controlnet_normal_strength
 
     # map the params to the ComfyUI nodes
     json_obj = map_params(params, selected_workflow)
@@ -507,7 +510,7 @@ def handle_success(response, filename_prefix):
     server_url = get_server_url(f"/history/{prompt_id}")
 
     while not status_completed:
-        # print(Fore.WHITE + "\nREQUEST TO: " + server_url)
+        print(Fore.WHITE + "\nREQUEST TO: " + server_url)
 
         response = requests.get(server_url, headers=create_headers(), timeout=utils.local_sd_timeout())
         response_obj = response.json()
@@ -530,12 +533,14 @@ def handle_success(response, filename_prefix):
                     print(json.dumps(response_obj, indent=2))
 
                 # Get the NODE NUMBER of the SaveImage node
+
                 save_image_node = None
                 for item in response_obj[prompt_id]["prompt"]:
                     if isinstance(item, dict):
                         for key, value in item.items():
                             if value.get("class_type") == "SaveImage":
                                 save_image_node = key
+                                break
 
                 if LOG_DOWNLOAD_IMAGE:
                     print(Fore.LIGHTWHITE_EX + "IMAGE NODE_NUMBER: " + Fore.RESET + save_image_node)
