@@ -326,7 +326,8 @@ PARAM_TO_WORKFLOW = {
 
 
 # CORE FUNCTIONS:
-def load_workflow(context, workflow_file):
+def load_workflow(context, workflow_file) -> dict:
+    """ Given the context and the workflow file name, load the workflow JSON. and output it as a dictionary."""
     workflow_path = os.path.join(get_workflows_path(context), workflow_file)
 
     try:

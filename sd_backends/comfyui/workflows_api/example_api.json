@@ -1,7 +1,7 @@
 {
   "3": {
     "inputs": {
-      "seed": 265216098348317,
+      "seed": 819306520081733,
       "steps": 10,
       "cfg": 7.5,
       "sampler_name": "dpmpp_2m_sde_gpu",
@@ -221,6 +221,25 @@
     }
   },
   "26": {
+    "inputs": {
+      "lora_name": "SD15\\epiNoiseoffset_v2-pynoise.safetensors",
+      "strength_model": 1,
+      "strength_clip": 1,
+      "model": [
+        "28",
+        0
+      ],
+      "clip": [
+        "28",
+        1
+      ]
+    },
+    "class_type": "LoraLoader",
+    "_meta": {
+      "title": "Load LoRA"
+    }
+  },
+  "28": {
     "inputs": {
       "lora_name": "SD15\\add_detail.safetensors",
       "strength_model": 1,

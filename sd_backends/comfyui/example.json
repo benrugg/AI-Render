@@ -1,6 +1,6 @@
 {
-  "last_node_id": 27,
-  "last_link_id": 45,
+  "last_node_id": 28,
+  "last_link_id": 49,
   "nodes": [
     {
       "id": 16,
@@ -9,12 +9,12 @@
         1020,
         -280
       ],
-      "size": [
-        483.2697305908189,
-        166
-      ],
+      "size": {
+        "0": 483.2697448730469,
+        "1": 166
+      },
       "flags": {},
-      "order": 13,
+      "order": 14,
       "mode": 0,
       "inputs": [
         {
@@ -70,59 +70,18 @@
       ]
     },
     {
-      "id": 15,
-      "type": "LoadImage",
-      "pos": [
-        520,
-        -560
-      ],
-      "size": [
-        450.67130003906163,
-        236.9879264088737
-      ],
-      "flags": {},
-      "order": 0,
-      "mode": 0,
-      "outputs": [
-        {
-          "name": "IMAGE",
-          "type": "IMAGE",
-          "links": [
-            17
-          ],
-          "shape": 3
-        },
-        {
-          "name": "MASK",
-          "type": "MASK",
-          "links": null,
-          "shape": 3
-        }
-      ],
-      "title": "depth",
-      "properties": {
-        "Node name for S&R": "LoadImage"
-      },
-      "widgets_values": [
-        "castle-3dmodel-depth.png",
-        "image"
-      ],
-      "color": "#222",
-      "bgcolor": "#000"
-    },
-    {
       "id": 17,
       "type": "ControlNetLoader",
       "pos": [
         1020,
         -60
       ],
-      "size": [
-        480,
-        60
-      ],
+      "size": {
+        "0": 480,
+        "1": 60
+      },
       "flags": {},
-      "order": 1,
+      "order": 0,
       "mode": 0,
       "outputs": [
         {
@@ -148,12 +107,12 @@
         520,
         -60
       ],
-      "size": [
-        460,
-        60
-      ],
+      "size": {
+        "0": 460,
+        "1": 60
+      },
       "flags": {},
-      "order": 2,
+      "order": 1,
       "mode": 0,
       "outputs": [
         {
@@ -179,12 +138,12 @@
         520,
         -280
       ],
-      "size": [
-        454.2541144348131,
-        166
-      ],
+      "size": {
+        "0": 454.2541198730469,
+        "1": 166
+      },
       "flags": {},
-      "order": 12,
+      "order": 13,
       "mode": 0,
       "inputs": [
         {
@@ -240,145 +199,6 @@
       ]
     },
     {
-      "id": 18,
-      "type": "LoadImage",
-      "pos": [
-        1020,
-        -540
-      ],
-      "size": [
-        480,
-        220
-      ],
-      "flags": {},
-      "order": 3,
-      "mode": 0,
-      "outputs": [
-        {
-          "name": "IMAGE",
-          "type": "IMAGE",
-          "links": [
-            38
-          ],
-          "shape": 3,
-          "slot_index": 0
-        },
-        {
-          "name": "MASK",
-          "type": "MASK",
-          "links": null,
-          "shape": 3
-        }
-      ],
-      "title": "normal",
-      "properties": {
-        "Node name for S&R": "LoadImage"
-      },
-      "widgets_values": [
-        "castle-3dmodel-normal.png",
-        "image"
-      ],
-      "color": "#223",
-      "bgcolor": "#335"
-    },
-    {
-      "id": 12,
-      "type": "LoadImage",
-      "pos": [
-        1580,
-        -540
-      ],
-      "size": [
-        420,
-        220
-      ],
-      "flags": {},
-      "order": 4,
-      "mode": 0,
-      "outputs": [
-        {
-          "name": "IMAGE",
-          "type": "IMAGE",
-          "links": [
-            10
-          ],
-          "shape": 3
-        },
-        {
-          "name": "MASK",
-          "type": "MASK",
-          "links": null,
-          "shape": 3
-        }
-      ],
-      "title": "color",
-      "properties": {
-        "Node name for S&R": "LoadImage"
-      },
-      "widgets_values": [
-        "castel-3dscan-color.png",
-        "image"
-      ],
-      "color": "#233",
-      "bgcolor": "#355"
-    },
-    {
-      "id": 26,
-      "type": "LoraLoader",
-      "pos": [
-        -440,
-        60
-      ],
-      "size": {
-        "0": 404.10992431640625,
-        "1": 126
-      },
-      "flags": {},
-      "order": 8,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "model",
-          "type": "MODEL",
-          "link": 40
-        },
-        {
-          "name": "clip",
-          "type": "CLIP",
-          "link": 39
-        }
-      ],
-      "outputs": [
-        {
-          "name": "MODEL",
-          "type": "MODEL",
-          "links": [
-            41
-          ],
-          "shape": 3,
-          "slot_index": 0
-        },
-        {
-          "name": "CLIP",
-          "type": "CLIP",
-          "links": [
-            42,
-            43
-          ],
-          "shape": 3,
-          "slot_index": 1
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "LoraLoader"
-      },
-      "widgets_values": [
-        "SD15\\add_detail.safetensors",
-        1,
-        1
-      ]
-    },
-    {
       "id": 7,
       "type": "CLIPTextEncode",
       "pos": [
@@ -390,7 +210,7 @@
         "1": 200
       },
       "flags": {},
-      "order": 11,
+      "order": 12,
       "mode": 0,
       "inputs": [
         {
@@ -421,53 +241,6 @@
       "bgcolor": "#533"
     },
     {
-      "id": 4,
-      "type": "CheckpointLoaderSimple",
-      "pos": [
-        -1000,
-        60
-      ],
-      "size": {
-        "0": 513.502197265625,
-        "1": 122.61135864257812
-      },
-      "flags": {},
-      "order": 5,
-      "mode": 0,
-      "outputs": [
-        {
-          "name": "MODEL",
-          "type": "MODEL",
-          "links": [
-            40
-          ],
-          "shape": 3,
-          "slot_index": 0
-        },
-        {
-          "name": "CLIP",
-          "type": "CLIP",
-          "links": [
-            39
-          ],
-          "shape": 3,
-          "slot_index": 1
-        },
-        {
-          "name": "VAE",
-          "type": "VAE",
-          "links": [],
-          "shape": 3
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "CheckpointLoaderSimple"
-      },
-      "widgets_values": [
-        "v1-5-pruned-emaonly.safetensors"
-      ]
-    },
-    {
       "id": 6,
       "type": "CLIPTextEncode",
       "pos": [
@@ -479,7 +252,7 @@
         "1": 200
       },
       "flags": {},
-      "order": 10,
+      "order": 11,
       "mode": 0,
       "inputs": [
         {
@@ -516,12 +289,12 @@
         2060,
         0
       ],
-      "size": [
-        162.7178955078125,
-        46
-      ],
+      "size": {
+        "0": 162.7178955078125,
+        "1": 46
+      },
       "flags": {},
-      "order": 15,
+      "order": 16,
       "mode": 0,
       "inputs": [
         {
@@ -556,12 +329,12 @@
         1579,
         -264
       ],
-      "size": [
-        420,
-        60
-      ],
+      "size": {
+        "0": 420,
+        "1": 60
+      },
       "flags": {},
-      "order": 6,
+      "order": 2,
       "mode": 0,
       "outputs": [
         {
@@ -589,12 +362,12 @@
         2059,
         -282
       ],
-      "size": [
-        151.83784179687518,
-        46
-      ],
+      "size": {
+        "0": 151.8378448486328,
+        "1": 46
+      },
       "flags": {},
-      "order": 9,
+      "order": 8,
       "mode": 0,
       "inputs": [
         {
@@ -629,12 +402,12 @@
         1580,
         60
       ],
-      "size": [
-        418.7351265761499,
-        262
-      ],
+      "size": {
+        "0": 418.7351379394531,
+        "1": 262
+      },
       "flags": {},
-      "order": 14,
+      "order": 15,
       "mode": 0,
       "inputs": [
         {
@@ -673,7 +446,7 @@
         "Node name for S&R": "KSampler"
       },
       "widgets_values": [
-        265216098348317,
+        819306520081733,
         "randomize",
         10,
         7.5,
@@ -683,6 +456,29 @@
       ],
       "color": "#323",
       "bgcolor": "#535"
+    },
+    {
+      "id": 27,
+      "type": "Note",
+      "pos": [
+        662,
+        193
+      ],
+      "size": {
+        "0": 502.60614013671875,
+        "1": 369.368408203125
+      },
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "properties": {
+        "text": ""
+      },
+      "widgets_values": [
+        "Note that the following node title has been renamed from the Property Panel:\n\npositive\nnegative\n\ncolor\ndepth\nnormal\n\nmain_sampler\noutput_image\n\n\n"
+      ],
+      "color": "#432",
+      "bgcolor": "#653"
     },
     {
       "id": 9,
@@ -696,7 +492,7 @@
         "1": 270
       },
       "flags": {},
-      "order": 16,
+      "order": 17,
       "mode": 0,
       "inputs": [
         {
@@ -709,30 +505,291 @@
       "properties": {},
       "widgets_values": [
         "ComfyUI"
+      ],
+      "color": "#332922",
+      "bgcolor": "#593930"
+    },
+    {
+      "id": 15,
+      "type": "LoadImage",
+      "pos": [
+        520,
+        -560
+      ],
+      "size": {
+        "0": 440,
+        "1": 220
+      },
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            17
+          ],
+          "shape": 3
+        },
+        {
+          "name": "MASK",
+          "type": "MASK",
+          "links": null,
+          "shape": 3
+        }
+      ],
+      "title": "depth",
+      "properties": {
+        "Node name for S&R": "LoadImage"
+      },
+      "widgets_values": [
+        "castle-3dmodel-depth.png",
+        "image"
+      ],
+      "color": "#222",
+      "bgcolor": "#000"
+    },
+    {
+      "id": 18,
+      "type": "LoadImage",
+      "pos": [
+        1020,
+        -560
+      ],
+      "size": {
+        "0": 460,
+        "1": 220
+      },
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            38
+          ],
+          "shape": 3,
+          "slot_index": 0
+        },
+        {
+          "name": "MASK",
+          "type": "MASK",
+          "links": null,
+          "shape": 3
+        }
+      ],
+      "title": "normal",
+      "properties": {
+        "Node name for S&R": "LoadImage"
+      },
+      "widgets_values": [
+        "castle-3dmodel-normal.png",
+        "image"
+      ],
+      "color": "#223",
+      "bgcolor": "#335"
+    },
+    {
+      "id": 12,
+      "type": "LoadImage",
+      "pos": [
+        1580,
+        -560
+      ],
+      "size": {
+        "0": 420,
+        "1": 220
+      },
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            10
+          ],
+          "shape": 3
+        },
+        {
+          "name": "MASK",
+          "type": "MASK",
+          "links": null,
+          "shape": 3
+        }
+      ],
+      "title": "color",
+      "properties": {
+        "Node name for S&R": "LoadImage"
+      },
+      "widgets_values": [
+        "castel-3dscan-color.png",
+        "image"
+      ],
+      "color": "#233",
+      "bgcolor": "#355"
+    },
+    {
+      "id": 28,
+      "type": "LoraLoader",
+      "pos": [
+        -497,
+        -117
+      ],
+      "size": {
+        "0": 404.10992431640625,
+        "1": 126
+      },
+      "flags": {},
+      "order": 9,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 46
+        },
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 47
+        }
+      ],
+      "outputs": [
+        {
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [
+            48
+          ],
+          "shape": 3,
+          "slot_index": 0
+        },
+        {
+          "name": "CLIP",
+          "type": "CLIP",
+          "links": [
+            49
+          ],
+          "shape": 3,
+          "slot_index": 1
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "LoraLoader"
+      },
+      "widgets_values": [
+        "SD15\\add_detail.safetensors",
+        1,
+        1
       ]
     },
     {
-      "id": 27,
-      "type": "Note",
+      "id": 4,
+      "type": "CheckpointLoaderSimple",
       "pos": [
-        662,
-        193
+        -1110,
+        -118
       ],
-      "size": [
-        502.6061492919919,
-        369.36840820312466
-      ],
+      "size": {
+        "0": 513.502197265625,
+        "1": 122.61135864257812
+      },
       "flags": {},
       "order": 7,
       "mode": 0,
+      "outputs": [
+        {
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [
+            46
+          ],
+          "shape": 3,
+          "slot_index": 0
+        },
+        {
+          "name": "CLIP",
+          "type": "CLIP",
+          "links": [
+            47
+          ],
+          "shape": 3,
+          "slot_index": 1
+        },
+        {
+          "name": "VAE",
+          "type": "VAE",
+          "links": [],
+          "shape": 3
+        }
+      ],
       "properties": {
-        "text": ""
+        "Node name for S&R": "CheckpointLoaderSimple"
       },
       "widgets_values": [
-        "Note that the following node title has been renamed from the Property Panel:\n\npositive\nnegative\n\ncolor\ndepth\nnormal\n\nmain_sampler\noutput_image\n\n\n"
+        "v1-5-pruned-emaonly.safetensors"
+      ]
+    },
+    {
+      "id": 26,
+      "type": "LoraLoader",
+      "pos": [
+        -490,
+        56
       ],
-      "color": "#432",
-      "bgcolor": "#653"
+      "size": {
+        "0": 404.10992431640625,
+        "1": 126
+      },
+      "flags": {},
+      "order": 10,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 48
+        },
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 49
+        }
+      ],
+      "outputs": [
+        {
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [
+            41
+          ],
+          "shape": 3,
+          "slot_index": 0
+        },
+        {
+          "name": "CLIP",
+          "type": "CLIP",
+          "links": [
+            42,
+            43
+          ],
+          "shape": 3,
+          "slot_index": 1
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "LoraLoader"
+      },
+      "widgets_values": [
+        "SD15\\epiNoiseoffset_v2-pynoise.safetensors",
+        1,
+        1
+      ]
     }
   ],
   "links": [
@@ -857,22 +914,6 @@
       "IMAGE"
     ],
     [
-      39,
-      4,
-      1,
-      26,
-      1,
-      "CLIP"
-    ],
-    [
-      40,
-      4,
-      0,
-      26,
-      0,
-      "MODEL"
-    ],
-    [
       41,
       26,
       0,
@@ -903,6 +944,38 @@
       3,
       1,
       "CONDITIONING"
+    ],
+    [
+      46,
+      4,
+      0,
+      28,
+      0,
+      "MODEL"
+    ],
+    [
+      47,
+      4,
+      1,
+      28,
+      1,
+      "CLIP"
+    ],
+    [
+      48,
+      28,
+      0,
+      26,
+      0,
+      "MODEL"
+    ],
+    [
+      49,
+      28,
+      1,
+      26,
+      1,
+      "CLIP"
     ]
   ],
   "groups": [],

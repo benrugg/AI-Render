@@ -43,15 +43,26 @@ class AIR_PT_comfyui(bpy.types.Panel):
         row.separator()
 
         # Cycle all the PropertyGroups inside the comfyui_props
-        for prop in props.keys():
-            # if the property is a type PropertyGroup
-            if isinstance(getattr(props, prop), bpy.types.PropertyGroup):
-                # Access each property inside the PropertyGroup and display it in a box
-                box = layout.box()
-                box.label(text=prop)
-                for subprop in getattr(props, prop).__annotations__.items():
-                    # Create a row for each property inside the PropertyGroup
-                    box.prop(getattr(props, prop), subprop[0], text=subprop[0])
+        for prop in props.bl_rna.properties.items():
+            # Check if the property is a CollectionProperty
+            if prop[1].type == 'COLLECTION':
+                # Create a box for each CollectionProperty with all the items inside
+                main_box = layout.box()
+                main_row = main_box.row(align=True)
+                main_row.label(text=prop[0].upper().replace('_', ' ').replace('COMFYUI', ''),
+                               )
+
+                for item in getattr(props, prop[0]):
+                    box = main_box.box()
+                    box.scale_y = 1
+                    row = box.row()
+                    row.label(text=item.name, icon='NODE')
+                    for sub_prop in item.bl_rna.properties.items():
+                        if sub_prop[1].type == 'STRING' and sub_prop[0] != 'name':
+                            row.prop(item, sub_prop[0], text='', emboss=False)
+                        if sub_prop[1].type == 'FLOAT':
+                            col = box.column()
+                            col.prop(item, sub_prop[0], text=sub_prop[0], slider=True)
 
 
 classes = [
