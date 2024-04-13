@@ -25,18 +25,18 @@ LOG_MAPPED_JSON = False
 ORIGINAL_DATA = {
     "3": {
         "inputs": {
-            "seed": 925732691918506,
+            "seed": 265216098348317,
             "steps": 5,
             "cfg": 2,
             "sampler_name": "dpmpp_sde_gpu",
             "scheduler": "karras",
             "denoise": 1,
             "model": [
-                "4",
+                "26",
                 0
             ],
             "positive": [
-                "13",
+                "16",
                 0
             ],
             "negative": [
@@ -50,12 +50,12 @@ ORIGINAL_DATA = {
         },
         "class_type": "KSampler",
         "_meta": {
-            "title": "KSampler"
+            "title": "main_sampler"
         }
     },
     "4": {
         "inputs": {
-            "ckpt_name": "SD15\\28DSTABLEBESTVERSION_v6.safetensors"
+            "ckpt_name": "v1-5-pruned-emaonly.safetensors"
         },
         "class_type": "CheckpointLoaderSimple",
         "_meta": {
@@ -66,7 +66,7 @@ ORIGINAL_DATA = {
         "inputs": {
             "text": "positive",
             "clip": [
-                "4",
+                "26",
                 1
             ]
         },
@@ -79,7 +79,7 @@ ORIGINAL_DATA = {
         "inputs": {
             "text": "negative",
             "clip": [
-                "4",
+                "26",
                 1
             ]
         },
@@ -244,29 +244,23 @@ ORIGINAL_DATA = {
             "title": "normal"
         }
     },
-    "22": {
+    "26": {
         "inputs": {
-            "resolution": 512,
-            "image": [
-                "12",
+            "lora_name": "SD15\\add_detail.safetensors",
+            "strength_model": 1,
+            "strength_clip": 1,
+            "model": [
+                "4",
                 0
+            ],
+            "clip": [
+                "4",
+                1
             ]
         },
-        "class_type": "BAE-NormalMapPreprocessor",
+        "class_type": "LoraLoader",
         "_meta": {
-            "title": "BAE Normal Map"
-        }
-    },
-    "25": {
-        "inputs": {
-            "images": [
-                "22",
-                0
-            ]
-        },
-        "class_type": "PreviewImage",
-        "_meta": {
-            "title": "Preview Image"
+            "title": "Load LoRA"
         }
     }
 }
@@ -274,32 +268,32 @@ PARAM_TO_WORKFLOW = {
     "seed": {
         "class_type": "KSampler",
         "input_key": "seed",
-        "meta_title": "KSampler"
+        "meta_title": "main_sampler"
     },
     "steps": {
         "class_type": "KSampler",
         "input_key": "steps",
-        "meta_title": "KSampler"
+        "meta_title": "main_sampler"
     },
     "cfg_scale": {
         "class_type": "KSampler",
         "input_key": "cfg",
-        "meta_title": "KSampler"
+        "meta_title": "main_sampler"
     },
     "sampler": {
         "class_type": "KSampler",
         "input_key": "sampler_name",
-        "meta_title": "KSampler"
+        "meta_title": "main_sampler"
     },
     "scheduler": {
         "class_type": "KSampler",
         "input_key": "scheduler",
-        "meta_title": "KSampler"
+        "meta_title": "main_sampler"
     },
     "denoising_strength": {
         "class_type": "KSampler",
         "input_key": "denoise",
-        "meta_title": "KSampler"
+        "meta_title": "main_sampler"
     },
     "prompt": {
         "class_type": "CLIPTextEncode",
@@ -325,37 +319,27 @@ PARAM_TO_WORKFLOW = {
         "class_type": "LoadImage",
         "input_key": "image",
         "meta_title": "normal"
-    },
-    "comfyui_controlnet_depth_strength": {
-        "class_type": "ControlNetApplyAdvanced",
-        "input_key": "strength",
-        "meta_title": "ControlNet"
-    },
-    "comfyui_controlnet_normal_strength": {
-        "class_type": "ControlNetApplyAdvanced",
-        "input_key": "strength",
-        "meta_title": "ControlNet"
-    },
+    }
 }
 
 # CORE FUNCTIONS:
-
-
 def load_workflow(context, workflow_file):
     workflow_path = os.path.join(get_workflows_path(context), workflow_file)
-    with open(workflow_path, 'r') as file:
-        return json.load(file)
+
+    try:
+        with open(workflow_path, 'r') as file:
+            return json.load(file)
+    except:
+        return operators.handle_error(f"Couldn't load the workflow file: {workflow_file}.", "workflow_file_not_found")
 
 
 def upload_image(img_file, subfolder):
     """Upload the image to the input folder of ComfyUI"""
+    # This function is here for future use if we decide to use a remote ComfyUI server.
 
     # At the moment we're not using this function:
     # ComfyUI is running local and we can render the image directly
-    # from Blender to the ComfyUI input path without the need to upload it.
-    # This function is here for future use if we decide to use a remote ComfyUI server.
-
-    # TODO: Create the logic to upload images to a remote ComfyUI server
+    # from Blender to the ComfyUI input path without the need to upload it through the API.
 
     # Get the image path from the name of _io.BufferedReader
     image_path = img_file.name
@@ -450,7 +434,7 @@ def generate(params, img_file, filename_prefix, props, comfyui_props):
     selected_workflow = load_workflow(bpy.context, comfyui_props.comfyui_workflow)
 
     if LOG_WORKFLOW:
-        print(f"{Fore.LIGHTWHITE_EX}\nLOG WORKFLOW: {Fore.RESET}{1(bpy.context)}")
+        print(f"{Fore.LIGHTWHITE_EX}\nLOG WORKFLOW: {Fore.RESET}{(bpy.context)}")
         pprint.pp(selected_workflow)
 
     params["denoising_strength"] = round(1 - params["image_similarity"], 4)
@@ -618,7 +602,6 @@ def handle_error(response):
 
 
 # PRIVATE SUPPORT FUNCTIONS:
-
 def create_headers():
     return {
         "User-Agent": f"Blender/{bpy.app.version_string}",
@@ -663,7 +646,6 @@ def debug_log(response):
 
 
 # PUBLIC SUPPORT FUNCTIONS:
-
 def get_workflows_path(context):
     return utils.get_addon_preferences().comfyui_workflows_path
 

@@ -357,7 +357,7 @@ def create_property_from_workflow(self, context):
 class AIRPropertiesComfyUI(bpy.types.PropertyGroup):
     comfyui_workflow: bpy.props.EnumProperty(
         name="comfyui_workflow",
-        default=1,
+        default=0,
         items=get_available_workflows,
         description="A list of the available workflows in the path specified in the addon preferences",
         update=create_property_from_workflow

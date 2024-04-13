@@ -2,9 +2,9 @@
   "3": {
     "inputs": {
       "seed": 265216098348317,
-      "steps": 5,
-      "cfg": 2,
-      "sampler_name": "dpmpp_sde_gpu",
+      "steps": 10,
+      "cfg": 7.5,
+      "sampler_name": "dpmpp_2m_sde_gpu",
       "scheduler": "karras",
       "denoise": 1,
       "model": [
@@ -12,7 +12,7 @@
         0
       ],
       "positive": [
-        "13",
+        "16",
         0
       ],
       "negative": [
@@ -26,12 +26,12 @@
     },
     "class_type": "KSampler",
     "_meta": {
-      "title": "KSampler"
+      "title": "main_sampler"
     }
   },
   "4": {
     "inputs": {
-      "ckpt_name": "SD15\\openjourney-v2.ckpt"
+      "ckpt_name": "v1-5-pruned-emaonly.safetensors"
     },
     "class_type": "CheckpointLoaderSimple",
     "_meta": {
@@ -130,7 +130,7 @@
   },
   "13": {
     "inputs": {
-      "strength": 1.1,
+      "strength": 1,
       "start_percent": 0,
       "end_percent": 1,
       "positive": [
@@ -222,7 +222,7 @@
   },
   "26": {
     "inputs": {
-      "lora_name": "SD15\\AS style_Mechanical disc.safetensors",
+      "lora_name": "SD15\\add_detail.safetensors",
       "strength_model": 1,
       "strength_clip": 1,
       "model": [
