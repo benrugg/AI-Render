@@ -1,12 +1,12 @@
 {
     "3": {
         "inputs": {
-            "seed": 1601765370,
+            "seed": 1535986351,
             "steps": 15,
             "cfg": 7.0,
             "sampler_name": "dpmpp_2m",
             "scheduler": "normal",
-            "denoise": 0.6,
+            "denoise": 1.0,
             "model": [
                 "26",
                 0
@@ -40,7 +40,7 @@
     },
     "6": {
         "inputs": {
-            "text": "",
+            "text": "a rainbow glass ice cube . ethereal, heavenly, expansive, iridescent, lens flare, psychedelic",
             "clip": [
                 "26",
                 1
@@ -120,7 +120,7 @@
     },
     "12": {
         "inputs": {
-            "image": "E:/COMFY/ComfyUI/input/color/Image0001.png",
+            "image": "E:/COMFY/ComfyUI/input/color/Image0030.png",
             "upload": "image"
         },
         "class_type": "LoadImage",
@@ -130,9 +130,9 @@
     },
     "13": {
         "inputs": {
-            "strength": 1,
-            "start_percent": 0,
-            "end_percent": 1,
+            "strength": 1.0,
+            "start_percent": 0.0,
+            "end_percent": 1.0,
             "positive": [
                 "6",
                 0
@@ -166,7 +166,7 @@
     },
     "15": {
         "inputs": {
-            "image": "E:/COMFY/ComfyUI/input/depth/Image0001.png",
+            "image": "E:/COMFY/ComfyUI/input/depth/Image0030.png",
             "upload": "image"
         },
         "class_type": "LoadImage",
@@ -176,9 +176,9 @@
     },
     "16": {
         "inputs": {
-            "strength": 1,
-            "start_percent": 0,
-            "end_percent": 1,
+            "strength": 0.0,
+            "start_percent": 0.0,
+            "end_percent": 1.0,
             "positive": [
                 "13",
                 0
@@ -212,7 +212,7 @@
     },
     "18": {
         "inputs": {
-            "image": "E:/COMFY/ComfyUI/input/normal/Image0001.png",
+            "image": "E:/COMFY/ComfyUI/input/normal/Image0030.png",
             "upload": "image"
         },
         "class_type": "LoadImage",
@@ -222,9 +222,28 @@
     },
     "26": {
         "inputs": {
+            "lora_name": "SD15\\epiNoiseoffset_v2-pynoise.safetensors",
+            "strength_model": 1.0,
+            "strength_clip": 1.0,
+            "model": [
+                "28",
+                0
+            ],
+            "clip": [
+                "28",
+                1
+            ]
+        },
+        "class_type": "LoraLoader",
+        "_meta": {
+            "title": "Load LoRA"
+        }
+    },
+    "28": {
+        "inputs": {
             "lora_name": "SD15\\add_detail.safetensors",
-            "strength_model": 1,
-            "strength_clip": 1,
+            "strength_model": 1.0,
+            "strength_clip": 1.0,
             "model": [
                 "4",
                 0

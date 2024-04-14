@@ -14,7 +14,7 @@ from colorama import Fore
 
 LOG_PROPS = True
 LOG_WORKFLOW = False
-LOG_PARAMS = True
+LOG_PARAMS = False
 LOG_MAPPED_WORKFLOW = False
 
 LOG_REQUEST_TO = True
@@ -22,12 +22,12 @@ LOG_RESPONSE = True
 LOG_HISTORY_RESPONSE = False
 
 LOG_UPLOAD_IMAGE = False
-LOG_DOWNLOAD_IMAGE = True
+LOG_DOWNLOAD_IMAGE = False
 
 ORIGINAL_DATA = {
     "3": {
         "inputs": {
-            "seed": 265216098348317,
+            "seed": 819306520081733,
             "steps": 10,
             "cfg": 7.5,
             "sampler_name": "dpmpp_2m_sde_gpu",
@@ -248,6 +248,25 @@ ORIGINAL_DATA = {
     },
     "26": {
         "inputs": {
+            "lora_name": "SD15\\epiNoiseoffset_v2-pynoise.safetensors",
+            "strength_model": 1,
+            "strength_clip": 1,
+            "model": [
+                "28",
+                0
+            ],
+            "clip": [
+                "28",
+                1
+            ]
+        },
+        "class_type": "LoraLoader",
+        "_meta": {
+            "title": "Load LoRA"
+        }
+    },
+    "28": {
+        "inputs": {
             "lora_name": "SD15\\add_detail.safetensors",
             "strength_model": 1,
             "strength_clip": 1,
@@ -328,8 +347,8 @@ PARAM_TO_WORKFLOW = {
 # CORE FUNCTIONS:
 def load_workflow(context, workflow_file) -> dict:
     """ Given the context and the workflow file name, load the workflow JSON. and output it as a dictionary."""
-    workflow_path = os.path.join(get_workflows_path(context), workflow_file)
 
+    workflow_path = os.path.join(get_workflows_path(context), workflow_file)
     try:
         with open(workflow_path, 'r') as file:
             return json.load(file)
@@ -341,8 +360,8 @@ def upload_image(img_file, subfolder):
     """Upload the image to the input folder of ComfyUI"""
     # This function is here for future use if we decide to use a remote ComfyUI server.
 
-    # At the moment we're not using this function:
-    # ComfyUI is running local and we can render the image directly
+    # At the moment we're not using it:
+    # ComfyUI is running locally and we can render the image directly
     # from Blender to the ComfyUI input path without the need to upload it through the API.
 
     # Get the image path from the name of _io.BufferedReader
@@ -396,8 +415,9 @@ def find_node_by_title(workflow: dict,
 
 def map_param_to_workflow(params, workflow):
     """Map parameters to the appropriate nodes in the workflow JSON."""
+
     for param_name, param_info in PARAM_TO_WORKFLOW.items():
-        # Continue only if the parameter is in the params dictionary
+        # Check if the parameter is in the params dictionary
         if param_name in params:
             class_type = param_info["class_type"]
             input_key = param_info["input_key"]
@@ -419,17 +439,165 @@ def map_params(params, workflow):
         print(Fore.WHITE + "\nLOG PARAMS:" + Fore.RESET)
         pprint.pp(params)
 
-    updated_workflow = map_param_to_workflow(params, workflow)
+    mapped_workflow = map_param_to_workflow(params, workflow)
+
+    return mapped_workflow
+
+
+def map_comfy_props(comfyui_props, workflow):
+    """Map the ComfyUI properties to the workflow."""
+
+    # Original data (worlflow) is a dictionary
+    # {
+    #     "26": {
+    #         "inputs": {
+    #             "lora_name": "SD15\\epiNoiseoffset_v2-pynoise.safetensors",
+    #             "strength_model": 1,
+    #             "strength_clip": 1,
+    #             "model": [
+    #                 "28",
+    #                 0
+    #             ],
+    #             "clip": [
+    #                 "28",
+    #                 1
+    #             ]
+    #         },
+    #         "class_type": "LoraLoader",
+    #         "_meta": {
+    #             "title": "Load LoRA"
+    #         }
+    #     },
+    #     "28": {
+    #         "inputs": {
+    #             "lora_name": "SD15\\add_detail.safetensors",
+    #             "strength_model": 1,
+    #             "strength_clip": 1,
+    #             "model": [
+    #                 "4",
+    #                 0
+    #             ],
+    #             "clip": [
+    #                 "4",
+    #                 1
+    #             ]
+    #         },
+    #     },
+    #     "13": {
+    #         "inputs": {
+    #             "strength": 1,
+    #             "start_percent": 0,
+    #             "end_percent": 1,
+    #             "positive": [
+    #                 "6",
+    #                 0
+    #             ],
+    #             "negative": [
+    #                 "7",
+    #                 0
+    #             ],
+    #             "control_net": [
+    #                 "14",
+    #                 0
+    #             ],
+    #             "image": [
+    #                 "15",
+    #                 0
+    #             ]
+    #         },
+    #         "class_type": "ControlNetApplyAdvanced",
+    #         "_meta": {
+    #             "title": "Apply ControlNet (Advanced)"
+    #         }
+    #     },
+    #     "16": {
+    #         "inputs": {
+    #             "strength": 1,
+    #             "start_percent": 0,
+    #             "end_percent": 1,
+    #             "positive": [
+    #                 "13",
+    #                 0
+    #             ],
+    #             "negative": [
+    #                 "13",
+    #                 1
+    #             ],
+    #             "control_net": [
+    #                 "17",
+    #                 0
+    #             ],
+    #             "image": [
+    #                 "18",
+    #                 0
+    #             ]
+    #         },
+    #         "class_type": "ControlNetApplyAdvanced",
+    #         "_meta": {
+    #             "title": "Apply ControlNet (Advanced)"
+    #         }
+    #     },
+    # }
+
+    # Result of the print:
+    # LOG COMFYUI PROPS:
+    # 26
+    # rna_type <bpy_struct, Struct("ComfyUILoraNode") at 0x0000021B173A5448>
+    # name 26
+    # lora_name SD15\epiNoiseoffset_v2-pynoise.safetensors
+    # strength_model 1.0
+    # strength_clip 1.0
+
+    # 28
+    # rna_type <bpy_struct, Struct("ComfyUILoraNode") at 0x0000021B173A5448>
+    # name 28
+    # lora_name SD15\add_detail.safetensors
+    # strength_model 1.0
+    # strength_clip 1.0
+
+    # 13
+    # rna_type <bpy_struct, Struct("ComfyUIControlNetNode") at 0x0000021B173A4488>
+    # name 13
+    # control_net_name SD15\control_v11\control_v11f1p_sd15_depth.pth
+    # strength 1.0
+    # start_percent 0.0
+    # end_percent 1.0
+
+    # 16
+    # rna_type <bpy_struct, Struct("ComfyUIControlNetNode") at 0x0000021B173A4488>
+    # name 16
+    # control_net_name SD15\control_v11\control_v11p_sd15_normalbae.pth
+    # strength 1.0
+    # start_percent 0.0
+    # end_percent 1.0
+
+    updated_workflow = workflow
+
+    print(Fore.WHITE + "\nLOG COMFYUI PROPS:" + Fore.RESET)
+    for prop in comfyui_props.bl_rna.properties.items():
+        if prop[1].type == 'COLLECTION':
+            for item in getattr(comfyui_props, prop[0]):
+                node_key = item.name
+                for sub_prop in item.bl_rna.properties.items():
+                    # print(sub_prop[0] + Fore.RESET, getattr(item, sub_prop[0]))
+                    # Access the updated workflow at node_key and change in the inputs only if key exists
+
+                    if sub_prop[0] in updated_workflow[node_key]["inputs"]:
+                        updated_workflow[node_key]["inputs"][sub_prop[0]] = getattr(item, sub_prop[0])
+                        print(f"Updated workflow at node_key: {node_key} with {sub_prop[0]}: {getattr(item, sub_prop[0])}")
+                print()
+
+
+    if LOG_MAPPED_WORKFLOW:
+        print(Fore.WHITE + "\nLOG_MAPPED_WORKFLOW:" + Fore.RESET)
+        print(type(updated_workflow))
+        pprint.pp(updated_workflow)
 
     # Save mapped json to local file
     with open('sd_backends/comfyui/example_api_mapped.json', 'w') as f:
         json.dump(updated_workflow, f, indent=4)
 
-    if LOG_MAPPED_WORKFLOW:
-        print(Fore.WHITE + "\LOG_MAPPED_WORKFLOW:" + Fore.RESET)
-        pprint.pp(updated_workflow)
-
-    return updated_workflow
+    return workflow
 
 
 def generate(params, img_file, filename_prefix, props, comfyui_props):
@@ -467,8 +635,12 @@ def generate(params, img_file, filename_prefix, props, comfyui_props):
     params['normal_image'] = normal_image_path
 
     # map the params to the ComfyUI nodes
-    json_obj = map_params(params, selected_workflow)
-    data = {"prompt": json_obj}
+    mapped_workflow = map_params(params, selected_workflow)
+
+    # Add additional comfyUI param mappings here
+    updated_workflow = map_comfy_props(comfyui_props, mapped_workflow)
+
+    data = {"prompt": updated_workflow}
 
     # prepare the server url
     try:
