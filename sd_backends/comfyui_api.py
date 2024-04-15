@@ -447,130 +447,6 @@ def map_params(params, workflow):
 def map_comfy_props(comfyui_props, workflow):
     """Map the ComfyUI properties to the workflow."""
 
-    # Original data (worlflow) is a dictionary
-    # {
-    #     "26": {
-    #         "inputs": {
-    #             "lora_name": "SD15\\epiNoiseoffset_v2-pynoise.safetensors",
-    #             "strength_model": 1,
-    #             "strength_clip": 1,
-    #             "model": [
-    #                 "28",
-    #                 0
-    #             ],
-    #             "clip": [
-    #                 "28",
-    #                 1
-    #             ]
-    #         },
-    #         "class_type": "LoraLoader",
-    #         "_meta": {
-    #             "title": "Load LoRA"
-    #         }
-    #     },
-    #     "28": {
-    #         "inputs": {
-    #             "lora_name": "SD15\\add_detail.safetensors",
-    #             "strength_model": 1,
-    #             "strength_clip": 1,
-    #             "model": [
-    #                 "4",
-    #                 0
-    #             ],
-    #             "clip": [
-    #                 "4",
-    #                 1
-    #             ]
-    #         },
-    #     },
-    #     "13": {
-    #         "inputs": {
-    #             "strength": 1,
-    #             "start_percent": 0,
-    #             "end_percent": 1,
-    #             "positive": [
-    #                 "6",
-    #                 0
-    #             ],
-    #             "negative": [
-    #                 "7",
-    #                 0
-    #             ],
-    #             "control_net": [
-    #                 "14",
-    #                 0
-    #             ],
-    #             "image": [
-    #                 "15",
-    #                 0
-    #             ]
-    #         },
-    #         "class_type": "ControlNetApplyAdvanced",
-    #         "_meta": {
-    #             "title": "Apply ControlNet (Advanced)"
-    #         }
-    #     },
-    #     "16": {
-    #         "inputs": {
-    #             "strength": 1,
-    #             "start_percent": 0,
-    #             "end_percent": 1,
-    #             "positive": [
-    #                 "13",
-    #                 0
-    #             ],
-    #             "negative": [
-    #                 "13",
-    #                 1
-    #             ],
-    #             "control_net": [
-    #                 "17",
-    #                 0
-    #             ],
-    #             "image": [
-    #                 "18",
-    #                 0
-    #             ]
-    #         },
-    #         "class_type": "ControlNetApplyAdvanced",
-    #         "_meta": {
-    #             "title": "Apply ControlNet (Advanced)"
-    #         }
-    #     },
-    # }
-
-    # Result of the print:
-    # LOG COMFYUI PROPS:
-    # 26
-    # rna_type <bpy_struct, Struct("ComfyUILoraNode") at 0x0000021B173A5448>
-    # name 26
-    # lora_name SD15\epiNoiseoffset_v2-pynoise.safetensors
-    # strength_model 1.0
-    # strength_clip 1.0
-
-    # 28
-    # rna_type <bpy_struct, Struct("ComfyUILoraNode") at 0x0000021B173A5448>
-    # name 28
-    # lora_name SD15\add_detail.safetensors
-    # strength_model 1.0
-    # strength_clip 1.0
-
-    # 13
-    # rna_type <bpy_struct, Struct("ComfyUIControlNetNode") at 0x0000021B173A4488>
-    # name 13
-    # control_net_name SD15\control_v11\control_v11f1p_sd15_depth.pth
-    # strength 1.0
-    # start_percent 0.0
-    # end_percent 1.0
-
-    # 16
-    # rna_type <bpy_struct, Struct("ComfyUIControlNetNode") at 0x0000021B173A4488>
-    # name 16
-    # control_net_name SD15\control_v11\control_v11p_sd15_normalbae.pth
-    # strength 1.0
-    # start_percent 0.0
-    # end_percent 1.0
-
     updated_workflow = workflow
 
     print(Fore.WHITE + "\nLOG COMFYUI PROPS:" + Fore.RESET)
@@ -579,9 +455,7 @@ def map_comfy_props(comfyui_props, workflow):
             for item in getattr(comfyui_props, prop[0]):
                 node_key = item.name
                 for sub_prop in item.bl_rna.properties.items():
-                    # print(sub_prop[0] + Fore.RESET, getattr(item, sub_prop[0]))
                     # Access the updated workflow at node_key and change in the inputs only if key exists
-
                     if sub_prop[0] in updated_workflow[node_key]["inputs"]:
                         updated_workflow[node_key]["inputs"][sub_prop[0]] = getattr(item, sub_prop[0])
                         print(f"Updated workflow at node_key: {node_key} with {sub_prop[0]}: {getattr(item, sub_prop[0])}")
@@ -594,7 +468,9 @@ def map_comfy_props(comfyui_props, workflow):
         pprint.pp(updated_workflow)
 
     # Save mapped json to local file
-    with open('sd_backends/comfyui/example_api_mapped.json', 'w') as f:
+    workflow_path = utils.get_addon_preferences().comfyui_workflows_path
+    workflow_file_path = workflow_path + '/../example_api_mapped.json'
+    with open(workflow_file_path, 'w') as f:
         json.dump(updated_workflow, f, indent=4)
 
     return workflow
