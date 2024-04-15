@@ -84,7 +84,7 @@
     "inputs": {
       "filename_prefix": "ComfyUI",
       "images": [
-        "8",
+        "35",
         0
       ]
     },
@@ -329,6 +329,31 @@
     "class_type": "PrepImageForClipVision",
     "_meta": {
       "title": "Prep Image For ClipVision"
+    }
+  },
+  "34": {
+    "inputs": {
+      "model_name": "4x-UltraSharp.pth"
+    },
+    "class_type": "UpscaleModelLoader",
+    "_meta": {
+      "title": "Load Upscale Model"
+    }
+  },
+  "35": {
+    "inputs": {
+      "upscale_model": [
+        "34",
+        0
+      ],
+      "image": [
+        "8",
+        0
+      ]
+    },
+    "class_type": "ImageUpscaleWithModel",
+    "_meta": {
+      "title": "Upscale Image (using Model)"
     }
   }
 }
