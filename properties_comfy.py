@@ -117,6 +117,8 @@ def update_ckpt_name(self, context):
 
     # Update the ckpt_name property
     self.ckpt_name = selected_ckpt_name
+    context.scene.air_props.sd_model = selected_ckpt_name
+
 
 class ComfyUICheckpointLoaderSimple(bpy.types.PropertyGroup):
     ckpt_name: bpy.props.StringProperty(

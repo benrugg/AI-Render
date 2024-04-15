@@ -931,8 +931,7 @@ def supports_negative_prompts():
 
 
 def supports_choosing_model():
-    # TODO: False until a get_models() function is implemented
-    return False
+    return True
 
 
 def supports_upscaling():

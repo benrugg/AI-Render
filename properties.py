@@ -26,7 +26,7 @@ def get_available_schedulers(self, context):
 def get_available_models(self, context):
     current_sd_backend = utils.sd_backend()
     if current_sd_backend == "comfyui" and comfyui_api.supports_choosing_model():
-        return comfyui_api.get_models()
+        return comfyui_api.create_ckpts_tuples()
     else:
         return [
             ("stable-diffusion-xl-1024-v1-0", "SDXL 1.0", "", 120),
@@ -201,7 +201,7 @@ class AIRProperties(bpy.types.PropertyGroup):
     )
     sd_model: bpy.props.EnumProperty(
         name="Stable Diffusion Model",
-        default=120,
+        default=0,
         items=get_available_models,
         description="The Stable Diffusion model to use. SDXL is comparable to Midjourney. Older versions have now been removed, but newer versions may be added in the future",
     )
