@@ -159,14 +159,26 @@ class AIR_PT_setup(bpy.types.Panel):
             row.separator()
             row.operator(operators.AIR_OT_disable.bl_idname, text="Disable AI Render")
 
-            col = layout.column()
-            col.label(text="Backend")
-            col.prop(utils.get_addon_preferences(context), "sd_backend", text="")
-            col.separator()
+            box = layout.box()
+            box.label(text="Addon Preferences")
 
-            col.label(text="Local SD URL")
-            col.prop(utils.get_addon_preferences(context), "local_sd_url", text="")
-            col.separator()
+            row = box.row()
+            row.prop(utils.get_addon_preferences(context), "sd_backend", text="")
+            row.prop(utils.get_addon_preferences(context), "local_sd_url", text="")
+
+            # ComfyUI Path
+            box.prop(utils.get_addon_preferences(context), 'comfyui_path', text="Comfy")
+
+            # ComfyUI Workflows Path
+            box.prop(utils.get_addon_preferences(context), 'comfyui_workflows_path', text="Workflows")
+
+            # Open ComfyUI workflow, input and output folder operator
+            box = layout.box()
+            row = box.row()
+            row.operator("ai_render.open_comfyui_workflows_folder", text="Workflow Folder")  # Had to do this to fix the circular import error
+            row.operator("ai_render.open_comfyui_input_folder", text="Input Folder")  # Had to do this to fix the circular import error
+            row.operator("ai_render.open_comfyui_output_folder", text="Output Folder")  # Had to do this to fix the circular import error
+
 
 
 class AIR_PT_prompt(bpy.types.Panel):
@@ -702,13 +714,13 @@ classes = [
     AIR_PT_main,
     AIR_PT_setup,
     AIR_PT_prompt,
-    AIR_PT_advanced_options,
     AIR_PT_controlnet,
     AIR_PT_operation,
     AIR_PT_upscale,
     AIR_PT_inpaint,
     AIR_PT_outpaint,
     AIR_PT_animation,
+    AIR_PT_advanced_options,
 ]
 
 

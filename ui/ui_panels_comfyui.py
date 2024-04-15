@@ -22,21 +22,6 @@ class AIR_PT_comfyui(bpy.types.Panel):
         scene = context.scene
         props = scene.comfyui_props
 
-        # ComfyUI Path
-        box = layout.box()
-        box.label(text="Addon Preferences")
-        box.prop(utils.get_addon_preferences(context), 'comfyui_path', text="Comfy")
-
-        # ComfyUI Workflows Path
-        box.prop(utils.get_addon_preferences(context), 'comfyui_workflows_path', text="Workflows")
-
-        # Open ComfyUI workflow, input and output folder operator
-        box = layout.box()
-        row = box.row()
-        row.operator("ai_render.open_comfyui_workflows_folder", text="Workflow Folder")  # Had to do this to fix the circular import error
-        row.operator("ai_render.open_comfyui_input_folder", text="Input Folder")  # Had to do this to fix the circular import error
-        row.operator("ai_render.open_comfyui_output_folder", text="Output Folder")  # Had to do this to fix the circular import error
-
         layout.separator(factor=2)
 
         # ComfyUI Workflows selector
@@ -47,7 +32,7 @@ class AIR_PT_comfyui(bpy.types.Panel):
 
         layout.separator(factor=1)
 
-        # Cycle all the PropertyGroups inside the comfyui_props
+        # Cycle all the Properties inside the comfyui_props
         for prop in props.bl_rna.properties.items():
             # Check if the property is a CollectionProperty
             if prop[1].type == 'COLLECTION':
@@ -55,31 +40,33 @@ class AIR_PT_comfyui(bpy.types.Panel):
                 main_box = layout.box()
                 main_row = main_box.row(align=True)
                 main_row.label(text=prop[0].upper().replace('_', ' ').replace('COMFYUI', ''), icon='COLLECTION_NEW')
+                main_row.prop(context.scene, 'expanded', text='', icon='TRIA_DOWN' if context.scene.expanded else 'TRIA_LEFT', emboss=False)
 
-                for item in getattr(props, prop[0]):
-                    box = main_box.box()
-                    box.scale_y = 1
-                    row = box.row()
-                    # Display the node number
-                    row.label(text=item.name, icon='NODE')
-                    for sub_prop in item.bl_rna.properties.items():
-                        if sub_prop[1].type == 'STRING' and sub_prop[0] != 'name':
-                            # Display the model name not editable as a string (emboss=False)
-                            row.prop(item, sub_prop[0], text='', emboss=False)
+                if context.scene.expanded:
+                    for item in getattr(props, prop[0]):
+                        box = main_box.box()
+                        box.scale_y = 1
+                        row = box.row()
+                        # Display the node number
+                        row.label(text=item.name, icon='NODE')
+                        for sub_prop in item.bl_rna.properties.items():
+                            if sub_prop[1].type == 'STRING' and sub_prop[0] != 'name':
+                                # Display the model name not editable as a string (emboss=False)
+                                row.prop(item, sub_prop[0], text='', emboss=False)
 
-                        elif sub_prop[1].type == 'ENUM':
-                            # Display the available enums. This can update the related strings
-                            row = box.row()
-                            row.prop(item, sub_prop[0], text="")
+                            elif sub_prop[1].type == 'ENUM':
+                                # Display the available enums. This can update the related strings
+                                row = box.row()
+                                row.prop(item, sub_prop[0], text="")
 
-                        elif sub_prop[1].type == 'FLOAT':
-                            col = box.column()
-                            col = col.split()
-                            col.label(text=sub_prop[0])
-                            col.use_property_split = True
-                            col.use_property_decorate = True
-                            # Display the available props
-                            col.prop(item, sub_prop[0], text='', expand=True)
+                            elif sub_prop[1].type == 'FLOAT':
+                                col = box.column()
+                                col = col.split()
+                                col.label(text=sub_prop[0])
+                                col.use_property_split = True
+                                col.use_property_decorate = True
+                                # Display the available props
+                                col.prop(item, sub_prop[0], text='', expand=True)
 
                 # Separator
                 layout.separator(factor=1)
@@ -91,10 +78,12 @@ classes = [
 
 
 def register():
+    bpy.types.Scene.expanded = bpy.props.BoolProperty(default=False)
     for cls in classes:
         bpy.utils.register_class(cls)
 
 
 def unregister():
+    del bpy.types.Scene.expanded
     for cls in classes:
         bpy.utils.unregister_class(cls)
