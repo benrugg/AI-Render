@@ -17,6 +17,8 @@ class AIR_PT_comfyui(bpy.types.Panel):
 
     def draw(self, context):
         layout = self.layout
+        layout.use_property_split = True
+        layout.use_property_decorate = False
         scene = context.scene
         props = scene.comfyui_props
 
@@ -35,12 +37,15 @@ class AIR_PT_comfyui(bpy.types.Panel):
         row.operator("ai_render.open_comfyui_input_folder", text="Input Folder")  # Had to do this to fix the circular import error
         row.operator("ai_render.open_comfyui_output_folder", text="Output Folder")  # Had to do this to fix the circular import error
 
-        # ComfyUI Workflows selector
-        row = layout.row()
-        row.label(text="Select Workflow")
-        row.prop(props, 'comfyui_workflow', text="")
+        layout.separator(factor=2)
 
-        row.separator()
+        # ComfyUI Workflows selector
+        row = layout.row(align=True, heading="Select Workflow")
+        # row.label(text=")
+        row.prop(props, 'comfyui_workflow', text="")
+        row.scale_y = 1.3
+
+        layout.separator(factor=1)
 
         # Cycle all the PropertyGroups inside the comfyui_props
         for prop in props.bl_rna.properties.items():
@@ -49,20 +54,35 @@ class AIR_PT_comfyui(bpy.types.Panel):
                 # Create a box for each CollectionProperty with all the items inside
                 main_box = layout.box()
                 main_row = main_box.row(align=True)
-                main_row.label(text=prop[0].upper().replace('_', ' ').replace('COMFYUI', ''),
-                               )
+                main_row.label(text=prop[0].upper().replace('_', ' ').replace('COMFYUI', ''), icon='COLLECTION_NEW')
 
                 for item in getattr(props, prop[0]):
                     box = main_box.box()
                     box.scale_y = 1
                     row = box.row()
+                    # Display the node number
                     row.label(text=item.name, icon='NODE')
                     for sub_prop in item.bl_rna.properties.items():
                         if sub_prop[1].type == 'STRING' and sub_prop[0] != 'name':
+                            # Display the model name not editable as a string (emboss=False)
                             row.prop(item, sub_prop[0], text='', emboss=False)
-                        if sub_prop[1].type == 'FLOAT':
+
+                        elif sub_prop[1].type == 'ENUM':
+                            # Display the available enums. This can update the related strings
+                            row = box.row()
+                            row.prop(item, sub_prop[0], text="")
+
+                        elif sub_prop[1].type == 'FLOAT':
                             col = box.column()
-                            col.prop(item, sub_prop[0], text=sub_prop[0], slider=True)
+                            col = col.split()
+                            col.label(text=sub_prop[0])
+                            col.use_property_split = True
+                            col.use_property_decorate = True
+                            # Display the available props
+                            col.prop(item, sub_prop[0], text='', expand=True)
+
+                # Separator
+                layout.separator(factor=1)
 
 
 classes = [
