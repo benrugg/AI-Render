@@ -1,6 +1,6 @@
 {
-  "last_node_id": 28,
-  "last_link_id": 49,
+  "last_node_id": 33,
+  "last_link_id": 55,
   "nodes": [
     {
       "id": 16,
@@ -14,7 +14,7 @@
         "1": 166
       },
       "flags": {},
-      "order": 14,
+      "order": 19,
       "mode": 0,
       "inputs": [
         {
@@ -143,7 +143,7 @@
         "1": 166
       },
       "flags": {},
-      "order": 13,
+      "order": 18,
       "mode": 0,
       "inputs": [
         {
@@ -210,7 +210,7 @@
         "1": 200
       },
       "flags": {},
-      "order": 12,
+      "order": 17,
       "mode": 0,
       "inputs": [
         {
@@ -252,7 +252,7 @@
         "1": 200
       },
       "flags": {},
-      "order": 11,
+      "order": 16,
       "mode": 0,
       "inputs": [
         {
@@ -294,7 +294,7 @@
         "1": 46
       },
       "flags": {},
-      "order": 16,
+      "order": 21,
       "mode": 0,
       "inputs": [
         {
@@ -367,7 +367,7 @@
         "1": 46
       },
       "flags": {},
-      "order": 8,
+      "order": 11,
       "mode": 0,
       "inputs": [
         {
@@ -407,7 +407,7 @@
         "1": 262
       },
       "flags": {},
-      "order": 15,
+      "order": 20,
       "mode": 0,
       "inputs": [
         {
@@ -492,7 +492,7 @@
         "1": 270
       },
       "flags": {},
-      "order": 17,
+      "order": 22,
       "mode": 0,
       "inputs": [
         {
@@ -516,10 +516,10 @@
         520,
         -560
       ],
-      "size": {
-        "0": 440,
-        "1": 220
-      },
+      "size": [
+        440,
+        314
+      ],
       "flags": {},
       "order": 4,
       "mode": 0,
@@ -557,10 +557,10 @@
         1020,
         -560
       ],
-      "size": {
-        "0": 460,
-        "1": 220
-      },
+      "size": [
+        460,
+        314
+      ],
       "flags": {},
       "order": 5,
       "mode": 0,
@@ -599,10 +599,10 @@
         1580,
         -560
       ],
-      "size": {
-        "0": 420,
-        "1": 220
-      },
+      "size": [
+        420,
+        314
+      ],
       "flags": {},
       "order": 6,
       "mode": 0,
@@ -645,13 +645,13 @@
         "1": 126
       },
       "flags": {},
-      "order": 9,
+      "order": 14,
       "mode": 0,
       "inputs": [
         {
           "name": "model",
           "type": "MODEL",
-          "link": 46
+          "link": 55
         },
         {
           "name": "clip",
@@ -683,56 +683,9 @@
         "Node name for S&R": "LoraLoader"
       },
       "widgets_values": [
-        "SD15\\add_detail.safetensors",
+        "SD15\\Mermaids.safetensors",
         1,
         1
-      ]
-    },
-    {
-      "id": 4,
-      "type": "CheckpointLoaderSimple",
-      "pos": [
-        -1110,
-        -118
-      ],
-      "size": {
-        "0": 513.502197265625,
-        "1": 122.61135864257812
-      },
-      "flags": {},
-      "order": 7,
-      "mode": 0,
-      "outputs": [
-        {
-          "name": "MODEL",
-          "type": "MODEL",
-          "links": [
-            46
-          ],
-          "shape": 3,
-          "slot_index": 0
-        },
-        {
-          "name": "CLIP",
-          "type": "CLIP",
-          "links": [
-            47
-          ],
-          "shape": 3,
-          "slot_index": 1
-        },
-        {
-          "name": "VAE",
-          "type": "VAE",
-          "links": [],
-          "shape": 3
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "CheckpointLoaderSimple"
-      },
-      "widgets_values": [
-        "v1-5-pruned-emaonly.safetensors"
       ]
     },
     {
@@ -747,7 +700,7 @@
         "1": 126
       },
       "flags": {},
-      "order": 10,
+      "order": 15,
       "mode": 0,
       "inputs": [
         {
@@ -786,9 +739,269 @@
         "Node name for S&R": "LoraLoader"
       },
       "widgets_values": [
-        "SD15\\epiNoiseoffset_v2-pynoise.safetensors",
+        "SD15\\Robotic_Jackal-ish.safetensors",
         1,
         1
+      ]
+    },
+    {
+      "id": 29,
+      "type": "LoadImage",
+      "pos": [
+        -860,
+        -620
+      ],
+      "size": {
+        "0": 315,
+        "1": 314
+      },
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            53
+          ],
+          "shape": 3,
+          "slot_index": 0
+        },
+        {
+          "name": "MASK",
+          "type": "MASK",
+          "links": null,
+          "shape": 3
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "LoadImage"
+      },
+      "widgets_values": [
+        "image (6).png",
+        "image"
+      ]
+    },
+    {
+      "id": 32,
+      "type": "CLIPVisionLoader",
+      "pos": [
+        -860,
+        -740
+      ],
+      "size": {
+        "0": 438.8739013671875,
+        "1": 58
+      },
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "outputs": [
+        {
+          "name": "CLIP_VISION",
+          "type": "CLIP_VISION",
+          "links": [
+            52
+          ],
+          "shape": 3
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "CLIPVisionLoader"
+      },
+      "widgets_values": [
+        "CLIP-ViT-H-14-laion2B-s32B-b79K.safetensors"
+      ]
+    },
+    {
+      "id": 33,
+      "type": "PrepImageForClipVision",
+      "pos": [
+        -520,
+        -620
+      ],
+      "size": {
+        "0": 315,
+        "1": 106
+      },
+      "flags": {},
+      "order": 12,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "link": 53
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            51
+          ],
+          "shape": 3,
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "PrepImageForClipVision"
+      },
+      "widgets_values": [
+        "LANCZOS",
+        "top",
+        0.15
+      ]
+    },
+    {
+      "id": 31,
+      "type": "IPAdapterModelLoader",
+      "pos": [
+        -860,
+        -840
+      ],
+      "size": {
+        "0": 440,
+        "1": 60
+      },
+      "flags": {},
+      "order": 9,
+      "mode": 0,
+      "outputs": [
+        {
+          "name": "IPADAPTER",
+          "type": "IPADAPTER",
+          "links": [
+            50
+          ],
+          "shape": 3
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "IPAdapterModelLoader"
+      },
+      "widgets_values": [
+        "ip-adapter-plus_sd15.safetensors"
+      ]
+    },
+    {
+      "id": 4,
+      "type": "CheckpointLoaderSimple",
+      "pos": [
+        -1110,
+        -118
+      ],
+      "size": {
+        "0": 513.502197265625,
+        "1": 122.61135864257812
+      },
+      "flags": {},
+      "order": 10,
+      "mode": 0,
+      "outputs": [
+        {
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [
+            54
+          ],
+          "shape": 3,
+          "slot_index": 0
+        },
+        {
+          "name": "CLIP",
+          "type": "CLIP",
+          "links": [
+            47
+          ],
+          "shape": 3,
+          "slot_index": 1
+        },
+        {
+          "name": "VAE",
+          "type": "VAE",
+          "links": [],
+          "shape": 3
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "CheckpointLoaderSimple"
+      },
+      "widgets_values": [
+        "SD15\\3D\\3dAnimationDiffusion_lcm.safetensors"
+      ]
+    },
+    {
+      "id": 30,
+      "type": "IPAdapterAdvanced",
+      "pos": [
+        -160,
+        -840
+      ],
+      "size": {
+        "0": 315,
+        "1": 278
+      },
+      "flags": {},
+      "order": 13,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 54
+        },
+        {
+          "name": "ipadapter",
+          "type": "IPADAPTER",
+          "link": 50,
+          "slot_index": 1
+        },
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "link": 51
+        },
+        {
+          "name": "image_negative",
+          "type": "IMAGE",
+          "link": null
+        },
+        {
+          "name": "attn_mask",
+          "type": "MASK",
+          "link": null
+        },
+        {
+          "name": "clip_vision",
+          "type": "CLIP_VISION",
+          "link": 52,
+          "slot_index": 5
+        }
+      ],
+      "outputs": [
+        {
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [
+            55
+          ],
+          "shape": 3,
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "IPAdapterAdvanced"
+      },
+      "widgets_values": [
+        0,
+        "linear",
+        "concat",
+        0,
+        1,
+        "V only"
       ]
     }
   ],
@@ -946,14 +1159,6 @@
       "CONDITIONING"
     ],
     [
-      46,
-      4,
-      0,
-      28,
-      0,
-      "MODEL"
-    ],
-    [
       47,
       4,
       1,
@@ -976,6 +1181,54 @@
       26,
       1,
       "CLIP"
+    ],
+    [
+      50,
+      31,
+      0,
+      30,
+      1,
+      "IPADAPTER"
+    ],
+    [
+      51,
+      33,
+      0,
+      30,
+      2,
+      "IMAGE"
+    ],
+    [
+      52,
+      32,
+      0,
+      30,
+      5,
+      "CLIP_VISION"
+    ],
+    [
+      53,
+      29,
+      0,
+      33,
+      0,
+      "IMAGE"
+    ],
+    [
+      54,
+      4,
+      0,
+      30,
+      0,
+      "MODEL"
+    ],
+    [
+      55,
+      30,
+      0,
+      28,
+      0,
+      "MODEL"
     ]
   ],
   "groups": [],

@@ -31,7 +31,7 @@
   },
   "4": {
     "inputs": {
-      "ckpt_name": "v1-5-pruned-emaonly.safetensors"
+      "ckpt_name": "SD15\\3D\\3dAnimationDiffusion_lcm.safetensors"
     },
     "class_type": "CheckpointLoaderSimple",
     "_meta": {
@@ -222,7 +222,7 @@
   },
   "26": {
     "inputs": {
-      "lora_name": "SD15\\epiNoiseoffset_v2-pynoise.safetensors",
+      "lora_name": "SD15\\Robotic_Jackal-ish.safetensors",
       "strength_model": 1,
       "strength_clip": 1,
       "model": [
@@ -241,11 +241,11 @@
   },
   "28": {
     "inputs": {
-      "lora_name": "SD15\\add_detail.safetensors",
+      "lora_name": "SD15\\Mermaids.safetensors",
       "strength_model": 1,
       "strength_clip": 1,
       "model": [
-        "4",
+        "30",
         0
       ],
       "clip": [
@@ -256,6 +256,79 @@
     "class_type": "LoraLoader",
     "_meta": {
       "title": "Load LoRA"
+    }
+  },
+  "29": {
+    "inputs": {
+      "image": "image (6).png",
+      "upload": "image"
+    },
+    "class_type": "LoadImage",
+    "_meta": {
+      "title": "Load Image"
+    }
+  },
+  "30": {
+    "inputs": {
+      "weight": 0,
+      "weight_type": "linear",
+      "combine_embeds": "concat",
+      "start_at": 0,
+      "end_at": 1,
+      "embeds_scaling": "V only",
+      "model": [
+        "4",
+        0
+      ],
+      "ipadapter": [
+        "31",
+        0
+      ],
+      "image": [
+        "33",
+        0
+      ],
+      "clip_vision": [
+        "32",
+        0
+      ]
+    },
+    "class_type": "IPAdapterAdvanced",
+    "_meta": {
+      "title": "IPAdapter Advanced"
+    }
+  },
+  "31": {
+    "inputs": {
+      "ipadapter_file": "ip-adapter-plus_sd15.safetensors"
+    },
+    "class_type": "IPAdapterModelLoader",
+    "_meta": {
+      "title": "IPAdapter Model Loader"
+    }
+  },
+  "32": {
+    "inputs": {
+      "clip_name": "CLIP-ViT-H-14-laion2B-s32B-b79K.safetensors"
+    },
+    "class_type": "CLIPVisionLoader",
+    "_meta": {
+      "title": "Load CLIP Vision"
+    }
+  },
+  "33": {
+    "inputs": {
+      "interpolation": "LANCZOS",
+      "crop_position": "top",
+      "sharpening": 0.15,
+      "image": [
+        "29",
+        0
+      ]
+    },
+    "class_type": "PrepImageForClipVision",
+    "_meta": {
+      "title": "Prep Image For ClipVision"
     }
   }
 }

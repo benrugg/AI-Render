@@ -1,12 +1,12 @@
 {
     "3": {
         "inputs": {
-            "seed": 1535986351,
-            "steps": 15,
-            "cfg": 7.0,
-            "sampler_name": "dpmpp_2m",
-            "scheduler": "normal",
-            "denoise": 1.0,
+            "seed": 819306520081733,
+            "steps": 10,
+            "cfg": 7.5,
+            "sampler_name": "dpmpp_2m_sde_gpu",
+            "scheduler": "karras",
+            "denoise": 1,
             "model": [
                 "26",
                 0
@@ -31,7 +31,7 @@
     },
     "4": {
         "inputs": {
-            "ckpt_name": "v1-5-pruned-emaonly.safetensors"
+            "ckpt_name": "SD15\\3D\\3dAnimationDiffusion_lcm.safetensors"
         },
         "class_type": "CheckpointLoaderSimple",
         "_meta": {
@@ -40,7 +40,7 @@
     },
     "6": {
         "inputs": {
-            "text": "a rainbow glass ice cube . ethereal, heavenly, expansive, iridescent, lens flare, psychedelic",
+            "text": "positive",
             "clip": [
                 "26",
                 1
@@ -53,7 +53,7 @@
     },
     "7": {
         "inputs": {
-            "text": "ugly, bad art",
+            "text": "negative",
             "clip": [
                 "26",
                 1
@@ -120,7 +120,7 @@
     },
     "12": {
         "inputs": {
-            "image": "E:/COMFY/ComfyUI/input/color/Image0030.png",
+            "image": "castel-3dscan-color.png",
             "upload": "image"
         },
         "class_type": "LoadImage",
@@ -130,9 +130,9 @@
     },
     "13": {
         "inputs": {
-            "strength": 1.0,
-            "start_percent": 0.0,
-            "end_percent": 1.0,
+            "strength": 1,
+            "start_percent": 0,
+            "end_percent": 1,
             "positive": [
                 "6",
                 0
@@ -166,7 +166,7 @@
     },
     "15": {
         "inputs": {
-            "image": "E:/COMFY/ComfyUI/input/depth/Image0030.png",
+            "image": "castle-3dmodel-depth.png",
             "upload": "image"
         },
         "class_type": "LoadImage",
@@ -176,9 +176,9 @@
     },
     "16": {
         "inputs": {
-            "strength": 0.0,
-            "start_percent": 0.0,
-            "end_percent": 1.0,
+            "strength": 1,
+            "start_percent": 0,
+            "end_percent": 1,
             "positive": [
                 "13",
                 0
@@ -212,7 +212,7 @@
     },
     "18": {
         "inputs": {
-            "image": "E:/COMFY/ComfyUI/input/normal/Image0030.png",
+            "image": "castle-3dmodel-normal.png",
             "upload": "image"
         },
         "class_type": "LoadImage",
@@ -222,9 +222,9 @@
     },
     "26": {
         "inputs": {
-            "lora_name": "SD15\\epiNoiseoffset_v2-pynoise.safetensors",
-            "strength_model": 1.0,
-            "strength_clip": 1.0,
+            "lora_name": "SD15\\Robotic_Jackal-ish.safetensors",
+            "strength_model": 1,
+            "strength_clip": 1,
             "model": [
                 "28",
                 0
@@ -241,11 +241,11 @@
     },
     "28": {
         "inputs": {
-            "lora_name": "SD15\\add_detail.safetensors",
-            "strength_model": 1.0,
-            "strength_clip": 1.0,
+            "lora_name": "SD15\\Mermaids.safetensors",
+            "strength_model": 1,
+            "strength_clip": 1,
             "model": [
-                "4",
+                "30",
                 0
             ],
             "clip": [
@@ -256,6 +256,79 @@
         "class_type": "LoraLoader",
         "_meta": {
             "title": "Load LoRA"
+        }
+    },
+    "29": {
+        "inputs": {
+            "image": "image (6).png",
+            "upload": "image"
+        },
+        "class_type": "LoadImage",
+        "_meta": {
+            "title": "Load Image"
+        }
+    },
+    "30": {
+        "inputs": {
+            "weight": 0,
+            "weight_type": "linear",
+            "combine_embeds": "concat",
+            "start_at": 0,
+            "end_at": 1,
+            "embeds_scaling": "V only",
+            "model": [
+                "4",
+                0
+            ],
+            "ipadapter": [
+                "31",
+                0
+            ],
+            "image": [
+                "33",
+                0
+            ],
+            "clip_vision": [
+                "32",
+                0
+            ]
+        },
+        "class_type": "IPAdapterAdvanced",
+        "_meta": {
+            "title": "IPAdapter Advanced"
+        }
+    },
+    "31": {
+        "inputs": {
+            "ipadapter_file": "ip-adapter-plus_sd15.safetensors"
+        },
+        "class_type": "IPAdapterModelLoader",
+        "_meta": {
+            "title": "IPAdapter Model Loader"
+        }
+    },
+    "32": {
+        "inputs": {
+            "clip_name": "CLIP-ViT-H-14-laion2B-s32B-b79K.safetensors"
+        },
+        "class_type": "CLIPVisionLoader",
+        "_meta": {
+            "title": "Load CLIP Vision"
+        }
+    },
+    "33": {
+        "inputs": {
+            "interpolation": "LANCZOS",
+            "crop_position": "top",
+            "sharpening": 0.15,
+            "image": [
+                "29",
+                0
+            ]
+        },
+        "class_type": "PrepImageForClipVision",
+        "_meta": {
+            "title": "Prep Image For ClipVision"
         }
     }
 }
