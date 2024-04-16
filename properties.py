@@ -152,11 +152,11 @@ class AIRProperties(bpy.types.PropertyGroup):
     )
     image_similarity: bpy.props.FloatProperty(
         name="Image Similarity",
-        default=0.4,
+        default=0.25,
         soft_min=0.0,
-        soft_max=0.9,
+        soft_max=0.999,
         min=0.0,
-        max=1.0,
+        max=0.999,
         description="How closely the final image will match the initial rendered image. Values around 0.1-0.4 will turn simple renders into new creations. Around 0.5 will keep a lot of the composition, and transform into something like the prompt. 0.6-0.7 keeps things more stable between renders. Higher values may require more steps for best results. You can set this to 0.0 to use only the prompt",
         update=update_denoise
     )
