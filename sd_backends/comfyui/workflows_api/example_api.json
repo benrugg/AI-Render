@@ -1,14 +1,14 @@
 {
   "3": {
     "inputs": {
-      "seed": 819306520081733,
+      "seed": 542669900244471,
       "steps": 10,
       "cfg": 7.5,
       "sampler_name": "dpmpp_2m_sde_gpu",
       "scheduler": "karras",
       "denoise": 1,
       "model": [
-        "26",
+        "36",
         0
       ],
       "positive": [
@@ -245,7 +245,7 @@
       "strength_model": 1,
       "strength_clip": 1,
       "model": [
-        "30",
+        "4",
         0
       ],
       "clip": [
@@ -256,79 +256,6 @@
     "class_type": "LoraLoader",
     "_meta": {
       "title": "Load LoRA"
-    }
-  },
-  "29": {
-    "inputs": {
-      "image": "image (6).png",
-      "upload": "image"
-    },
-    "class_type": "LoadImage",
-    "_meta": {
-      "title": "Load Image"
-    }
-  },
-  "30": {
-    "inputs": {
-      "weight": 0,
-      "weight_type": "linear",
-      "combine_embeds": "concat",
-      "start_at": 0,
-      "end_at": 1,
-      "embeds_scaling": "V only",
-      "model": [
-        "4",
-        0
-      ],
-      "ipadapter": [
-        "31",
-        0
-      ],
-      "image": [
-        "33",
-        0
-      ],
-      "clip_vision": [
-        "32",
-        0
-      ]
-    },
-    "class_type": "IPAdapterAdvanced",
-    "_meta": {
-      "title": "IPAdapter Advanced"
-    }
-  },
-  "31": {
-    "inputs": {
-      "ipadapter_file": "ip-adapter-plus_sd15.safetensors"
-    },
-    "class_type": "IPAdapterModelLoader",
-    "_meta": {
-      "title": "IPAdapter Model Loader"
-    }
-  },
-  "32": {
-    "inputs": {
-      "clip_name": "CLIP-ViT-H-14-laion2B-s32B-b79K.safetensors"
-    },
-    "class_type": "CLIPVisionLoader",
-    "_meta": {
-      "title": "Load CLIP Vision"
-    }
-  },
-  "33": {
-    "inputs": {
-      "interpolation": "LANCZOS",
-      "crop_position": "top",
-      "sharpening": 0.15,
-      "image": [
-        "29",
-        0
-      ]
-    },
-    "class_type": "PrepImageForClipVision",
-    "_meta": {
-      "title": "Prep Image For ClipVision"
     }
   },
   "34": {
@@ -354,6 +281,20 @@
     "class_type": "ImageUpscaleWithModel",
     "_meta": {
       "title": "Upscale Image (using Model)"
+    }
+  },
+  "36": {
+    "inputs": {
+      "scale": 1,
+      "blur_sigma": 2,
+      "model": [
+        "26",
+        0
+      ]
+    },
+    "class_type": "SelfAttentionGuidance",
+    "_meta": {
+      "title": "Self-Attention Guidance"
     }
   }
 }
