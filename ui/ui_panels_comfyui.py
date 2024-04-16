@@ -38,10 +38,10 @@ class AIR_PT_comfyui(bpy.types.Panel):
             if prop[1].type == 'COLLECTION' and getattr(props, prop[0]):
                 # Create a box for each CollectionProperty with all the items inside
                 main_box = layout.box()
-                main_row = main_box.row(align=True)
+                main_row = main_box.row(align=True, heading="" )
                 main_row.label(text=prop[0].upper().replace('_', ' ').replace('COMFYUI', ''), icon='COLLECTION_NEW')
                 main_row.prop(props, prop[0], text="")
-                main_row.scale_y = 1.3
+                main_row.scale_y = 1
 
                 # Create the expand/collapse button
                 for item in getattr(props, prop[0]):
@@ -51,6 +51,8 @@ class AIR_PT_comfyui(bpy.types.Panel):
                     else:
                         icon = 'TRIA_RIGHT'
                 main_row.prop(item, 'expanded', text='', icon=icon, emboss=False)
+
+                # TODO: Check if the collection contains animated subproperties, if so, set expand to True
 
                 for item in getattr(props, prop[0]) if is_expanded else []:
                     box = main_box.box()

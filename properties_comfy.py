@@ -27,13 +27,14 @@ def create_property_from_workflow(self, context):
     print(Fore.GREEN + "CREATING PROPERTIES FROM WORKFLOW: " + Fore.RESET + selected_workflow_file)
     # pprint(selected_workflow)
 
-    selected_class_types = ["LoraLoader", "ControlNetApplyAdvanced", "CheckpointLoaderSimple"]
+    selected_class_types = ["LoraLoader", "ControlNetApplyAdvanced", "CheckpointLoaderSimple", "SelfAttentionGuidance"]
     print(Fore.GREEN + "SELECTED CLASS TYPE: " + Fore.RESET + str(selected_class_types))
 
     # Clear the comfyui_nodes collections
     self.comfyui_lora_nodes.clear()
     self.comfyui_control_net_nodes.clear()
     self.comfyui_checkpoint_loader_simple.clear()
+    self.comfyui_self_attention_guidance.clear()
 
     # Cycle through the nodes in the selected workflow and create the properties
     for node_id, node in selected_workflow.items():
@@ -100,6 +101,20 @@ def create_property_from_workflow(self, context):
                 comfyui_checkpoint_loader_simple.name = node_id
                 comfyui_checkpoint_loader_simple.ckpt_name = node["inputs"]["ckpt_name"]
 
+            elif node["class_type"] == "SelfAttentionGuidance":
+                print(Fore.MAGENTA + "NODE: " + Fore.RESET + node_id)
+                pprint(node)
+
+                # {'_meta': {'title': 'Self-Attention Guidance'},
+                #  'class_type': 'SelfAttentionGuidance',
+                #  'inputs': {'blur_sigma': 2, 'model': ['26', 0], 'scale': 1}}
+
+                # Create the property group
+                comfyui_self_attention_guidance = self.comfyui_self_attention_guidance.add()
+                comfyui_self_attention_guidance.name = node_id
+                comfyui_self_attention_guidance.blur_sigma = node["inputs"]["blur_sigma"]
+                comfyui_self_attention_guidance.scale = node["inputs"]["scale"]
+
 
 def get_available_ckpts(self, context):
     """ Query the comfyui_api /object_info for the available checkpoints and return them as a list of tuples"""
@@ -148,12 +163,12 @@ class ComfyUILoraNode(bpy.types.PropertyGroup):
         description="Expanded"
     )
     lora_name: bpy.props.StringProperty(
-        name="lora_name",
+        name="Lora Name",
         default="",
         description="Name of the LoRA model"
     )
     strength_model: bpy.props.FloatProperty(
-        name="strength_model",
+        name="Lora Model Strength",
         default=1,
         soft_min=0,
         soft_max=1,
@@ -162,7 +177,7 @@ class ComfyUILoraNode(bpy.types.PropertyGroup):
         description="Strength of the LoRA model"
     )
     strength_clip: bpy.props.FloatProperty(
-        name="strength_clip",
+        name="Lora Clip Strength",
         default=1,
         soft_min=0,
         soft_max=1,
@@ -179,12 +194,12 @@ class ComfyUIControlNetNode(bpy.types.PropertyGroup):
         description="Expanded"
     )
     control_net_name: bpy.props.StringProperty(
-        name="control_net_name",
+        name="ControlNet Name",
         default="",
         description="Name of the ControlNet model"
     )
     strength: bpy.props.FloatProperty(
-        name="strength",
+        name="ControlNet Strength",
         default=1,
         soft_min=0,
         soft_max=1,
@@ -193,18 +208,42 @@ class ComfyUIControlNetNode(bpy.types.PropertyGroup):
         description="Strength of the ControlNet model",
     )
     start_percent: bpy.props.FloatProperty(
-        name="start_percent",
+        name="ControlNet Start Percent",
         default=0,
         min=0,
         max=1,
         description="Start percent of the ControlNet model"
     )
     end_percent: bpy.props.FloatProperty(
-        name="end_percent",
+        name="ControlNet End Percent",
         default=1,
         min=0,
         max=1,
         description="End percent of the ControlNet model"
+    )
+
+
+class ComfyUISelfAttentionGuidance(bpy.types.PropertyGroup):
+    expanded: bpy.props.BoolProperty(
+        name="expanded",
+        default=False,
+        description="Expanded"
+    )
+    blur_sigma: bpy.props.FloatProperty(
+        name="Self-Attention Guidance Blur Sigma",
+        default=2,
+        soft_min=0,
+        soft_max=10,
+        min=0,
+        max=10,
+        description="Blur sigma"
+    )
+    scale: bpy.props.FloatProperty(
+        name="Self-Attention Guidance Scale",
+        default=0.5,
+        min=-2,
+        max=6,
+        description="Scale"
     )
 
 
@@ -219,12 +258,14 @@ class AIRPropertiesComfyUI(bpy.types.PropertyGroup):
     comfyui_checkpoint_loader_simple: bpy.props.CollectionProperty(type=ComfyUICheckpointLoaderSimple)
     comfyui_lora_nodes: bpy.props.CollectionProperty(type=ComfyUILoraNode)
     comfyui_control_net_nodes: bpy.props.CollectionProperty(type=ComfyUIControlNetNode)
+    comfyui_self_attention_guidance: bpy.props.CollectionProperty(type=ComfyUISelfAttentionGuidance)
 
 
 classes = [
     ComfyUILoraNode,
     ComfyUIControlNetNode,
     ComfyUICheckpointLoaderSimple,
+    ComfyUISelfAttentionGuidance,
     AIRPropertiesComfyUI,
 ]
 

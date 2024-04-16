@@ -1,300 +1,300 @@
 {
-  "3": {
-    "inputs": {
-      "seed": 542669900244471,
-      "steps": 10,
-      "cfg": 7.5,
-      "sampler_name": "dpmpp_2m_sde_gpu",
-      "scheduler": "karras",
-      "denoise": 1,
-      "model": [
-        "36",
-        0
-      ],
-      "positive": [
-        "16",
-        0
-      ],
-      "negative": [
-        "16",
-        1
-      ],
-      "latent_image": [
-        "10",
-        0
-      ]
+    "3": {
+        "inputs": {
+            "seed": 2077167104,
+            "steps": 15,
+            "cfg": 7.0,
+            "sampler_name": "euler_ancestral",
+            "scheduler": "karras",
+            "denoise": 1.0,
+            "model": [
+                "36",
+                0
+            ],
+            "positive": [
+                "16",
+                0
+            ],
+            "negative": [
+                "16",
+                1
+            ],
+            "latent_image": [
+                "10",
+                0
+            ]
+        },
+        "class_type": "KSampler",
+        "_meta": {
+            "title": "main_sampler"
+        }
     },
-    "class_type": "KSampler",
-    "_meta": {
-      "title": "main_sampler"
-    }
-  },
-  "4": {
-    "inputs": {
-      "ckpt_name": "SD15\\3D\\3dAnimationDiffusion_lcm.safetensors"
+    "4": {
+        "inputs": {
+            "ckpt_name": "v1-5-pruned-emaonly.safetensors"
+        },
+        "class_type": "CheckpointLoaderSimple",
+        "_meta": {
+            "title": "Load Checkpoint"
+        }
     },
-    "class_type": "CheckpointLoaderSimple",
-    "_meta": {
-      "title": "Load Checkpoint"
-    }
-  },
-  "6": {
-    "inputs": {
-      "text": "positive",
-      "clip": [
-        "26",
-        1
-      ]
+    "6": {
+        "inputs": {
+            "text": "a cg render of a glass (red:0.5) cube on a white surface, 8k, realistic shadows, made by pixar, beautiful reflections",
+            "clip": [
+                "26",
+                1
+            ]
+        },
+        "class_type": "CLIPTextEncode",
+        "_meta": {
+            "title": "positive"
+        }
     },
-    "class_type": "CLIPTextEncode",
-    "_meta": {
-      "title": "positive"
-    }
-  },
-  "7": {
-    "inputs": {
-      "text": "negative",
-      "clip": [
-        "26",
-        1
-      ]
+    "7": {
+        "inputs": {
+            "text": "ugly, bad art, caustics",
+            "clip": [
+                "26",
+                1
+            ]
+        },
+        "class_type": "CLIPTextEncode",
+        "_meta": {
+            "title": "negative"
+        }
     },
-    "class_type": "CLIPTextEncode",
-    "_meta": {
-      "title": "negative"
-    }
-  },
-  "8": {
-    "inputs": {
-      "samples": [
-        "3",
-        0
-      ],
-      "vae": [
-        "11",
-        0
-      ]
+    "8": {
+        "inputs": {
+            "samples": [
+                "3",
+                0
+            ],
+            "vae": [
+                "11",
+                0
+            ]
+        },
+        "class_type": "VAEDecode",
+        "_meta": {
+            "title": "VAE Decode"
+        }
     },
-    "class_type": "VAEDecode",
-    "_meta": {
-      "title": "VAE Decode"
-    }
-  },
-  "9": {
-    "inputs": {
-      "filename_prefix": "ComfyUI",
-      "images": [
-        "35",
-        0
-      ]
+    "9": {
+        "inputs": {
+            "filename_prefix": "ComfyUI",
+            "images": [
+                "35",
+                0
+            ]
+        },
+        "class_type": "SaveImage",
+        "_meta": {
+            "title": "output_image"
+        }
     },
-    "class_type": "SaveImage",
-    "_meta": {
-      "title": "output_image"
-    }
-  },
-  "10": {
-    "inputs": {
-      "pixels": [
-        "12",
-        0
-      ],
-      "vae": [
-        "11",
-        0
-      ]
+    "10": {
+        "inputs": {
+            "pixels": [
+                "12",
+                0
+            ],
+            "vae": [
+                "11",
+                0
+            ]
+        },
+        "class_type": "VAEEncode",
+        "_meta": {
+            "title": "VAE Encode"
+        }
     },
-    "class_type": "VAEEncode",
-    "_meta": {
-      "title": "VAE Encode"
-    }
-  },
-  "11": {
-    "inputs": {
-      "vae_name": "vae-ft-mse-840000-ema-pruned.safetensors"
+    "11": {
+        "inputs": {
+            "vae_name": "vae-ft-mse-840000-ema-pruned.safetensors"
+        },
+        "class_type": "VAELoader",
+        "_meta": {
+            "title": "Load VAE"
+        }
     },
-    "class_type": "VAELoader",
-    "_meta": {
-      "title": "Load VAE"
-    }
-  },
-  "12": {
-    "inputs": {
-      "image": "castel-3dscan-color.png",
-      "upload": "image"
+    "12": {
+        "inputs": {
+            "image": "E:/COMFY/ComfyUI/input/color/Image0001.png",
+            "upload": "image"
+        },
+        "class_type": "LoadImage",
+        "_meta": {
+            "title": "color"
+        }
     },
-    "class_type": "LoadImage",
-    "_meta": {
-      "title": "color"
-    }
-  },
-  "13": {
-    "inputs": {
-      "strength": 1,
-      "start_percent": 0,
-      "end_percent": 1,
-      "positive": [
-        "6",
-        0
-      ],
-      "negative": [
-        "7",
-        0
-      ],
-      "control_net": [
-        "14",
-        0
-      ],
-      "image": [
-        "15",
-        0
-      ]
+    "13": {
+        "inputs": {
+            "strength": 0.7960000038146973,
+            "start_percent": 0.0,
+            "end_percent": 1.0,
+            "positive": [
+                "6",
+                0
+            ],
+            "negative": [
+                "7",
+                0
+            ],
+            "control_net": [
+                "14",
+                0
+            ],
+            "image": [
+                "15",
+                0
+            ]
+        },
+        "class_type": "ControlNetApplyAdvanced",
+        "_meta": {
+            "title": "Apply ControlNet (Advanced)"
+        }
     },
-    "class_type": "ControlNetApplyAdvanced",
-    "_meta": {
-      "title": "Apply ControlNet (Advanced)"
-    }
-  },
-  "14": {
-    "inputs": {
-      "control_net_name": "SD15\\control_v11\\control_v11f1p_sd15_depth.pth"
+    "14": {
+        "inputs": {
+            "control_net_name": "SD15\\control_v11\\control_v11f1p_sd15_depth.pth"
+        },
+        "class_type": "ControlNetLoader",
+        "_meta": {
+            "title": "Load ControlNet Model"
+        }
     },
-    "class_type": "ControlNetLoader",
-    "_meta": {
-      "title": "Load ControlNet Model"
-    }
-  },
-  "15": {
-    "inputs": {
-      "image": "castle-3dmodel-depth.png",
-      "upload": "image"
+    "15": {
+        "inputs": {
+            "image": "E:/COMFY/ComfyUI/input/depth/Image0001.png",
+            "upload": "image"
+        },
+        "class_type": "LoadImage",
+        "_meta": {
+            "title": "depth"
+        }
     },
-    "class_type": "LoadImage",
-    "_meta": {
-      "title": "depth"
-    }
-  },
-  "16": {
-    "inputs": {
-      "strength": 1,
-      "start_percent": 0,
-      "end_percent": 1,
-      "positive": [
-        "13",
-        0
-      ],
-      "negative": [
-        "13",
-        1
-      ],
-      "control_net": [
-        "17",
-        0
-      ],
-      "image": [
-        "18",
-        0
-      ]
+    "16": {
+        "inputs": {
+            "strength": 0.7599999904632568,
+            "start_percent": 0.0,
+            "end_percent": 1.0,
+            "positive": [
+                "13",
+                0
+            ],
+            "negative": [
+                "13",
+                1
+            ],
+            "control_net": [
+                "17",
+                0
+            ],
+            "image": [
+                "18",
+                0
+            ]
+        },
+        "class_type": "ControlNetApplyAdvanced",
+        "_meta": {
+            "title": "Apply ControlNet (Advanced)"
+        }
     },
-    "class_type": "ControlNetApplyAdvanced",
-    "_meta": {
-      "title": "Apply ControlNet (Advanced)"
-    }
-  },
-  "17": {
-    "inputs": {
-      "control_net_name": "SD15\\control_v11\\control_v11p_sd15_normalbae.pth"
+    "17": {
+        "inputs": {
+            "control_net_name": "SD15\\control_v11\\control_v11p_sd15_normalbae.pth"
+        },
+        "class_type": "ControlNetLoader",
+        "_meta": {
+            "title": "Load ControlNet Model"
+        }
     },
-    "class_type": "ControlNetLoader",
-    "_meta": {
-      "title": "Load ControlNet Model"
-    }
-  },
-  "18": {
-    "inputs": {
-      "image": "castle-3dmodel-normal.png",
-      "upload": "image"
+    "18": {
+        "inputs": {
+            "image": "E:/COMFY/ComfyUI/input/normal/Image0001.png",
+            "upload": "image"
+        },
+        "class_type": "LoadImage",
+        "_meta": {
+            "title": "normal"
+        }
     },
-    "class_type": "LoadImage",
-    "_meta": {
-      "title": "normal"
-    }
-  },
-  "26": {
-    "inputs": {
-      "lora_name": "SD15\\Robotic_Jackal-ish.safetensors",
-      "strength_model": 1,
-      "strength_clip": 1,
-      "model": [
-        "28",
-        0
-      ],
-      "clip": [
-        "28",
-        1
-      ]
+    "26": {
+        "inputs": {
+            "lora_name": "SD15\\Robotic_Jackal-ish.safetensors",
+            "strength_model": 0.0,
+            "strength_clip": 1.0,
+            "model": [
+                "28",
+                0
+            ],
+            "clip": [
+                "28",
+                1
+            ]
+        },
+        "class_type": "LoraLoader",
+        "_meta": {
+            "title": "Load LoRA"
+        }
     },
-    "class_type": "LoraLoader",
-    "_meta": {
-      "title": "Load LoRA"
-    }
-  },
-  "28": {
-    "inputs": {
-      "lora_name": "SD15\\Mermaids.safetensors",
-      "strength_model": 1,
-      "strength_clip": 1,
-      "model": [
-        "4",
-        0
-      ],
-      "clip": [
-        "4",
-        1
-      ]
+    "28": {
+        "inputs": {
+            "lora_name": "SD15\\Mermaids.safetensors",
+            "strength_model": 0.0,
+            "strength_clip": 1.0,
+            "model": [
+                "4",
+                0
+            ],
+            "clip": [
+                "4",
+                1
+            ]
+        },
+        "class_type": "LoraLoader",
+        "_meta": {
+            "title": "Load LoRA"
+        }
     },
-    "class_type": "LoraLoader",
-    "_meta": {
-      "title": "Load LoRA"
-    }
-  },
-  "34": {
-    "inputs": {
-      "model_name": "4x-UltraSharp.pth"
+    "34": {
+        "inputs": {
+            "model_name": "4x-UltraSharp.pth"
+        },
+        "class_type": "UpscaleModelLoader",
+        "_meta": {
+            "title": "Load Upscale Model"
+        }
     },
-    "class_type": "UpscaleModelLoader",
-    "_meta": {
-      "title": "Load Upscale Model"
-    }
-  },
-  "35": {
-    "inputs": {
-      "upscale_model": [
-        "34",
-        0
-      ],
-      "image": [
-        "8",
-        0
-      ]
+    "35": {
+        "inputs": {
+            "upscale_model": [
+                "34",
+                0
+            ],
+            "image": [
+                "8",
+                0
+            ]
+        },
+        "class_type": "ImageUpscaleWithModel",
+        "_meta": {
+            "title": "Upscale Image (using Model)"
+        }
     },
-    "class_type": "ImageUpscaleWithModel",
-    "_meta": {
-      "title": "Upscale Image (using Model)"
+    "36": {
+        "inputs": {
+            "scale": 0.0,
+            "blur_sigma": 2.0,
+            "model": [
+                "26",
+                0
+            ]
+        },
+        "class_type": "SelfAttentionGuidance",
+        "_meta": {
+            "title": "Self-Attention Guidance"
+        }
     }
-  },
-  "36": {
-    "inputs": {
-      "scale": 1,
-      "blur_sigma": 2,
-      "model": [
-        "26",
-        0
-      ]
-    },
-    "class_type": "SelfAttentionGuidance",
-    "_meta": {
-      "title": "Self-Attention Guidance"
-    }
-  }
 }
