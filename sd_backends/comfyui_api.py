@@ -476,6 +476,23 @@ def map_comfy_props(comfyui_props, workflow):
     return workflow
 
 
+def get_comfyui_input_path(context):
+    comfyui_path = utils.get_addon_preferences(context).comfyui_path
+    return comfyui_path + "input/"
+
+
+def get_color_file_input_path(context):
+    return get_comfyui_input_path(context) + "color/"
+
+
+def get_depth_file_input_path(context):
+    return get_comfyui_input_path(context) + "depth/"
+
+
+def get_normal_file_input_path(context):
+    return get_comfyui_input_path(context) + "normal/"
+
+
 def generate(params, img_file, filename_prefix, props, comfyui_props):
 
     if LOG_PROPS:
@@ -493,18 +510,19 @@ def generate(params, img_file, filename_prefix, props, comfyui_props):
     params["denoising_strength"] = round(1 - params["image_similarity"], 4)
     params["sampler_index"] = params["sampler"]
 
-    # Get the input path of local ComfyUI
-    comfyui_input_path = get_comfyui_input_path(bpy.context)
-
     # get the frame number for the filename
     frame_number = bpy.context.scene.frame_current
 
     # format the frame number to 4 digits
     frame_number = str(frame_number).zfill(4)
 
-    color_image_path = comfyui_input_path + "color/Image" + frame_number + ".png"
-    depth_image_path = comfyui_input_path + "depth/Image" + frame_number + ".png"
-    normal_image_path = comfyui_input_path + "normal/Image" + frame_number + ".png"
+    # color_image_path = comfyui_input_path + "color/Image" + frame_number + ".png"
+    # depth_image_path = comfyui_input_path + "depth/Image" + frame_number + ".png"
+    # normal_image_path = comfyui_input_path + "normal/Image" + frame_number + ".png"
+
+    color_image_path = f"{get_color_file_input_path(bpy.context)}Image{frame_number}.png"
+    depth_image_path = f"{get_depth_file_input_path(bpy.context)}Image{frame_number}.png"
+    normal_image_path = f"{get_normal_file_input_path(bpy.context)}Image{frame_number}.png"
 
     params['color_image'] = color_image_path
     params['depth_image'] = depth_image_path
@@ -731,11 +749,6 @@ def create_workflows_tuples():
     workflows_tuples = [(f, f, "", i) for i, f in enumerate(workflow_files)]
 
     return workflows_tuples
-
-
-def get_comfyui_input_path(context):
-    comfyui_path = utils.get_addon_preferences(context).comfyui_path
-    return comfyui_path + "input/"
 
 
 def get_comfyui_output_path(context):

@@ -31,10 +31,6 @@ def normalpass2normalmap_node_group(context):
     normalpass2normalmap = bpy.data.node_groups.new(
         type="CompositorNodeTree", name="NormalPass2NormalMap")
 
-    # start with a clean node tree
-    for node in normalpass2normalmap.nodes:
-        normalpass2normalmap.nodes.remove(node)
-
     # normalpass2normalmap interface
     # Socket Image
     image_socket = normalpass2normalmap.interface.new_socket(name="Image", in_out='OUTPUT', socket_type='NodeSocketColor')
@@ -67,7 +63,7 @@ def normalpass2normalmap_node_group(context):
     # Fac
     mix.inputs[0].default_value = 1.0
     # Image_001
-    mix.inputs[2].default_value = (1.0, 1.0, 1.0, 1.0)
+    mix.inputs[2].default_value = (0.5, 0.5, 0.5, 1.0)
 
     # node Mix.001
     mix_001 = normalpass2normalmap.nodes.new("CompositorNodeMixRGB")
@@ -78,7 +74,7 @@ def normalpass2normalmap_node_group(context):
     # Fac
     mix_001.inputs[0].default_value = 1.0
     # Image_001
-    mix_001.inputs[2].default_value = (1.0, 1.0, 1.0, 1.0)
+    mix_001.inputs[2].default_value = (0.5, 0.5, 0.5, 1.0)
 
     # node Invert Color
     invert_color = normalpass2normalmap.nodes.new("CompositorNodeInvert")
@@ -93,6 +89,8 @@ def normalpass2normalmap_node_group(context):
     combine_color.name = "Combine Color"
     combine_color.mode = 'RGB'
     combine_color.ycc_mode = 'ITUBT709'
+    # Alpha
+    combine_color.inputs[3].default_value = 1.0
 
     # node Separate Color
     separate_color = normalpass2normalmap.nodes.new("CompositorNodeSeparateColor")
@@ -139,8 +137,6 @@ def normalpass2normalmap_node_group(context):
     normalpass2normalmap.links.new(group_input.outputs[0], mix.inputs[1])
     # combine_color.Image -> group_output.Image
     normalpass2normalmap.links.new(combine_color.outputs[0], group_output.inputs[0])
-    # group_input.Alpha -> combine_color.Alpha
-    normalpass2normalmap.links.new(group_input.outputs[1], combine_color.inputs[3])
     return normalpass2normalmap
 
 
@@ -149,7 +145,6 @@ def ensure_compositor_nodes(context):
 
     print(Fore.YELLOW + "ENSURE COMPOSITOR NODES")
 
-    comfyui_input_path = comfyui_api.get_comfyui_input_path(context)
     # Ensure that the render passes are enabled
     ensure_use_passes(context)
     ensure_film_transparent(context)
@@ -163,64 +158,15 @@ def ensure_compositor_nodes(context):
 
     # remove all nodes except the render layers and the Composite node
     for node in nodes:
-        if node.name != "Render Layers" and node.name != "Composite":
-            nodes.remove(node)
+        nodes.remove(node)
 
-    # Check if Render Layers and Composite nodes exist, if not add them
-    if not any(node for node in nodes if node.name == "Render Layers"):
-        render_layers_node = nodes.new("CompositorNodeRLayers")
-        render_layers_node.name = "Render Layers"
-        render_layers_node.label = "Render Layers"
+    # scene_1 interface
 
-    if not any(node for node in nodes if node.name == "Composite"):
-        composite_node = nodes.new("CompositorNodeComposite")
-        composite_node.name = "Composite"
-        composite_node.label = "Composite"
-
-    # Set the position of the Render Layers and Composite nodes
-    render_layers_node = nodes.get("Render Layers")
-    render_layers_node.location = (0, 0)
-    composite_node = nodes.get("Composite")
-    composite_node.location = (500, 400)
-
-    # Color
-    ColorOutputNode = nodes.new("CompositorNodeOutputFile")
-    ColorOutputNode.name = "color_file_output"
-    ColorOutputNode.label = "Color"
-    ColorOutputNode.base_path = comfyui_input_path + "color/"
-    ColorOutputNode.location = (500, 200)
-    ColorOutputNode.format.file_format = "PNG"
-    ColorOutputNode.width = 300
-
-    # Depth
-    MistOutputNode = nodes.new("CompositorNodeOutputFile")
-    MistOutputNode.name = "depth_file_output"
-    MistOutputNode.label = "Depth"
-    MistOutputNode.base_path = comfyui_input_path + "depth/"
-    MistOutputNode.location = (500, 0)
-    MistOutputNode.format.file_format = "PNG"
-    MistOutputNode.width = 300
-
-    # Invert Node for Mist
-    InvertNode = nodes.new("CompositorNodeInvert")
-    InvertNode.name = "Invert"
-    InvertNode.label = "Invert"
-    InvertNode.location = (300, 0)
-
-    # Normal
-    NormalOutputNode = nodes.new("CompositorNodeOutputFile")
-    NormalOutputNode.name = "normal_file_output"
-    NormalOutputNode.label = "Normal"
-    NormalOutputNode.base_path = comfyui_input_path + "normal/"
-    NormalOutputNode.location = (500, -200)
-    NormalOutputNode.format.file_format = "PNG"
-    NormalOutputNode.width = 300
-
+    # initialize scene_1 nodes
     # Create a new node group
     NormalNodeGroup = nodes.new("CompositorNodeGroup")
     NormalNodeGroup.name = "NormalPass2NormalMap"
     NormalNodeGroup.label = "NormalPass  2NormalMap"
-    NormalNodeGroup.location = (300, -200)
 
     # Create a new Normal NodeTree if there is not one already
     if not bpy.data.node_groups.get("NormalPass2NormalMap"):
@@ -230,15 +176,108 @@ def ensure_compositor_nodes(context):
 
     # Set the node group to the normalpass2normalmap node group
     NormalNodeGroup.node_tree = Normal_Node_Tree
+    # Socket_2
+    NormalNodeGroup.inputs[1].default_value = 1.0
 
-    # Link the nodes
+    # node Color Ramp
+    color_ramp = nodes.new("CompositorNodeValToRGB")
+    color_ramp.name = "Color Ramp"
+    color_ramp.color_ramp.color_mode = 'RGB'
+    color_ramp.color_ramp.hue_interpolation = 'NEAR'
+    color_ramp.color_ramp.interpolation = 'EASE'
+
+    # initialize color ramp elements
+    color_ramp.color_ramp.elements.remove(color_ramp.color_ramp.elements[0])
+    color_ramp_cre_0 = color_ramp.color_ramp.elements[0]
+    color_ramp_cre_0.position = 0.913193
+    color_ramp_cre_0.alpha = 1.0
+    color_ramp_cre_0.color = (1.0, 1.0, 1.0, 1.0)
+
+    color_ramp_cre_1 = color_ramp.color_ramp.elements.new(0.965278)
+    color_ramp_cre_1.alpha = 1.0
+    color_ramp_cre_1.color = (0.0, 0.0, 0.0, 1.0)
+
+    # node normal_file_output
+    normal_file_output = nodes.new("CompositorNodeOutputFile")
+    normal_file_output.label = "Normal"
+    normal_file_output.name = "normal_file_output"
+    normal_file_output.active_input_index = 0
+    normal_file_output.base_path = comfyui_api.get_normal_file_input_path(context)
+
+    # node Render Layers
+    render_layers = nodes.new("CompositorNodeRLayers")
+    render_layers.label = "Render Layers"
+    render_layers.name = "Render Layers"
+    render_layers.layer = 'ViewLayer'
+
+    # node Viewer
+    viewer = nodes.new("CompositorNodeViewer")
+    viewer.name = "Viewer"
+    viewer.center_x = 0.5
+    viewer.center_y = 0.5
+    viewer.tile_order = 'CENTEROUT'
+    viewer.use_alpha = True
+    # Alpha
+    viewer.inputs[1].default_value = 1.0
+
+    # node Composite
+    composite = nodes.new("CompositorNodeComposite")
+    composite.label = "Composite"
+    composite.name = "Composite"
+    composite.use_alpha = True
+    # Alpha
+    composite.inputs[1].default_value = 1.0
+
+    # node color_file_output
+    color_file_output = nodes.new("CompositorNodeOutputFile")
+    color_file_output.label = "Color"
+    color_file_output.name = "color_file_output"
+    color_file_output.active_input_index = 0
+    color_file_output.base_path = comfyui_api.get_color_file_input_path(context)
+
+    # node depth_file_output
+    depth_file_output = nodes.new("CompositorNodeOutputFile")
+    depth_file_output.label = "Depth"
+    depth_file_output.name = "depth_file_output"
+    depth_file_output.active_input_index = 0
+    depth_file_output.base_path = comfyui_api.get_depth_file_input_path(context)
+
+    # Set locations
+    NormalNodeGroup.location = (361.5553894042969, -169.21304321289062)
+    color_ramp.location = (365.3896179199219, 73.5697250366211)
+    normal_file_output.location = (691.8238525390625, -7.402432441711426)
+    render_layers.location = (3.578803300857544, 178.27804565429688)
+    viewer.location = (370.6922302246094, 283.4913330078125)
+    composite.location = (377.6049499511719, 407.1597900390625)
+    color_file_output.location = (693.7745971679688, 238.85935974121094)
+    depth_file_output.location = (694.5862426757812, 120.32701873779297)
+
+    # Set dimensions
+    NormalNodeGroup.width, NormalNodeGroup.height = 244.50103759765625, 100.0
+    color_ramp.width, color_ramp.height = 240.0, 100.0
+    normal_file_output.width, normal_file_output.height = 300.0, 100.0
+    render_layers.width, render_layers.height = 240.0, 100.0
+    viewer.width, viewer.height = 236.62774658203125, 100.0
+    composite.width, composite.height = 232.3331756591797, 100.0
+    color_file_output.width, color_file_output.height = 300.0, 100.0
+    depth_file_output.width, depth_file_output.height = 300.0, 100.0
+
+    # initialize links
     links = tree.links
-    links.new(render_layers_node.outputs["Image"], ColorOutputNode.inputs[0])
-    links.new(render_layers_node.outputs["Mist"], InvertNode.inputs[1])
-    links.new(InvertNode.outputs[0], MistOutputNode.inputs[0])
-    links.new(render_layers_node.outputs["Normal"], NormalNodeGroup.inputs[0])
-    links.new(render_layers_node.outputs["Alpha"], NormalNodeGroup.inputs[1])
-    links.new(NormalNodeGroup.outputs[0], NormalOutputNode.inputs[0])
+    # render_layers.Image -> composite.Image
+    links.new(render_layers.outputs[0], composite.inputs[0])
+    # render_layers.Image -> color_file_output.Image
+    links.new(render_layers.outputs[0], color_file_output.inputs[0])
+    # render_layers.Normal -> normalpass2normalmap_1.Image
+    links.new(render_layers.outputs[4], NormalNodeGroup.inputs[0])
+    # normalpass2normalmap_1.Image -> normal_file_output.Image
+    links.new(NormalNodeGroup.outputs[0], normal_file_output.inputs[0])
+    # color_ramp.Image -> depth_file_output.Image
+    links.new(color_ramp.outputs[0], depth_file_output.inputs[0])
+    # render_layers.Mist -> color_ramp.Fac
+    links.new(render_layers.outputs[3], color_ramp.inputs[0])
+    # render_layers.Image -> viewer.Image
+    links.new(render_layers.outputs[0], viewer.inputs[0])
 
     # Deselect all nodes
     for node in nodes:
