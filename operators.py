@@ -5,6 +5,8 @@ import random
 import re
 import time
 
+from .operators_comfyui import ensure_compositor_nodes
+
 from . import (
     analytics,
     config,
@@ -15,6 +17,8 @@ from . import (
 
 from .sd_backends import automatic1111_api
 from .sd_backends import comfyui_api
+
+from colorama import Fore, Style
 
 
 example_dimensions_tuple_list = utils.generate_example_dimensions_tuple_list()
@@ -134,8 +138,11 @@ def render_frame(context, current_frame, prompts):
 
 def save_render_to_file(scene, filename_prefix):
     try:
+        print(Fore.MAGENTA + "Creating temp file for image")
         temp_file = utils.create_temp_file(
-            filename_prefix + "-", suffix=f".{utils.get_image_format()}")
+            filename_prefix + "-",
+            suffix=f".{utils.get_image_format()}"
+        )
     except:
         return handle_error("Couldn't create temp file for image", "temp_file")
 
@@ -144,11 +151,11 @@ def save_render_to_file(scene, filename_prefix):
         orig_render_color_mode = scene.render.image_settings.color_mode
         orig_render_color_depth = scene.render.image_settings.color_depth
 
-        scene.render.image_settings.file_format = utils.get_image_format(
-            to_lower=False)
+        scene.render.image_settings.file_format = utils.get_image_format(to_lower=False)
         scene.render.image_settings.color_mode = 'RGBA'
         scene.render.image_settings.color_depth = '8'
 
+        print(Fore.MAGENTA + "Saving rendered image to temp file")
         bpy.data.images['Render Result'].save_render(temp_file)
 
         scene.render.image_settings.file_format = orig_render_file_format
@@ -205,10 +212,14 @@ def load_image(filename, data_block_name=None):
     if name in bpy.data.images:
         existing_img = bpy.data.images[name]
         existing_img.filepath = filename
+
+        print(Fore.YELLOW + f"Existing image: {filename}")
         return existing_img
 
     img_file = bpy.data.images.load(filename, check_existing=False)
     img_file.name = name
+
+    print(Fore.YELLOW + f"\nLOADED IMAGE: {filename}")
     return img_file
 
 
@@ -223,6 +234,15 @@ def do_pre_render_setup(scene):
 
     # mute the legacy compositor node group, if it exists
     mute_legacy_compositor_node_group(scene)
+
+    # ensure the compositor nodes are set up correctly to send color,
+    # depth, and normal data to comfyui.
+
+    # It seems that it is not possible to change the base_path of the
+    # file output node, cause it takes only the path and saves the file
+    # with the name of 'Image0001' and the extension of the file format.
+    if utils.sd_backend() == "comfyui":
+        ensure_compositor_nodes(bpy.context)
 
 
 def do_pre_api_setup(scene):
@@ -343,7 +363,9 @@ def validate_and_process_animated_prompt_text_for_single_frame(scene, frame):
 
 def sd_generate(scene, prompts=None, use_last_sd_image=False):
     """Post to the API to generate a Stable Diffusion image and then process it"""
+
     props = scene.air_props
+    comfyui_props = scene.comfyui_props
 
     # get the prompt if we haven't been given one
     if not prompts:
@@ -369,8 +391,10 @@ def sd_generate(scene, prompts=None, use_last_sd_image=False):
     # prepare the output filenames
     before_output_filename_prefix = utils.get_image_filename(
         scene, prompt, negative_prompt, "-1-before")
+
     after_output_filename_prefix = utils.get_image_filename(
         scene, prompt, negative_prompt, "-2-after")
+
     animation_output_filename_prefix = "ai-render-"
 
     # if we want to use the last SD image, try loading it now
@@ -385,10 +409,11 @@ def sd_generate(scene, prompts=None, use_last_sd_image=False):
         # else, use the rendered image...
 
         # save the rendered image and then read it back in
-        temp_input_file = save_render_to_file(
-            scene, before_output_filename_prefix)
+        temp_input_file = save_render_to_file(scene, before_output_filename_prefix)
+
         if not temp_input_file:
             return False
+
         img_file = open(temp_input_file, 'rb')
 
         # autosave the before image, if we want that, and we're not rendering an animation
@@ -416,11 +441,24 @@ def sd_generate(scene, prompts=None, use_last_sd_image=False):
 
     # get the backend we're using
     sd_backend = utils.get_active_backend()
+    sd_backend_name = utils.sd_backend()
 
     # send to whichever API we're using
     start_time = time.time()
-    generated_image_file = sd_backend.generate(
-        params, img_file, after_output_filename_prefix, props)
+
+    if sd_backend_name == "comfyui":
+        generated_image_file = comfyui_api.generate(
+            params,
+            img_file,
+            after_output_filename_prefix,
+            props,
+            comfyui_props)
+    else:
+        generated_image_file = sd_backend.generate(
+            params,
+            img_file,
+            after_output_filename_prefix,
+            props)
 
     # if we didn't get a successful image, stop here (an error will have been handled by the api function)
     if not generated_image_file:
@@ -428,6 +466,8 @@ def sd_generate(scene, prompts=None, use_last_sd_image=False):
 
     # autosave the after image, if we should
     if utils.should_autosave_after_image(props):
+
+        print(Fore.YELLOW + "Autosaving after image")
         generated_image_file = save_after_image(
             scene, after_output_filename_prefix, generated_image_file)
 
@@ -459,6 +499,8 @@ def sd_generate(scene, prompts=None, use_last_sd_image=False):
 
     # if we're rendering an animation manually, save the image to the animation output path
     if props.is_rendering_animation_manually:
+
+        print(Fore.YELLOW + "Rendering animation manually")
         generated_image_file = save_animation_image(
             scene, animation_output_filename_prefix, generated_image_file)
 

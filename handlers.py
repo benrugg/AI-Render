@@ -24,6 +24,7 @@ def load_post_handler(loaded_filename):
     # (the available options change when the user changes the SD backend, which could
     # have happened since this file was last saved)
     properties.ensure_properties(None, context)
+    # TODO: Add comfyui related code here
 
     # update the sd backend to migrate a possible old value from a previous installation
     preferences.update_sd_backend_from_previous_installation(context)

@@ -3,74 +3,520 @@ import bpy
 import base64
 import requests
 import json
+import pprint
 from time import sleep
+from colorama import Fore
+
 from .. import (
     config,
     operators,
     utils,
 )
-from colorama import Fore
+
+LOG_PROPS = True
+LOG_WORKFLOW = False
+LOG_PARAMS = False
+LOG_MAPPED_WORKFLOW = False
+
+LOG_REQUEST_TO = True
+LOG_RESPONSE = True
+LOG_LONG_RESPONSE = False
+
+LOG_UPLOAD_IMAGE = False
+LOG_DOWNLOAD_IMAGE = False
+
+ORIGINAL_DATA = {
+    "3": {
+        "inputs": {
+            "seed": 819306520081733,
+            "steps": 10,
+            "cfg": 7.5,
+            "sampler_name": "dpmpp_2m_sde_gpu",
+            "scheduler": "karras",
+            "denoise": 1,
+            "model": [
+                "26",
+                0
+            ],
+            "positive": [
+                "16",
+                0
+            ],
+            "negative": [
+                "16",
+                1
+            ],
+            "latent_image": [
+                "10",
+                0
+            ]
+        },
+        "class_type": "KSampler",
+        "_meta": {
+            "title": "main_sampler"
+        }
+    },
+    "4": {
+        "inputs": {
+            "ckpt_name": "v1-5-pruned-emaonly.safetensors"
+        },
+        "class_type": "CheckpointLoaderSimple",
+        "_meta": {
+            "title": "Load Checkpoint"
+        }
+    },
+    "6": {
+        "inputs": {
+            "text": "positive",
+            "clip": [
+                "26",
+                1
+            ]
+        },
+        "class_type": "CLIPTextEncode",
+        "_meta": {
+            "title": "positive"
+        }
+    },
+    "7": {
+        "inputs": {
+            "text": "negative",
+            "clip": [
+                "26",
+                1
+            ]
+        },
+        "class_type": "CLIPTextEncode",
+        "_meta": {
+            "title": "negative"
+        }
+    },
+    "8": {
+        "inputs": {
+            "samples": [
+                "3",
+                0
+            ],
+            "vae": [
+                "11",
+                0
+            ]
+        },
+        "class_type": "VAEDecode",
+        "_meta": {
+            "title": "VAE Decode"
+        }
+    },
+    "9": {
+        "inputs": {
+            "filename_prefix": "ComfyUI",
+            "images": [
+                "8",
+                0
+            ]
+        },
+        "class_type": "SaveImage",
+        "_meta": {
+            "title": "output_image"
+        }
+    },
+    "10": {
+        "inputs": {
+            "pixels": [
+                "12",
+                0
+            ],
+            "vae": [
+                "11",
+                0
+            ]
+        },
+        "class_type": "VAEEncode",
+        "_meta": {
+            "title": "VAE Encode"
+        }
+    },
+    "11": {
+        "inputs": {
+            "vae_name": "vae-ft-mse-840000-ema-pruned.safetensors"
+        },
+        "class_type": "VAELoader",
+        "_meta": {
+            "title": "Load VAE"
+        }
+    },
+    "12": {
+        "inputs": {
+            "image": "castel-3dscan-color.png",
+            "upload": "image"
+        },
+        "class_type": "LoadImage",
+        "_meta": {
+            "title": "color"
+        }
+    },
+    "13": {
+        "inputs": {
+            "strength": 1,
+            "start_percent": 0,
+            "end_percent": 1,
+            "positive": [
+                "6",
+                0
+            ],
+            "negative": [
+                "7",
+                0
+            ],
+            "control_net": [
+                "14",
+                0
+            ],
+            "image": [
+                "15",
+                0
+            ]
+        },
+        "class_type": "ControlNetApplyAdvanced",
+        "_meta": {
+            "title": "Apply ControlNet (Advanced)"
+        }
+    },
+    "14": {
+        "inputs": {
+            "control_net_name": "SD15\\control_v11\\control_v11f1p_sd15_depth.pth"
+        },
+        "class_type": "ControlNetLoader",
+        "_meta": {
+            "title": "Load ControlNet Model"
+        }
+    },
+    "15": {
+        "inputs": {
+            "image": "castle-3dmodel-depth.png",
+            "upload": "image"
+        },
+        "class_type": "LoadImage",
+        "_meta": {
+            "title": "depth"
+        }
+    },
+    "16": {
+        "inputs": {
+            "strength": 1,
+            "start_percent": 0,
+            "end_percent": 1,
+            "positive": [
+                "13",
+                0
+            ],
+            "negative": [
+                "13",
+                1
+            ],
+            "control_net": [
+                "17",
+                0
+            ],
+            "image": [
+                "18",
+                0
+            ]
+        },
+        "class_type": "ControlNetApplyAdvanced",
+        "_meta": {
+            "title": "Apply ControlNet (Advanced)"
+        }
+    },
+    "17": {
+        "inputs": {
+            "control_net_name": "SD15\\control_v11\\control_v11p_sd15_normalbae.pth"
+        },
+        "class_type": "ControlNetLoader",
+        "_meta": {
+            "title": "Load ControlNet Model"
+        }
+    },
+    "18": {
+        "inputs": {
+            "image": "castle-3dmodel-normal.png",
+            "upload": "image"
+        },
+        "class_type": "LoadImage",
+        "_meta": {
+            "title": "normal"
+        }
+    },
+    "26": {
+        "inputs": {
+            "lora_name": "SD15\\epiNoiseoffset_v2-pynoise.safetensors",
+            "strength_model": 1,
+            "strength_clip": 1,
+            "model": [
+                "28",
+                0
+            ],
+            "clip": [
+                "28",
+                1
+            ]
+        },
+        "class_type": "LoraLoader",
+        "_meta": {
+            "title": "Load LoRA"
+        }
+    },
+    "28": {
+        "inputs": {
+            "lora_name": "SD15\\add_detail.safetensors",
+            "strength_model": 1,
+            "strength_clip": 1,
+            "model": [
+                "4",
+                0
+            ],
+            "clip": [
+                "4",
+                1
+            ]
+        },
+        "class_type": "LoraLoader",
+        "_meta": {
+            "title": "Load LoRA"
+        }
+    }
+}
+PARAM_TO_WORKFLOW = {
+    "seed": {
+        "class_type": "KSampler",
+        "input_key": "seed",
+        "meta_title": "main_sampler"
+    },
+    "steps": {
+        "class_type": "KSampler",
+        "input_key": "steps",
+        "meta_title": "main_sampler"
+    },
+    "cfg_scale": {
+        "class_type": "KSampler",
+        "input_key": "cfg",
+        "meta_title": "main_sampler"
+    },
+    "sampler": {
+        "class_type": "KSampler",
+        "input_key": "sampler_name",
+        "meta_title": "main_sampler"
+    },
+    "scheduler": {
+        "class_type": "KSampler",
+        "input_key": "scheduler",
+        "meta_title": "main_sampler"
+    },
+    "denoising_strength": {
+        "class_type": "KSampler",
+        "input_key": "denoise",
+        "meta_title": "main_sampler"
+    },
+    "prompt": {
+        "class_type": "CLIPTextEncode",
+        "input_key": "text",
+        "meta_title": "positive"
+    },
+    "negative_prompt": {
+        "class_type": "CLIPTextEncode",
+        "input_key": "text",
+        "meta_title": "negative"
+    },
+    "color_image": {
+        "class_type": "LoadImage",
+        "input_key": "image",
+        "meta_title": "color"
+    },
+    "depth_image": {
+        "class_type": "LoadImage",
+        "input_key": "image",
+        "meta_title": "depth"
+    },
+    "normal_image": {
+        "class_type": "LoadImage",
+        "input_key": "image",
+        "meta_title": "normal"
+    }
+}
 
 
 # CORE FUNCTIONS:
+def load_workflow(context, workflow_file) -> dict:
+    """ Given the context and the workflow file name, load the workflow JSON. and output it as a dictionary."""
 
-def load_workflow(context, workflow_file):
     workflow_path = os.path.join(get_workflows_path(context), workflow_file)
-    with open(workflow_path, 'r') as file:
-        return json.load(file)
+    try:
+        with open(workflow_path, 'r') as file:
+            return json.load(file)
+    except:
+        return operators.handle_error(f"Couldn't load the workflow file: {workflow_file}.", "workflow_file_not_found")
 
 
-def get_active_workflow(context):
-    return context.scene.air_props.comfyui_workflows
+def upload_image(img_file, subfolder):
+    """Upload the image to the input folder of ComfyUI"""
+    # This function is here for future use if we decide to use a remote ComfyUI server.
 
+    # At the moment we're not using it:
+    # ComfyUI is running locally and we can render the image directly
+    # from Blender to the ComfyUI input path without the need to upload it through the API.
 
-def upload_image(img_file):
-
-    # Get the image path from _io.BufferedReader
+    # Get the image path from the name of _io.BufferedReader
     image_path = img_file.name
-    # print("\nLOG IMAGE PATH:")
-    # print(image_path)
 
-    # Post the image to the /upload/image endpoint
-    server_url = get_server_url("/upload/image")
-    print(Fore.WHITE + "\nREQUEST TO: " + server_url)
+    if LOG_UPLOAD_IMAGE:
+        print(Fore.WHITE + f"\nLOG IMAGE PATH:" + Fore.RESET)
+        print(image_path)
 
     # prepare the data
+    server_url = get_server_url("/upload/image")
     headers = create_headers()
-    data = {"subfolder": "test", "type": "input"}
+    data = {"subfolder": subfolder, "type": "input"}
     files = {'image': (os.path.basename(image_path), open(image_path, 'rb'))}
-    resp = requests.post(server_url, files=files, data=data, headers=headers)
 
-    # print(Fore.WHITE + "\nUPLOAD IMAGE RESPONSE OBJECT:" + Fore.RESET)
-    print(resp.content)
-    # b'{"name": "ai-render-1712271170-cat-1-before-y939nzr0.png", "subfolder": "", "type": "input"}'
+    if LOG_REQUEST_TO:
+        print(Fore.WHITE + "\nREQUEST TO: " + server_url)
 
-    # add a base 64 encoded image to the params
-    # params["init_images"] = ["data:image/png;base64," + base64.b64encode(img_file.read()).decode()]
-    # img_file.close()
+    # send the API request
+    try:
+        resp = requests.post(server_url, files=files, data=data, headers=headers)
+    except requests.exceptions.ConnectionError:
+        return operators.handle_error(f"The local Stable Diffusion server couldn't be found. It's either not running, or it's running at a different location than what you specified in the add-on preferences. [Get help]({config.HELP_WITH_LOCAL_INSTALLATION_URL})", "local_server_not_found")
+    except requests.exceptions.MissingSchema:
+        return operators.handle_error(f"The url for your local Stable Diffusion server is invalid. Please set it correctly in the add-on preferences. [Get help]({config.HELP_WITH_LOCAL_INSTALLATION_URL})", "local_server_url_invalid")
+    except requests.exceptions.ReadTimeout:
+        return operators.handle_error("The local Stable Diffusion server timed out. Set a longer timeout in AI Render preferences, or use a smaller image size.", "timeout")
 
-    return resp.json()["subfolder"], resp.json()["name"]
+    # if LOG_RESPONSE:
+        # print(Fore.WHITE + "\nUPLOAD IMAGE RESPONSE:" + Fore.RESET)
+        # pprint.pp(resp.content)
+
+    img_file.close()
+
+    # return the image name
+    return resp.json().get("name")
 
 
-def generate(params, img_file, filename_prefix, props):
+def find_node_by_title(workflow: dict,
+                       class_type: str,
+                       meta_title: str):
+    """Find the node key based on class_type and meta_title."""
+
+    for key, value in workflow.items():
+        if value['class_type'] == class_type:
+            if value.get('_meta', {}).get('title') == meta_title:
+                return key
+
+    return None
+
+
+def map_param_to_workflow(params, workflow):
+    """Map parameters to the appropriate nodes in the workflow JSON."""
+
+    for param_name, param_info in PARAM_TO_WORKFLOW.items():
+        # Check if the parameter is in the params dictionary
+        if param_name in params:
+            class_type = param_info["class_type"]
+            input_key = param_info["input_key"]
+            meta_title = param_info["meta_title"]
+
+            # Find the node by title in the workflow
+            node_key = find_node_by_title(workflow, class_type, meta_title)
+
+            # If the node is found, update the input_key with the parameter's value
+            if node_key is not None:
+                workflow[node_key]["inputs"][input_key] = params[param_name]
+    return workflow
+
+
+def map_params(params, workflow):
+    """Map the parameters to the workflow."""
+
+    if LOG_PARAMS:
+        print(Fore.WHITE + "\nLOG PARAMS:" + Fore.RESET)
+        pprint.pp(params)
+
+    mapped_workflow = map_param_to_workflow(params, workflow)
+
+    return mapped_workflow
+
+
+def map_comfy_props(comfyui_props, workflow):
+    """Map the ComfyUI properties to the workflow."""
+
+    updated_workflow = workflow
+
+    print(Fore.WHITE + "\nLOG COMFYUI PROPS:" + Fore.RESET)
+    for prop in comfyui_props.bl_rna.properties.items():
+        if prop[1].type == 'COLLECTION':
+            for item in getattr(comfyui_props, prop[0]):
+                node_key = item.name
+                for sub_prop in item.bl_rna.properties.items():
+                    # Access the updated workflow at node_key and change in the inputs only if key exists
+                    if sub_prop[0] in updated_workflow[node_key]["inputs"]:
+                        updated_workflow[node_key]["inputs"][sub_prop[0]] = getattr(item, sub_prop[0])
+                        print(f"Updated workflow at node_key: {node_key} with {sub_prop[0]}: {getattr(item, sub_prop[0])}")
+                print()
+
+    if LOG_MAPPED_WORKFLOW:
+        print(Fore.WHITE + "\nLOG_MAPPED_WORKFLOW:" + Fore.RESET)
+        print(type(updated_workflow))
+        pprint.pp(updated_workflow)
+
+    # Save mapped json to local file
+    workflow_path = utils.get_addon_preferences().comfyui_workflows_path
+    workflow_file_path = workflow_path + '/../example_api_mapped.json'
+    with open(workflow_file_path, 'w') as f:
+        json.dump(updated_workflow, f, indent=4)
+
+    return workflow
+
+
+def generate(params, img_file, filename_prefix, props, comfyui_props):
+
+    if LOG_PROPS:
+        print(Fore.WHITE + "\nLOG PROPS:" + Fore.RESET)
+        pprint.pp(props)
+        pprint.pp(comfyui_props)
 
     # Load the workflow
-    workflow = load_workflow(bpy.context, get_active_workflow(bpy.context))
-    print(f"{Fore.LIGHTWHITE_EX}\nLOG WORKFLOW: {Fore.RESET}{get_active_workflow(bpy.context)}")
-    # pprint(workflow)
+    selected_workflow = load_workflow(bpy.context, comfyui_props.comfyui_workflow)
+
+    if LOG_WORKFLOW:
+        print(f"{Fore.LIGHTWHITE_EX}\nLOG WORKFLOW: {Fore.RESET}{(bpy.context)}")
+        pprint.pp(selected_workflow)
 
     params["denoising_strength"] = round(1 - params["image_similarity"], 4)
     params["sampler_index"] = params["sampler"]
 
-    # upload the image, get the subfolder and image name
-    subfolder, img_name = upload_image(img_file)
+    # Get the input path of local ComfyUI
+    comfyui_input_path = get_comfyui_input_path(bpy.context)
 
-    # Add the image path to the params
-    params["init_images"] = [f"{subfolder}/{img_name}"]
+    # get the frame number for the filename
+    frame_number = bpy.context.scene.frame_current
+
+    # format the frame number to 4 digits
+    frame_number = str(frame_number).zfill(4)
+
+    color_image_path = comfyui_input_path + "color/Image" + frame_number + ".png"
+    depth_image_path = comfyui_input_path + "depth/Image" + frame_number + ".png"
+    normal_image_path = comfyui_input_path + "normal/Image" + frame_number + ".png"
+
+    params['color_image'] = color_image_path
+    params['depth_image'] = depth_image_path
+    params['normal_image'] = normal_image_path
 
     # map the params to the ComfyUI nodes
-    json_obj = map_params(params, workflow)
-    data = {"prompt": json_obj}
+    mapped_workflow = map_params(params, selected_workflow)
+
+    # Add additional comfyUI param mappings here
+    updated_workflow = map_comfy_props(comfyui_props, mapped_workflow)
+
+    data = {"prompt": updated_workflow}
 
     # prepare the server url
     try:
@@ -91,53 +537,6 @@ def generate(params, img_file, filename_prefix, props):
         return handle_error(response)
 
 
-def upscale(img_file, filename_prefix, props):
-
-    # prepare the params
-    data = {
-        "resize_mode": 0,
-        "show_extras_results": True,
-        "gfpgan_visibility": 0,
-        "codeformer_visibility": 0,
-        "codeformer_weight": 0,
-        "upscaling_resize": props.upscale_factor,
-        "upscaling_resize_w": utils.sanitized_upscaled_width(max_upscaled_image_size()),
-        "upscaling_resize_h": utils.sanitized_upscaled_height(max_upscaled_image_size()),
-        "upscaling_crop": True,
-        "upscaler_1": props.upscaler_model,
-        "upscaler_2": "None",
-        "extras_upscaler_2_visibility": 0,
-        "upscale_first": True,
-    }
-
-    # add a base 64 encoded image to the params
-    data["image"] = "data:image/png;base64," + \
-        base64.b64encode(img_file.read()).decode()
-    img_file.close()
-
-    # prepare the server url
-    try:
-        server_url = get_server_url("/sdapi/v1/extra-single-image")
-    except:
-        return operators.handle_error(f"You need to specify a location for the local Stable Diffusion server in the add-on preferences. [Get help]({config.HELP_WITH_LOCAL_INSTALLATION_URL})", "local_server_url_missing")
-
-    # send the API request
-    response = do_post(server_url, data)
-
-    # print log info for debugging
-    print("DEBUG COMFY")
-    debug_log(response)
-
-    if response == False:
-        return False
-
-    # handle the response
-    if response.status_code == 200:
-        return handle_success(response, filename_prefix)
-    else:
-        return handle_error(response)
-
-
 def handle_success(response, filename_prefix):
 
     # Get the prompt_id from the response
@@ -145,11 +544,13 @@ def handle_success(response, filename_prefix):
         response_obj = response.json()
         prompt_id = response_obj.get("prompt_id")
 
-        # print(Fore.WHITE + "QUEUE PROMPT RESPONSE OBJECT: " + Fore.RESET)
-        # print(json.dumps(response_obj, indent=2))
-        print(Fore.GREEN + "\nPROMPT ID: " + Fore.RESET + prompt_id)
+        if LOG_RESPONSE:
+            print(Fore.WHITE + "\nPROMPT RESPONSE: " + Fore.RESET)
+            print(json.dumps(response_obj, indent=2))
+            print(Fore.LIGHTWHITE_EX + "\nPROMPT ID: " + Fore.RESET + prompt_id)
 
     except:
+
         print("ComfyUI response content: ")
         print(response.content)
         return operators.handle_error("Received an unexpected response from the ComfyUI.", "unexpected_response")
@@ -160,7 +561,7 @@ def handle_success(response, filename_prefix):
     server_url = get_server_url(f"/history/{prompt_id}")
 
     while not status_completed:
-        # print(Fore.WHITE + "\nREQUEST TO: " + server_url)
+        print(Fore.WHITE + "\nREQUEST TO: " + server_url)
 
         response = requests.get(server_url, headers=create_headers(), timeout=utils.local_sd_timeout())
         response_obj = response.json()
@@ -175,31 +576,42 @@ def handle_success(response, filename_prefix):
             status_completed = status.get("status_str") == "success"
 
             if status_completed:
-                print(Fore.GREEN + "STATUS: " + Fore.RESET + status.get("status_str"))
-                # print(Fore.WHITE + "\nHISTORY RESPONSE OBJECT: " + Fore.RESET)
-                # print(json.dumps(response_obj, indent=2))
+
+                if LOG_DOWNLOAD_IMAGE:
+                    print(Fore.LIGHTWHITE_EX + "STATUS: " + Fore.RESET + status.get("status_str"))
+                if LOG_RESPONSE:
+                    print(Fore.WHITE + "\nHISTORY RESPONSE: " + Fore.RESET)
+                if LOG_LONG_RESPONSE:
+                    print(json.dumps(response_obj, indent=2))
+                else:
+                    print("LONG RESPONSE LOGGING IS DISABLED")
 
                 # Get the NODE NUMBER of the SaveImage node
+
                 save_image_node = None
                 for item in response_obj[prompt_id]["prompt"]:
                     if isinstance(item, dict):
                         for key, value in item.items():
-                            # print(Fore.WHITE + "\nNODE NUMBER: " + Fore.RESET + key)
-                            # print(Fore.WHITE + "\nNODE VALUE: " + Fore.RESET)
-                            # print(json.dumps(value, indent=2))
                             if value.get("class_type") == "SaveImage":
                                 save_image_node = key
-                print(Fore.GREEN + "IMAGE NODE_NUMBER: " + Fore.RESET + save_image_node)
+                                break
+
+                if LOG_DOWNLOAD_IMAGE:
+                    print(Fore.LIGHTWHITE_EX + "IMAGE NODE_NUMBER: " + Fore.RESET + save_image_node)
 
                 image_file_name = response_obj[prompt_id]["outputs"][save_image_node]["images"][0]["filename"]
-                print(Fore.GREEN + "IMAGE FILE NAME: " + Fore.RESET + image_file_name)  # ComfyUI_00057_.png
+
+                if LOG_DOWNLOAD_IMAGE:
+                    print(Fore.LIGHTWHITE_EX + "IMAGE FILE NAME: " + Fore.RESET + image_file_name)  # ComfyUI_00057_.png
                 break
         else:
             return handle_error(response)
 
     # Query the view endpoint with the image_file_name to get the image
     server_url = get_server_url(f"/view?filename={image_file_name}")
-    print(Fore.WHITE + "\nREQUEST TO: " + server_url)
+
+    if LOG_DOWNLOAD_IMAGE:
+        print(Fore.WHITE + "\nREQUEST TO: " + server_url)
 
     response = requests.get(server_url, headers=create_headers(), timeout=utils.local_sd_timeout())
 
@@ -242,53 +654,13 @@ def handle_error(response):
             return operators.handle_error(f"It looks like the Automatic1111 server is running, but it's not in API mode. [Get help]({config.HELP_WITH_AUTOMATIC1111_NOT_IN_API_MODE_URL})", "automatic1111_not_in_api_mode")
 
     else:
-        print(Fore.GREEN + "ERROR DETAILS: " + Fore.RESET)
-        print(json.dumps(response.json(), indent=2))
+        print(Fore.RED + "ERROR DETAILS:")
+        pprint.pp(response.json(), indent=2)
+        print(Fore.RESET)
         return operators.handle_error(f"AN ERROR occurred in the ComfyUI server.", "unknown_error_response")
 
 
 # PRIVATE SUPPORT FUNCTIONS:
-
-def print_with_colors(json_dict):
-    def find_prompts(data, class_type='KSampler'):
-        for key, value in data.items():
-            if isinstance(value, dict):
-                if value.get('class_type') == class_type:
-                    return value['inputs'].get('positive', [''])[0], value['inputs'].get('negative', [''])[0]
-                positive_key, negative_key = find_prompts(value, class_type)
-                if positive_key or negative_key:
-                    return positive_key, negative_key
-        return None, None
-
-    def recursive_print(data, positive_key=None, negative_key=None, path=""):
-        for key, value in data.items():
-            # Maintain the path traveled in the JSON structure
-            json_traverse_path = f"{path}/{key}"
-            if isinstance(value, dict):
-                recursive_print(value, positive_key,
-                                negative_key, json_traverse_path)
-            elif isinstance(value, list) and all(isinstance(item, dict) for item in value):
-                for item in value:
-                    recursive_print(item, positive_key,
-                                    negative_key, json_traverse_path)
-            else:
-                if key == 'prompt' or (key == 'text' and positive_key and positive_key in json_traverse_path):
-                    print(
-                        Fore.GREEN + f"{key}: {Fore.LIGHTGREEN_EX}{value}" + Fore.RESET)
-                elif key == 'negative_prompt' or (key == 'text' and negative_key and negative_key in json_traverse_path):
-                    print(
-                        Fore.RED + f"{key}: {Fore.LIGHTRED_EX}{value}" + Fore.RESET)
-                elif key in ['sampler', 'scheduler', 'denoising_strength', 'steps', 'seed', 'cfg_scale', 'denoise', 'sampler_name', 'cfg']:
-                    print(
-                        Fore.MAGENTA + f"{key}: {Fore.LIGHTMAGENTA_EX}{value}" + Fore.RESET)
-                elif key in ['init_images', 'image']:
-                    print(
-                        Fore.YELLOW + f"{key}: {Fore.LIGHTYELLOW_EX}{value}" + Fore.RESET)
-
-    positive_node, negative_node = find_prompts(json_dict)
-    recursive_print(json_dict, positive_node, negative_node)
-
-
 def create_headers():
     return {
         "User-Agent": f"Blender/{bpy.app.version_string}",
@@ -305,92 +677,22 @@ def get_server_url(path):
         return base_url + path
 
 
-def map_KSampler(params, json_obj):
-
-    KSampler = None
-
-    for key, value in json_obj.items():
-        if value['class_type'] == 'KSampler':
-            KSampler = key
-
-            value['inputs']['seed'] = params['seed']
-            value['inputs']['steps'] = params['steps']
-            value['inputs']['cfg'] = params['cfg_scale']
-            value['inputs']['sampler_name'] = params['sampler']
-            value['inputs']['scheduler'] = params['scheduler']
-            value['inputs']['denoise'] = params['denoising_strength']
-
-    return json_obj, KSampler
-
-
-def map_prompts(params, json_obj):
-
-    positive = None
-    negative = None
-
-    # Get the node number of the positive and negative prompta
-    for key, value in json_obj.items():
-        if value['class_type'] == 'KSampler':
-            positive = value['inputs']['positive'][0]
-            negative = value['inputs']['negative'][0]
-
-    for key, value in json_obj.items():
-        if value['class_type'] == 'CLIPTextEncode':
-            if key == positive:
-                value['inputs']['text'] = params['prompt']
-            if key == negative:
-                value['inputs']['text'] = params['negative_prompt']
-
-    return json_obj, positive, negative
-
-
-def map_init_image(params, json_obj):
-
-    connected_image = None
-
-    # Get the node number of the VAEEncode
-    for key, value in json_obj.items():
-        if value['class_type'] == 'VAEEncode':
-            connected_image = value['inputs']['pixels'][0]
-
-    for key, value in json_obj.items():
-        if value['class_type'] == 'LoadImage':
-            if key == connected_image:  # If the LoadImage is connected to the VAEEncode
-                value['inputs']['image'] = params['init_images'][0]
-
-    return json_obj, connected_image
-
-
-def map_params(params, json_obj):
-
-    # print("\nLOG PARAMS:")
-    # print_with_colors(params)
-
-    # Map the params to the ComfyUI nodes
-    json_obj, KSampler = map_KSampler(params, json_obj)
-    json_obj, positive, negative = map_prompts(params, json_obj)
-    json_obj, connected_image = map_init_image(params, json_obj)
-
-    # print("\nMAPPING COMFYUI NODES:")
-    # print(Fore.MAGENTA + "KSAMPLER: " + Fore.RESET + KSampler)
-    # print(Fore.GREEN + "POSITIVE PROMPT: " + Fore.RESET + positive)
-    # print(Fore.RED + "NEGATIVE PROMPT: " + Fore.RESET + negative)
-    # print(Fore.YELLOW + "IMAGE CONNECTED TO VAE ENCODER: " + Fore.RESET + connected_image)
-
-    # Save mapped json to local file
-    with open('sd_backends/comfyui/_mapped.json', 'w') as f:
-        json.dump(json_obj, f, indent=4)
-
-    return json_obj
+def do_get(url):
+    if LOG_REQUEST_TO:
+        print(Fore.WHITE + "\nGET REQUEST TO: " + url)
+    try:
+        return requests.get(url, headers=create_headers(), timeout=utils.local_sd_timeout())
+    except requests.exceptions.ConnectionError:
+        return operators.handle_error(f"The local Stable Diffusion server couldn't be found. It's either not running, or it's running at a different location than what you specified in the add-on preferences. [Get help]({config.HELP_WITH_LOCAL_INSTALLATION_URL})", "local_server_not_found")
+    except requests.exceptions.MissingSchema:
+        return operators.handle_error(f"The url for your local Stable Diffusion server is invalid. Please set it correctly in the add-on preferences. [Get help]({config.HELP_WITH_LOCAL_INSTALLATION_URL})", "local_server_url_invalid")
+    except requests.exceptions.ReadTimeout:
+        return operators.handle_error("The local Stable Diffusion server timed out. Set a longer timeout in AI Render preferences, or use a smaller image size.", "timeout")
 
 
 def do_post(url, data):
-
-    # send the API request
-    print(Fore.WHITE + "\nREQUEST TO: " + url)
-    # print("\nLOG REQUEST DATA:")
-    # print_with_colors(data)
-
+    if LOG_REQUEST_TO:
+        print(Fore.WHITE + "\nPOST REQUEST TO: " + url)
     try:
         return requests.post(url, json=data, headers=create_headers(), timeout=utils.local_sd_timeout())
     except requests.exceptions.ConnectionError:
@@ -416,18 +718,142 @@ def debug_log(response):
 
 
 # PUBLIC SUPPORT FUNCTIONS:
-
 def get_workflows_path(context):
-    return utils.get_addon_preferences().workflows_path
+    return utils.get_addon_preferences().comfyui_workflows_path
 
 
-def get_workflows():
+def create_workflows_tuples():
+    """ Get the workflows and create a list of tuples for the EnumProperty"""
+
     workflows_path = get_workflows_path(bpy.context)
     workflow_files = [f for f in os.listdir(workflows_path) if os.path.isfile(
         os.path.join(workflows_path, f)) and f.endswith(".json")]
-    workflow_tuples = [(f, f, "", i) for i, f in enumerate(workflow_files)]
+    workflows_tuples = [(f, f, "", i) for i, f in enumerate(workflow_files)]
 
-    return workflow_tuples
+    return workflows_tuples
+
+
+def get_comfyui_input_path(context):
+    comfyui_path = utils.get_addon_preferences(context).comfyui_path
+    return comfyui_path + "input/"
+
+
+def get_comfyui_output_path(context):
+    comfyui_path = utils.get_addon_preferences(context).comfyui_path
+    return comfyui_path + "output/"
+
+
+def update_model_list():
+    """ GET /object_info/CheckpointLoaderSimple endpoint to get the available models"""
+    # TODO: Operator that updates the list of models in the UI
+
+    # prepare the server url
+    try:
+        server_url = get_server_url("/object_info/CheckpointLoaderSimple")
+    except:
+        return operators.handle_error(f"You need to specify a location for the local Stable Diffusion server in the add-on preferences. [Get help]({config.HELP_WITH_LOCAL_INSTALLATION_URL})", "local_server_url_missing")
+
+    # send the API request
+    response = do_get(server_url)
+
+    if response == False:
+        return None
+
+    # handle the response
+    if response.status_code == 200:
+
+        models_list = response.json()["CheckpointLoaderSimple"]["input"]["required"]["ckpt_name"][0]
+
+        if LOG_RESPONSE:
+            print(Fore.WHITE + "\nMODELS RESPONSE: " + Fore.RESET)
+            pprint.pp(models_list)
+        if LOG_LONG_RESPONSE:
+            print(response.json())
+        else:
+            print("LONG RESPONSE LOGGING IS DISABLED")
+
+    return models_list
+
+
+def get_models():
+    return ['SD15\\28DSTABLEBESTVERSION_v6.safetensors',
+            'SD15\\3D\\3dAnimationDiffusion_lcm.safetensors',
+            'SD15\\3D\\3dAnimationDiffusion_v10.safetensors',
+            'SD15\\ANIME\\ghostmix_v20Bakedvae.safetensors',
+            'SD15\\ANIME\\helloyoung25d_V10f.safetensors',
+            'SD15\\ANIME\\lofiEVERYTHINGEasilyCreate_lofiEVERYTHINGV1.safetensors',
+            'SD15\\ANIME\\toonyou_beta6.safetensors',
+            'SD15\\CINE\\cineDiffusion_v3.safetensors',
+            'SD15\\GRAPHIC\\lyriel_v16.safetensors',
+            'SD15\\GRAPHIC\\zyd232_InkStyle_v1_0.safetensors',
+            'SD15\\LCM\\LCM_Dreamshaper_v7_4k.safetensors',
+            'SD15\\LCM\\dreamshaper_8LCM.safetensors',
+            'SD15\\LCM\\photonLCM_v10.safetensors',
+            'SD15\\MONET\\Monet-Style.ckpt',
+            'SD15\\PHOTO\\leosamsFilmgirlUltra_ultraBaseModel.safetensors',
+            'SD15\\PHOTO\\picxReal_10.safetensors',
+            'SD15\\PHOTO\\picxReal_10Inpaint.safetensors',
+            'SD15\\PHOTO\\picxReal_10Lcm.safetensors',
+            'SD15\\PHOTO\\realisticVisionV51_v51VAE.safetensors',
+            'SD15\\PaperCut_v1.ckpt',
+            'SD15\\VECTOR\\VVVASIIGRECI_0.safetensors',
+            'SD15\\VECTOR\\Vectorartz.ckpt',
+            'SD15\\VECTOR\\flonixsVectorStyle_redditModelBadges.safetensors',
+            'SD15\\VECTOR\\vectorartzDiffusion_v1.ckpt',
+            'SD15\\deliberate_v2.safetensors',
+            'SD15\\dreamlike-diffusion-1.0.safetensors',
+            'SD15\\dreamshaper_8.safetensors',
+            'SD15\\dynamicrafter_1024_v1.ckpt',
+            'SD15\\dynamicrafter_512_interp_v1.ckpt',
+            'SD15\\openjourney-v2.ckpt',
+            'SD15\\pirsusComicsStyle_pirsusComicsStyle.safetensors',
+            'SD15\\reliberate_v10.safetensors',
+            'SD15\\revAnimated_v122.safetensors',
+            'SD15\\roboDiffusion_v1.ckpt',
+            'SD15\\salle_sdv15_135K_steps_v1.safetensors',
+            'SD15\\sxzLumaFp16Cleaned_09X.safetensors',
+            'SD15\\sxzLumaFp16Cleaned_09XInpaint.safetensors',
+            'SD15\\sxzLuma_09XVAE.safetensors',
+            'SD15\\v1-5-pruned.safetensors',
+            'SD21\\v2-1_768-ema-pruned.safetensors',
+            'SD21\\v2-1_768-nonema-pruned.safetensors',
+            'SDXL\\SDXLFaetastic_v24.safetensors',
+            'SDXL\\SSD-1B.safetensors',
+            'SDXL\\aetherverseLightning_v10.safetensors',
+            'SDXL\\dreamshaperXL_lightningDPMSDE.safetensors',
+            'SDXL\\dreamshaperXL_v21TurboDPMSDE.safetensors',
+            'SDXL\\fenris-xl.safetensors',
+            'SDXL\\hsxl_base_1.0.safetensors',
+            'SDXL\\juggernautXL_v9Rdphoto2Lightning.safetensors',
+            'SDXL\\juggernautXL_v9Rundiffusionphoto2.safetensors',
+            'SDXL\\juggernautXL_version6Rundiffusion.safetensors',
+            'SDXL\\leosamsHelloworldXL_helloworldXL50GPT4V.safetensors',
+            'SDXL\\proteusRundiffusion_withclip.safetensors',
+            'SDXL\\realisticStockPhoto_v10.safetensors',
+            'SDXL\\realvisxlV40_v40LightningBakedvae.safetensors',
+            'SDXL\\sd_xl_base_1.0.safetensors',
+            'SDXL\\sd_xl_base_1.0_0.9vae.safetensors',
+            'SDXL\\sd_xl_refiner_1.0.safetensors',
+            'SDXL\\sd_xl_refiner_1.0_0.9vae.safetensors',
+            'SDXL\\sd_xl_turbo_1.0_fp16.safetensors',
+            'SDXL\\turbovisionxlSuperFastXLBasedOnNew_tvxlV431Bakedvae.safetensors',
+            'STABLECASCADE\\stable_cascade_stage_b.safetensors',
+            'STABLECASCADE\\stable_cascade_stage_c.safetensors',
+            'sd_turbo.safetensors',
+            'v1-5-pruned-emaonly.safetensors',
+            'x4-upscaler-ema.safetensors']
+
+
+def create_ckpts_tuples():
+    """ Get the models and create a list of tuples for the EnumProperty"""
+
+    models_list = get_models()
+
+    if models_list:
+        models_tuples = [(f, f, "", i) for i, f in enumerate(models_list)]
+        return models_tuples
+    else:
+        return [("none", "None", "", 0)]
 
 
 def get_samplers():
@@ -505,9 +931,7 @@ def supports_negative_prompts():
 
 
 def supports_choosing_model():
-    # TODO - This should be set to true
-    # and a get_model() shoulb be used to get the model list from the ComfyUI API
-    return False
+    return True
 
 
 def supports_upscaling():
@@ -543,136 +967,3 @@ def is_using_sdxl_1024_model(props):
     # returning false, because that way the UI will allow the user to select
     # more image size options.
     return False
-
-
-def get_available_controlnet_models(context):
-    models = context.scene.air_props.controlnet_available_models
-
-    if (not models):
-        return []
-    else:
-        enum_list = []
-        for item in models.split("||||"):
-            enum_list.append((item, item, ""))
-        return enum_list
-
-
-def get_available_controlnet_modules(context):
-    modules = context.scene.air_props.controlnet_available_modules
-
-    if (not modules):
-        return []
-    else:
-        enum_list = []
-        for item in modules.split("||||"):
-            enum_list.append((item, item, ""))
-        return enum_list
-
-
-def choose_controlnet_defaults(context):
-    models = get_available_controlnet_models(context)
-    modules = get_available_controlnet_modules(context)
-
-    if (not models) or (not modules):
-        return
-
-    # priority order for models and modules
-    priority_order = ['depth', 'openpose', 'normal', 'canny', 'scribble']
-
-    # choose a matching model and module in the priority order:
-    for item in priority_order:
-        model_selection = None
-        module_selection = None
-
-        for model in models:
-            if item in model[0]:
-                model_selection = model[0]
-                break
-
-        for module in modules:
-            if item in module[0]:
-                module_selection = module[0]
-                break
-
-        if model_selection and module_selection:
-            context.scene.air_props.controlnet_model = model_selection
-            context.scene.air_props.controlnet_module = module_selection
-            return
-
-
-def load_upscaler_models(context):
-    try:
-        # set a flag to indicate whether the list of models has already been loaded
-        was_already_loaded = is_upscaler_model_list_loaded(context)
-
-        # get the list of available upscaler models from the Automatic1111 api
-        server_url = get_server_url("/sdapi/v1/upscalers")
-        headers = {"Accept": "application/json"}
-        response = requests.get(server_url, headers=headers, timeout=5)
-        response_obj = response.json()
-        print("Upscaler models returned from Automatic1111 API:")
-        print(response_obj)
-
-        # store the list of models in the scene properties
-        if not response_obj:
-            return operators.handle_error(f"No upscaler models are installed in Automatic1111. [Get help]({config.HELP_WITH_AUTOMATIC1111_UPSCALING_URL})")
-        else:
-            # map the response object to a list of model names
-            upscaler_models = []
-            for model in response_obj:
-                if (model["name"] != "None"):
-                    upscaler_models.append(model["name"])
-            context.scene.air_props.automatic1111_available_upscaler_models = "||||".join(
-                upscaler_models)
-
-            # if the list of models was not already loaded, set the default model
-            if not was_already_loaded:
-                context.scene.air_props.upscaler_model = default_upscaler_model()
-
-            # return success
-            return True
-    except:
-        return operators.handle_error(f"Couldn't get the list of available upscaler models from the Automatic1111 server. [Get help]({config.HELP_WITH_AUTOMATIC1111_UPSCALING_URL})")
-
-
-def load_controlnet_models(context):
-    try:
-        # get the list of available controlnet models from the Automatic1111 api
-        server_url = get_server_url("/controlnet/model_list")
-        headers = {"Accept": "application/json"}
-        response = requests.get(server_url, headers=headers, timeout=5)
-        response_obj = response.json()
-        print("ControlNet models returned from Automatic1111 API:")
-        print(response_obj)
-
-        # store the list of models in the scene properties
-        models = response_obj["model_list"]
-        if not models:
-            return operators.handle_error(f"You don't have any ControlNet models installed. You will need to download them from Hugging Face. [Get help]({config.HELP_WITH_CONTROLNET_URL})")
-        else:
-            context.scene.air_props.controlnet_available_models = "||||".join(
-                models)
-            return True
-    except:
-        return operators.handle_error(f"Couldn't get the list of available ControlNet models from the Automatic1111 server. Make sure ControlNet is installed and activated. [Get help]({config.HELP_WITH_CONTROLNET_URL})")
-
-
-def load_controlnet_modules(context):
-    try:
-        # get the list of available controlnet modules from the Automatic1111 api
-        server_url = get_server_url("/controlnet/module_list")
-        headers = {"Accept": "application/json"}
-        response = requests.get(server_url, headers=headers, timeout=5)
-        response_obj = response.json()
-        print("ControlNet modules returned from Automatic1111 API:")
-        print(response_obj)
-
-        # sort the modules in alphabetical order, and then store them in the scene
-        # properties
-        modules = response_obj["module_list"]
-        modules.sort()
-        context.scene.air_props.controlnet_available_modules = "||||".join(
-            modules)
-        return True
-    except:
-        return operators.handle_error(f"Couldn't get the list of available ControlNet modules from the Automatic1111 server. Make sure ControlNet is installed and activated. [Get help]({config.HELP_WITH_CONTROLNET_URL})")

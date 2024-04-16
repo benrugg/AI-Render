@@ -9,6 +9,8 @@ from .ui import ui_preset_styles
 from .sd_backends import automatic1111_api
 from .sd_backends import comfyui_api
 
+from colorama import Fore
+
 
 def get_available_samplers(self, context):
     return utils.get_active_backend().get_samplers()
@@ -16,21 +18,19 @@ def get_available_samplers(self, context):
 
 def get_available_schedulers(self, context):
     if utils.sd_backend() == "comfyui":
-        return utils.get_active_backend().get_schedulers()
+        return comfyui_api.get_schedulers()
     else:
-        return []
-
-
-def get_available_workflows(self, context):
-    if utils.sd_backend() == "comfyui":
-        return utils.get_active_backend().get_workflows()
-    else:
-        return []
+        return [("none", "None", "", 0)]
 
 
 def get_available_models(self, context):
-    # TODO: Do it
-    pass
+    current_sd_backend = utils.sd_backend()
+    if current_sd_backend == "comfyui" and comfyui_api.supports_choosing_model():
+        return comfyui_api.create_ckpts_tuples()
+    else:
+        return [
+            ("stable-diffusion-xl-1024-v1-0", "SDXL 1.0", "", 120),
+        ]
 
 
 def get_default_sampler():
@@ -73,7 +73,8 @@ def get_outpaint_directions(self, context):
 
 
 def ensure_sampler(context):
-    # """Ensure that the sampler is set to a valid value"""
+    """Ensure that the sampler is set to a valid value"""
+    print(Fore.GREEN + "ENSURE SAMPLER" + Fore.RESET)
     scene = context.scene
     if not scene.air_props.sampler:
         scene.air_props.sampler = get_default_sampler()
@@ -81,13 +82,16 @@ def ensure_sampler(context):
 
 def ensure_scheduler(context):
     # """Ensure that the scheduler is set to a valid value"""
-    scene = context.scene
-    if not scene.air_props.scheduler:
-        scene.air_props.scheduler = get_default_scheduler()
+    print(Fore.GREEN + "ENSURE SCHEDULER" + Fore.RESET)
+    if utils.sd_backend() == "comfyui":
+        scene = context.scene
+        if not scene.air_props.scheduler:
+            scene.air_props.scheduler = get_default_scheduler()
 
 
 def ensure_upscaler_model(context):
     # """Ensure that the upscale model is set to a valid value"""
+    print(Fore.GREEN + "ENSURE UPSCALER MODEL" + Fore.RESET)
     scene = context.scene
     if (
         utils.get_active_backend().is_upscaler_model_list_loaded(context)
@@ -102,6 +106,8 @@ def update_local_sd_url(context):
     If is set to ComfyUI, the url is http://127.0.0.1:8188
     """
 
+    print(Fore.GREEN + "UPDATE LOCAL SD URL TO:" + Fore.RESET)
+    print(utils.sd_backend())
     addonprefs = utils.get_addon_preferences(context)
 
     if utils.sd_backend() == "automatic1111":
@@ -111,16 +117,18 @@ def update_local_sd_url(context):
 
 
 def ensure_properties(self, context):
-    # """Ensure that any properties which could change with a change in preferences are set to valid values"""
+    """Ensure that any properties which could change with a change in preferences are set to valid values"""
+    print(Fore.GREEN + "ENSURE PROPERTIES" + Fore.RESET)
     ensure_sampler(context)
-    if utils.sd_backend() == "comfyui":
-        ensure_scheduler(context)
     ensure_upscaler_model(context)
     update_local_sd_url(context)
+    if utils.sd_backend() == "comfyui":
+        ensure_scheduler(context)
 
 
 def update_denoise(self, context):
     """round(1 - params["image_similarity"], 2)"""
+
     context.scene.air_props.denoising_strength = round(
         1 - context.scene.air_props.image_similarity, 4)
 
@@ -184,7 +192,7 @@ class AIRProperties(bpy.types.PropertyGroup):
     )
     steps: bpy.props.IntProperty(
         name="Steps",
-        default=30,
+        default=15,
         soft_min=1,
         soft_max=50,
         min=1,
@@ -193,10 +201,8 @@ class AIRProperties(bpy.types.PropertyGroup):
     )
     sd_model: bpy.props.EnumProperty(
         name="Stable Diffusion Model",
-        default=120,
-        items=[
-            ("stable-diffusion-xl-1024-v1-0", "SDXL 1.0", "", 120),
-        ],
+        default=0,
+        items=get_available_models,
         description="The Stable Diffusion model to use. SDXL is comparable to Midjourney. Older versions have now been removed, but newer versions may be added in the future",
     )
     sampler: bpy.props.EnumProperty(
@@ -414,12 +420,6 @@ class AIRProperties(bpy.types.PropertyGroup):
         step=0.01,
         name="Outpaint Color Variation",
     )
-    comfyui_workflows: bpy.props.EnumProperty(
-        name="ComfyUI Workflows",
-        default=1,
-        items=get_available_workflows,
-        description="A list of the available workflows (loaded from the ComfyUI API)",
-    )
 
 
 classes = [AIRProperties]
@@ -428,7 +428,6 @@ classes = [AIRProperties]
 def register():
     for cls in classes:
         bpy.utils.register_class(cls)
-
     bpy.types.Scene.air_props = bpy.props.PointerProperty(type=AIRProperties)
 
 

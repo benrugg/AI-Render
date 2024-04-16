@@ -1,4 +1,5 @@
 import bpy
+import os
 from . import (
     addon_updater_ops,
     config,
@@ -6,6 +7,11 @@ from . import (
     properties,
     utils,
 )
+
+
+def get_default_comfy_workflows_path():
+    workflows_path = os.path.join(os.path.dirname(__file__), "sd_backends", "comfyui", "workflows_api")
+    return workflows_path
 
 
 class AIRPreferences(bpy.types.AddonPreferences):
@@ -108,10 +114,18 @@ class AIRPreferences(bpy.types.AddonPreferences):
         min=0,
         max=59)
 
-    workflows_path: bpy.props.StringProperty(
-        name="Workflow Path",
+    # ComfyUI
+    comfyui_path: bpy.props.StringProperty(
+        name="ComfyUI Path",
+        default="E:/COMFY/ComfyUI/",
+        description="The path to the ComfyUI Installation",
+        subtype="DIR_PATH",
+    )
+
+    comfyui_workflows_path: bpy.props.StringProperty(
+        name="Workflows Path",
         description="Path where the workflows are stored",
-        default=utils.get_default_comfy_workflows_path(),
+        default=get_default_comfy_workflows_path(),
         subtype='DIR_PATH')
 
     def draw(self, context):
@@ -147,7 +161,7 @@ class AIRPreferences(bpy.types.AddonPreferences):
                 box.separator()
 
                 row = box.row()
-                row.operator("wm.url_open", text="Sign Up For DreamStudio (free)",icon="URL").url = config.DREAM_STUDIO_URL
+                row.operator("wm.url_open", text="Sign Up For DreamStudio (free)", icon="URL").url = config.DREAM_STUDIO_URL
 
                 row = box.row()
                 row.prop(self, "dream_studio_api_key")
@@ -163,10 +177,10 @@ class AIRPreferences(bpy.types.AddonPreferences):
                 row.prop(self, "stable_horde_api_key")
 
             # Local Installation with Automatic1111 or ComfyUI
-            if self.sd_backend == "automatic1111" or self.sd_backend == "comfyui":
+            if self.sd_backend == "automatic1111":
                 box = layout.box()
                 row = box.row()
-                row.label(text="Local Installation with Automatic1111 or comfyui:", icon="INFO")
+                row.label(text="Local Installation with Automatic1111:", icon="INFO")
 
                 utils.label_multiline(box, text="Instead of running in the cloud with DreamStudio, AI Render can hook into an existing local installation of Stable Diffusion. This allows for unlimited, free rendering on your own machine. It requires some advanced setup steps.", width=width_guess)
 
@@ -192,10 +206,6 @@ class AIRPreferences(bpy.types.AddonPreferences):
                 row = box.row()
                 row.operator("wm.url_open", text="Help with local installation", icon="URL").url \
                     = config.HELP_WITH_LOCAL_INSTALLATION_URL
-
-                if self.sd_backend == 'comfyui':
-                    row = box.row()
-                    row.prop(self, "workflows_path")
 
             # Local Installation with SHARK
             if self.sd_backend == "shark":
@@ -227,6 +237,32 @@ class AIRPreferences(bpy.types.AddonPreferences):
                 row = box.row()
                 row.operator("wm.url_open", text="Help with local installation", icon="URL").url \
                     = config.HELP_WITH_SHARK_INSTALLATION_URL
+
+            if self.sd_backend == "comfyui":
+                box = layout.box()
+                row = box.row()
+                row.label(text="Local Installation of Comfy UI:", icon="INFO")
+
+                utils.label_multiline(box, text="Instead of running in the cloud with DreamStudio, AI Render can hook into an existing local installation of Stable Diffusion. This allows for unlimited, free rendering on your own machine. It requires some advanced setup steps.", width=width_guess)
+
+                box.separator()
+
+                row = box.row()
+                col = row.column()
+                col.label(text="Local Web Server URL:")
+                col = row.column()
+                col.prop(self, "local_sd_url", text="")
+
+                row = box.row()
+                col = row.column()
+                col.label(text="Timeout (in seconds):")
+                col = row.column()
+                col.prop(self, "local_sd_timeout", text="")
+
+                row = box.row()
+                row.prop(self, "comfyui_path")
+                row = box.row()
+                row.prop(self, "workflows_path")
 
             # Notes
             box = layout.box()
