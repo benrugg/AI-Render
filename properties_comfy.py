@@ -109,6 +109,7 @@ def get_available_ckpts(self, context):
     else:
         return []
 
+
 def update_ckpt_name(self, context):
     """ Update the ckpt_name property with the selected checkpoint name"""
 
@@ -121,6 +122,11 @@ def update_ckpt_name(self, context):
 
 
 class ComfyUICheckpointLoaderSimple(bpy.types.PropertyGroup):
+    expanded: bpy.props.BoolProperty(
+        name="expanded",
+        default=False,
+        description="Expanded"
+    )
     ckpt_name: bpy.props.StringProperty(
         name="ckpt_name",
         default="",
@@ -136,6 +142,11 @@ class ComfyUICheckpointLoaderSimple(bpy.types.PropertyGroup):
 
 
 class ComfyUILoraNode(bpy.types.PropertyGroup):
+    expanded: bpy.props.BoolProperty(
+        name="expanded",
+        default=False,
+        description="Expanded"
+    )
     lora_name: bpy.props.StringProperty(
         name="lora_name",
         default="",
@@ -162,6 +173,11 @@ class ComfyUILoraNode(bpy.types.PropertyGroup):
 
 
 class ComfyUIControlNetNode(bpy.types.PropertyGroup):
+    expanded: bpy.props.BoolProperty(
+        name="expanded",
+        default=False,
+        description="Expanded"
+    )
     control_net_name: bpy.props.StringProperty(
         name="control_net_name",
         default="",

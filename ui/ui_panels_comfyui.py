@@ -34,39 +34,48 @@ class AIR_PT_comfyui(bpy.types.Panel):
 
         # Cycle all the Properties inside the comfyui_props
         for prop in props.bl_rna.properties.items():
-            # Check if the property is a CollectionProperty
-            if prop[1].type == 'COLLECTION':
+            # Check if the property is a CollectionProperty and it has items
+            if prop[1].type == 'COLLECTION' and getattr(props, prop[0]):
                 # Create a box for each CollectionProperty with all the items inside
                 main_box = layout.box()
                 main_row = main_box.row(align=True)
                 main_row.label(text=prop[0].upper().replace('_', ' ').replace('COMFYUI', ''), icon='COLLECTION_NEW')
-                main_row.prop(context.scene, 'expanded', text='', icon='TRIA_DOWN' if context.scene.expanded else 'TRIA_LEFT', emboss=False)
+                main_row.prop(props, prop[0], text="")
+                main_row.scale_y = 1.3
 
-                if context.scene.expanded:
-                    for item in getattr(props, prop[0]):
-                        box = main_box.box()
-                        box.scale_y = 1
-                        row = box.row()
-                        # Display the node number
-                        row.label(text=item.name, icon='NODE')
-                        for sub_prop in item.bl_rna.properties.items():
-                            if sub_prop[1].type == 'STRING' and sub_prop[0] != 'name':
-                                # Display the model name not editable as a string (emboss=False)
-                                row.prop(item, sub_prop[0], text='', emboss=False)
+                # Create the expand/collapse button
+                for item in getattr(props, prop[0]):
+                    is_expanded = item.expanded
+                    if is_expanded:
+                        icon = 'TRIA_DOWN'
+                    else:
+                        icon = 'TRIA_RIGHT'
+                main_row.prop(item, 'expanded', text='', icon=icon, emboss=False)
 
-                            elif sub_prop[1].type == 'ENUM':
-                                # Display the available enums. This can update the related strings
-                                row = box.row()
-                                row.prop(item, sub_prop[0], text="")
+                for item in getattr(props, prop[0]) if is_expanded else []:
+                    box = main_box.box()
+                    box.scale_y = 1
+                    row = box.row()
+                    # Display the node number
+                    row.label(text=item.name, icon='NODE')
+                    for sub_prop in item.bl_rna.properties.items():
+                        if sub_prop[1].type == 'STRING' and sub_prop[0] != 'name':
+                            # Display the model name not editable as a string (emboss=False)
+                            row.prop(item, sub_prop[0], text='', emboss=False)
 
-                            elif sub_prop[1].type == 'FLOAT':
-                                col = box.column()
-                                col = col.split()
-                                col.label(text=sub_prop[0])
-                                col.use_property_split = True
-                                col.use_property_decorate = True
-                                # Display the available props
-                                col.prop(item, sub_prop[0], text='', expand=True)
+                        elif sub_prop[1].type == 'ENUM':
+                            # Display the available enums. This can update the related strings
+                            row = box.row()
+                            row.prop(item, sub_prop[0], text="")
+
+                        elif sub_prop[1].type == 'FLOAT':
+                            col = box.column()
+                            col = col.split()
+                            col.label(text=sub_prop[0])
+                            col.use_property_split = True
+                            col.use_property_decorate = True
+                            # Display the available props
+                            col.prop(item, sub_prop[0], text='', expand=True)
 
                 # Separator
                 layout.separator(factor=1)
@@ -78,12 +87,10 @@ classes = [
 
 
 def register():
-    bpy.types.Scene.expanded = bpy.props.BoolProperty(default=False)
     for cls in classes:
         bpy.utils.register_class(cls)
 
 
 def unregister():
-    del bpy.types.Scene.expanded
     for cls in classes:
         bpy.utils.unregister_class(cls)
