@@ -38,7 +38,7 @@ class AIR_PT_comfyui(bpy.types.Panel):
             if prop[1].type == 'COLLECTION' and getattr(props, prop[0]):
                 # Create a box for each CollectionProperty with all the items inside
                 main_box = layout.box()
-                main_row = main_box.row(align=True, heading="" )
+                main_row = main_box.row(align=True, heading="")
                 main_row.label(text=prop[0].upper().replace('_', ' ').replace('COMFYUI', ''), icon='COLLECTION_NEW')
                 main_row.prop(props, prop[0], text="")
                 main_row.scale_y = 1
@@ -59,7 +59,7 @@ class AIR_PT_comfyui(bpy.types.Panel):
                     box.scale_y = 1
                     row = box.row()
                     # Display the node number
-                    row.label(text=item.name, icon='NODE')
+                    # row.label(text=item.name, icon='NODE')
                     for sub_prop in item.bl_rna.properties.items():
                         if sub_prop[1].type == 'STRING' and sub_prop[0] != 'name':
                             # Display the model name not editable as a string (emboss=False)

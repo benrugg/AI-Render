@@ -5,7 +5,7 @@ import random
 import re
 import time
 
-from .operators_comfyui import ensure_compositor_nodes
+# from .operators_comfyui import ensure_compositor_nodes
 
 from . import (
     analytics,
@@ -227,7 +227,7 @@ def do_pre_render_setup(scene):
     # Lock the user interface when rendering, so that we can change
     # compositor nodes in the render_init handler without causing a crash!
     # See: https://docs.blender.org/api/current/bpy.app.handlers.html#note-on-altering-data
-    scene.render.use_lock_interface = True
+    scene.render.use_lock_interface = False
 
     # clear any previous errors
     clear_error(scene)
@@ -241,8 +241,8 @@ def do_pre_render_setup(scene):
     # It seems that it is not possible to change the base_path of the
     # file output node, cause it takes only the path and saves the file
     # with the name of 'Image0001' and the extension of the file format.
-    if utils.sd_backend() == "comfyui":
-        ensure_compositor_nodes(bpy.context)
+    # if utils.sd_backend() == "comfyui":
+    #     ensure_compositor_nodes(bpy.context)
 
 
 def do_pre_api_setup(scene):
