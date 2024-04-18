@@ -262,7 +262,7 @@ class AIRPreferences(bpy.types.AddonPreferences):
                 row = box.row()
                 row.prop(self, "comfyui_path")
                 row = box.row()
-                row.prop(self, "workflows_path")
+                row.prop(self, "comfyui_workflows_path")
 
             # Notes
             box = layout.box()
