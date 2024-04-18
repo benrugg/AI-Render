@@ -31,14 +31,14 @@ LOG_MODEL_RESPONSE = False
 ORIGINAL_DATA = {
     "3": {
         "inputs": {
-            "seed": 819306520081733,
+            "seed": 967975925929612,
             "steps": 10,
             "cfg": 7.5,
             "sampler_name": "dpmpp_2m_sde_gpu",
             "scheduler": "karras",
             "denoise": 1,
             "model": [
-                "26",
+                "37",
                 0
             ],
             "positive": [
@@ -61,7 +61,7 @@ ORIGINAL_DATA = {
     },
     "4": {
         "inputs": {
-            "ckpt_name": "v1-5-pruned-emaonly.safetensors"
+            "ckpt_name": "SD15\\3D\\3dAnimationDiffusion_lcm.safetensors"
         },
         "class_type": "CheckpointLoaderSimple",
         "_meta": {
@@ -70,7 +70,7 @@ ORIGINAL_DATA = {
     },
     "6": {
         "inputs": {
-            "text": "positive",
+            "text": "a beautiful (robotic:0.3) castle, vibrant, color, saturated, highly detailed, ultra HD, sharp photo, 8k, dark background, in focus",
             "clip": [
                 "26",
                 1
@@ -83,7 +83,7 @@ ORIGINAL_DATA = {
     },
     "7": {
         "inputs": {
-            "text": "negative",
+            "text": "<embedding:EasyNegative>",
             "clip": [
                 "26",
                 1
@@ -114,7 +114,7 @@ ORIGINAL_DATA = {
         "inputs": {
             "filename_prefix": "ComfyUI",
             "images": [
-                "8",
+                "35",
                 0
             ]
         },
@@ -160,16 +160,16 @@ ORIGINAL_DATA = {
     },
     "13": {
         "inputs": {
-            "strength": 1,
+            "strength": 0.7000000000000001,
             "start_percent": 0,
-            "end_percent": 1,
+            "end_percent": 0.7000000000000001,
             "positive": [
-                "6",
+                "40",
                 0
             ],
             "negative": [
-                "7",
-                0
+                "40",
+                1
             ],
             "control_net": [
                 "14",
@@ -206,9 +206,9 @@ ORIGINAL_DATA = {
     },
     "16": {
         "inputs": {
-            "strength": 1,
+            "strength": 0.7000000000000001,
             "start_percent": 0,
-            "end_percent": 1,
+            "end_percent": 0.7000000000000001,
             "positive": [
                 "13",
                 0
@@ -252,7 +252,7 @@ ORIGINAL_DATA = {
     },
     "26": {
         "inputs": {
-            "lora_name": "SD15\\epiNoiseoffset_v2-pynoise.safetensors",
+            "lora_name": "SD15\\Robotic_Jackal-ish.safetensors",
             "strength_model": 1,
             "strength_clip": 1,
             "model": [
@@ -271,7 +271,7 @@ ORIGINAL_DATA = {
     },
     "28": {
         "inputs": {
-            "lora_name": "SD15\\add_detail.safetensors",
+            "lora_name": "SD15\\Mermaids.safetensors",
             "strength_model": 1,
             "strength_clip": 1,
             "model": [
@@ -286,6 +286,107 @@ ORIGINAL_DATA = {
         "class_type": "LoraLoader",
         "_meta": {
             "title": "Load LoRA"
+        }
+    },
+    "34": {
+        "inputs": {
+            "model_name": "4x-UltraSharp.pth"
+        },
+        "class_type": "UpscaleModelLoader",
+        "_meta": {
+            "title": "Load Upscale Model"
+        }
+    },
+    "35": {
+        "inputs": {
+            "upscale_model": [
+                "34",
+                0
+            ],
+            "image": [
+                "8",
+                0
+            ]
+        },
+        "class_type": "ImageUpscaleWithModel",
+        "_meta": {
+            "title": "Upscale Image (using Model)"
+        }
+    },
+    "37": {
+        "inputs": {
+            "scale": 0.5,
+            "blur_sigma": 2,
+            "model": [
+                "26",
+                0
+            ]
+        },
+        "class_type": "SelfAttentionGuidance",
+        "_meta": {
+            "title": "Self-Attention Guidance"
+        }
+    },
+    "38": {
+        "inputs": {
+            "coarse": "disable",
+            "resolution": 512,
+            "image": [
+                "12",
+                0
+            ]
+        },
+        "class_type": "LineArtPreprocessor",
+        "_meta": {
+            "title": "Realistic Lineart"
+        }
+    },
+    "39": {
+        "inputs": {
+            "images": [
+                "38",
+                0
+            ]
+        },
+        "class_type": "PreviewImage",
+        "_meta": {
+            "title": "Preview Image"
+        }
+    },
+    "40": {
+        "inputs": {
+            "strength": 1,
+            "start_percent": 0,
+            "end_percent": 1,
+            "positive": [
+                "6",
+                0
+            ],
+            "negative": [
+                "7",
+                0
+            ],
+            "control_net": [
+                "41",
+                0
+            ],
+            "image": [
+                "38",
+                0
+            ]
+        },
+        "class_type": "ControlNetApplyAdvanced",
+        "_meta": {
+            "title": "Apply ControlNet (Advanced)"
+        }
+    },
+    "41": {
+        "inputs": {
+            "control_net_name": "SD15\\control_v11\\control_v11p_sd15_lineart.pth"
+        },
+        "class_type": "ControlNetLoader",
+        "_meta": {
+            "title": "Load ControlNet Model"
         }
     }
 }
@@ -813,7 +914,7 @@ def get_models(context):
     if (
         comfyui_ckpt_loader_simple_collection
         and comfyui_ckpt_loader_simple_collection.items()
-        ):
+    ):
         for item in comfyui_ckpt_loader_simple_collection:
             # Access the item in the collection
             print(item)  # <bpy_struct, ComfyUICheckpointLoaderSimple("4") at 0x0000029E823942C8>

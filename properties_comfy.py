@@ -125,6 +125,16 @@ def get_available_ckpts(self, context):
         return []
 
 
+def get_current_ckpt(self, context):
+    """ Get the current selected checkpoint"""
+
+    # Get the current selected checkpoint
+    selected_ckpt = self.available_ckpts
+
+    # Set the current selected checkpoint
+    self.ckpt_name = selected_ckpt
+
+
 class ComfyUICheckpointLoaderSimple(bpy.types.PropertyGroup):
     expanded: bpy.props.BoolProperty(
         name="expanded",
@@ -136,6 +146,12 @@ class ComfyUICheckpointLoaderSimple(bpy.types.PropertyGroup):
         default=0,
         items=get_available_ckpts,
         description="A list of the available checkpoints obtained from the running ComfyUI server",
+        update=get_current_ckpt
+    )
+    ckpt_name: bpy.props.StringProperty(
+        name="Checkpoint Name",
+        default="",
+        description="Name of the checkpoint model"
     )
 
 

@@ -1,12 +1,12 @@
 {
     "3": {
         "inputs": {
-            "seed": 1463769856,
-            "steps": 20,
-            "cfg": 7.5,
+            "seed": 1224164056,
+            "steps": 15,
+            "cfg": 7.0,
             "sampler_name": "dpmpp_2m",
-            "scheduler": "karras",
-            "denoise": 0.001,
+            "scheduler": "normal",
+            "denoise": 0.75,
             "model": [
                 "37",
                 0
@@ -31,7 +31,7 @@
     },
     "4": {
         "inputs": {
-            "ckpt_name": "SD15\\roboDiffusion_v1.ckpt"
+            "ckpt_name": "SD15\\VECTOR\\VVVASIIGRECI_0.safetensors"
         },
         "class_type": "CheckpointLoaderSimple",
         "_meta": {
@@ -40,7 +40,7 @@
     },
     "6": {
         "inputs": {
-            "text": "steampunk style a beautiful (robotic:0.7) castle, vibrant, color, saturated, highly detailed, ultra HD, sharp photo, 8k, dark background, in focus . retro, mechanical, detailed, Victorian",
+            "text": "",
             "clip": [
                 "26",
                 1
@@ -53,7 +53,7 @@
     },
     "7": {
         "inputs": {
-            "text": "<embedding:EasyNegative>",
+            "text": "ugly, bad art",
             "clip": [
                 "26",
                 1
@@ -120,7 +120,7 @@
     },
     "12": {
         "inputs": {
-            "image": "E:/COMFY/ComfyUI/input/color/Image0015.png",
+            "image": "E:/COMFY/ComfyUI/input/color/Image0001.png",
             "upload": "image"
         },
         "class_type": "LoadImage",
@@ -166,7 +166,7 @@
     },
     "15": {
         "inputs": {
-            "image": "E:/COMFY/ComfyUI/input/depth/Image0015.png",
+            "image": "E:/COMFY/ComfyUI/input/depth/Image0001.png",
             "upload": "image"
         },
         "class_type": "LoadImage",
@@ -212,7 +212,7 @@
     },
     "18": {
         "inputs": {
-            "image": "E:/COMFY/ComfyUI/input/normal/Image0015.png",
+            "image": "E:/COMFY/ComfyUI/input/normal/Image0001.png",
             "upload": "image"
         },
         "class_type": "LoadImage",
@@ -223,7 +223,7 @@
     "26": {
         "inputs": {
             "lora_name": "SD15\\Robotic_Jackal-ish.safetensors",
-            "strength_model": 0.699999988079071,
+            "strength_model": 1.0,
             "strength_clip": 1.0,
             "model": [
                 "28",
@@ -242,7 +242,7 @@
     "28": {
         "inputs": {
             "lora_name": "SD15\\Mermaids.safetensors",
-            "strength_model": 0.0,
+            "strength_model": 1.0,
             "strength_clip": 1.0,
             "model": [
                 "4",
@@ -325,9 +325,9 @@
     },
     "40": {
         "inputs": {
-            "strength": 1,
-            "start_percent": 0,
-            "end_percent": 1,
+            "strength": 1.0,
+            "start_percent": 0.0,
+            "end_percent": 1.0,
             "positive": [
                 "6",
                 0

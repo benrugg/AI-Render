@@ -38,7 +38,7 @@ class AIR_PT_comfyui(bpy.types.Panel):
             if prop[1].type == 'COLLECTION' and getattr(props, prop[0]):
                 # Create a box for each CollectionProperty with all the items inside
                 main_box = layout.box()
-                main_row = main_box.row(align=True, heading="")
+                main_row = main_box.row()
                 main_row.label(text=prop[0].upper().replace('_', ' ').replace('COMFYUI', ''), icon='COLLECTION_NEW')
                 main_row.prop(props, prop[0], text="")
                 main_row.scale_y = 1
@@ -49,7 +49,7 @@ class AIR_PT_comfyui(bpy.types.Panel):
                     if is_expanded:
                         icon = 'TRIA_DOWN'
                     else:
-                        icon = 'TRIA_RIGHT'
+                        icon = 'TRIA_LEFT'
                 main_row.prop(item, 'expanded', text='', icon=icon, emboss=False)
 
                 # TODO: Check if the collection contains animated subproperties, if so, set expand to True
@@ -63,7 +63,8 @@ class AIR_PT_comfyui(bpy.types.Panel):
                     for sub_prop in item.bl_rna.properties.items():
                         if sub_prop[1].type == 'STRING' and sub_prop[0] != 'name':
                             # Display the model name not editable as a string (emboss=False)
-                            row.prop(item, sub_prop[0], text='', emboss=False)
+                            col = box.column()
+                            col.prop(item, sub_prop[0], text='', emboss=False)
 
                         elif sub_prop[1].type == 'ENUM':
                             # Display the available enums. This can update the related strings
