@@ -7,6 +7,7 @@ from .. import (
     utils,
 )
 
+
 def show_error_if_it_exists(layout, context, width_guess):
     props = context.scene.air_props
     if (props.error_message):
@@ -167,19 +168,19 @@ class AIR_PT_setup(bpy.types.Panel):
             row.prop(utils.get_addon_preferences(context), "sd_backend", text="")
             row.prop(utils.get_addon_preferences(context), "local_sd_url", text="")
 
-            # ComfyUI Path
-            box.prop(utils.get_addon_preferences(context), 'comfyui_path', text="Comfy")
+            if utils.sd_backend(context) == "comfyui":
+                # ComfyUI Path
+                box.prop(utils.get_addon_preferences(context), 'comfyui_path', text="Comfy")
 
-            # ComfyUI Workflows Path
-            box.prop(utils.get_addon_preferences(context), 'comfyui_workflows_path', text="Workflows")
+                # ComfyUI Workflows Path
+                box.prop(utils.get_addon_preferences(context), 'comfyui_workflows_path', text="Workflows")
 
-            # Open ComfyUI workflow, input and output folder operator
-            box = layout.box()
-            row = box.row()
-            row.operator("ai_render.open_comfyui_workflows_folder", text="Workflow Folder")  # Had to do this to fix the circular import error
-            row.operator("ai_render.open_comfyui_input_folder", text="Input Folder")  # Had to do this to fix the circular import error
-            row.operator("ai_render.open_comfyui_output_folder", text="Output Folder")  # Had to do this to fix the circular import error
-
+                # Open ComfyUI workflow, input and output folder operator
+                box = layout.box()
+                row = box.row()
+                row.operator("ai_render.open_comfyui_workflows_folder", text="Workflow Folder")
+                row.operator("ai_render.open_comfyui_input_folder", text="Input Folder")
+                row.operator("ai_render.open_comfyui_output_folder", text="Output Folder")
 
 
 class AIR_PT_prompt(bpy.types.Panel):
