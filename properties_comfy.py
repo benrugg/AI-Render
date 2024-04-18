@@ -120,20 +120,9 @@ def get_available_ckpts(self, context):
     """ Query the comfyui_api /object_info for the available checkpoints and return them as a list of tuples"""
 
     if utils.sd_backend() == "comfyui":
-        return comfyui_api.create_ckpts_tuples()
+        return comfyui_api.get_models(context)
     else:
         return []
-
-
-def update_ckpt_name(self, context):
-    """ Update the ckpt_name property with the selected checkpoint name"""
-
-    # Get the selected checkpoint name
-    selected_ckpt_name = self.available_ckpts
-
-    # Update the ckpt_name property
-    self.ckpt_name = selected_ckpt_name
-    context.scene.air_props.sd_model = selected_ckpt_name
 
 
 class ComfyUICheckpointLoaderSimple(bpy.types.PropertyGroup):
@@ -142,17 +131,11 @@ class ComfyUICheckpointLoaderSimple(bpy.types.PropertyGroup):
         default=False,
         description="Expanded"
     )
-    ckpt_name: bpy.props.StringProperty(
-        name="ckpt_name",
-        default="",
-        description="Name of the checkpoint model"
-    )
     available_ckpts: bpy.props.EnumProperty(
         name="available_ckpts",
         default=0,
         items=get_available_ckpts,
-        description="A list of the available checkpoints in the path specified in the addon preferences",
-        update=update_ckpt_name
+        description="A list of the available checkpoints obtained from the running ComfyUI server",
     )
 
 
@@ -247,7 +230,7 @@ class ComfyUISelfAttentionGuidance(bpy.types.PropertyGroup):
     )
 
 
-class AIRPropertiesComfyUI(bpy.types.PropertyGroup):
+class ComfyUIProps(bpy.types.PropertyGroup):
     comfyui_workflow: bpy.props.EnumProperty(
         name="comfyui_workflow",
         default=0,
@@ -266,14 +249,14 @@ classes = [
     ComfyUIControlNetNode,
     ComfyUICheckpointLoaderSimple,
     ComfyUISelfAttentionGuidance,
-    AIRPropertiesComfyUI,
+    ComfyUIProps,
 ]
 
 
 def register():
     for cls in classes:
         bpy.utils.register_class(cls)
-    bpy.types.Scene.comfyui_props = bpy.props.PointerProperty(type=AIRPropertiesComfyUI)
+    bpy.types.Scene.comfyui_props = bpy.props.PointerProperty(type=ComfyUIProps)
 
 
 def unregister():

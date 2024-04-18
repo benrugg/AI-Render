@@ -18,12 +18,15 @@ LOG_WORKFLOW = False
 LOG_PARAMS = False
 LOG_MAPPED_WORKFLOW = False
 
-LOG_REQUEST_TO = True
+LOG_REQUEST = True
 LOG_RESPONSE = True
 LOG_LONG_RESPONSE = False
 
 LOG_UPLOAD_IMAGE = False
 LOG_DOWNLOAD_IMAGE = False
+
+LOG_MODEL_REQUEST = False
+LOG_MODEL_RESPONSE = False
 
 ORIGINAL_DATA = {
     "3": {
@@ -378,7 +381,7 @@ def upload_image(img_file, subfolder):
     data = {"subfolder": subfolder, "type": "input"}
     files = {'image': (os.path.basename(image_path), open(image_path, 'rb'))}
 
-    if LOG_REQUEST_TO:
+    if LOG_REQUEST:
         print(Fore.WHITE + "\nREQUEST TO: " + server_url)
 
     # send the API request
@@ -696,7 +699,7 @@ def get_server_url(path):
 
 
 def do_get(url):
-    if LOG_REQUEST_TO:
+    if LOG_REQUEST and LOG_MODEL_REQUEST:
         print(Fore.WHITE + "\nGET REQUEST TO: " + url)
     try:
         return requests.get(url, headers=create_headers(), timeout=utils.local_sd_timeout())
@@ -709,8 +712,9 @@ def do_get(url):
 
 
 def do_post(url, data):
-    if LOG_REQUEST_TO:
+    if LOG_REQUEST:
         print(Fore.WHITE + "\nPOST REQUEST TO: " + url)
+
     try:
         return requests.post(url, json=data, headers=create_headers(), timeout=utils.local_sd_timeout())
     except requests.exceptions.ConnectionError:
@@ -756,7 +760,17 @@ def get_comfyui_output_path(context):
     return comfyui_path + "output/"
 
 
-def update_model_list():
+def create_ckpts_tuples(models_list):
+    """ Get the models and create a list of tuples for the EnumProperty"""
+
+    if models_list:
+        models_tuples = [(f, f, "", i) for i, f in enumerate(models_list)]
+        return models_tuples
+    else:
+        return [("none", "None", "", 0)]
+
+
+def get_models(context):
     """ GET /object_info/CheckpointLoaderSimple endpoint to get the available models"""
     # TODO: Operator that updates the list of models in the UI
 
@@ -772,101 +786,43 @@ def update_model_list():
     if response == False:
         return None
 
+    models_list = []
+
     # handle the response
     if response.status_code == 200:
 
         models_list = response.json()["CheckpointLoaderSimple"]["input"]["required"]["ckpt_name"][0]
 
-        if LOG_RESPONSE:
+        if LOG_MODEL_RESPONSE:
             print(Fore.WHITE + "\nMODELS RESPONSE: " + Fore.RESET)
-            pprint.pp(models_list)
-        if LOG_LONG_RESPONSE:
-            print(response.json())
-        else:
-            print("LONG RESPONSE LOGGING IS DISABLED")
+            if LOG_LONG_RESPONSE:
+                pprint.pp(models_list)
+                print(response.json())
+            else:
+                print("LONG RESPONSE LOGGING IS DISABLED")
 
-    return models_list
+    ckpt_tuples = create_ckpts_tuples(models_list)
+    comfyui_ckpt_loader_simple_collection = context.scene.comfyui_props.comfyui_checkpoint_loader_simple
+    # print(comfyui_ckpt_loader_simple_collection.items())
+    # print result: [('4', bpy.data.scenes['Scene'].comfyui_props.comfyui_checkpoint_loader_simple[0])]
 
+    return ckpt_tuples
 
-def get_models():
-    return ['SD15\\28DSTABLEBESTVERSION_v6.safetensors',
-            'SD15\\3D\\3dAnimationDiffusion_lcm.safetensors',
-            'SD15\\3D\\3dAnimationDiffusion_v10.safetensors',
-            'SD15\\ANIME\\ghostmix_v20Bakedvae.safetensors',
-            'SD15\\ANIME\\helloyoung25d_V10f.safetensors',
-            'SD15\\ANIME\\lofiEVERYTHINGEasilyCreate_lofiEVERYTHINGV1.safetensors',
-            'SD15\\ANIME\\toonyou_beta6.safetensors',
-            'SD15\\CINE\\cineDiffusion_v3.safetensors',
-            'SD15\\GRAPHIC\\lyriel_v16.safetensors',
-            'SD15\\GRAPHIC\\zyd232_InkStyle_v1_0.safetensors',
-            'SD15\\LCM\\LCM_Dreamshaper_v7_4k.safetensors',
-            'SD15\\LCM\\dreamshaper_8LCM.safetensors',
-            'SD15\\LCM\\photonLCM_v10.safetensors',
-            'SD15\\MONET\\Monet-Style.ckpt',
-            'SD15\\PHOTO\\leosamsFilmgirlUltra_ultraBaseModel.safetensors',
-            'SD15\\PHOTO\\picxReal_10.safetensors',
-            'SD15\\PHOTO\\picxReal_10Inpaint.safetensors',
-            'SD15\\PHOTO\\picxReal_10Lcm.safetensors',
-            'SD15\\PHOTO\\realisticVisionV51_v51VAE.safetensors',
-            'SD15\\PaperCut_v1.ckpt',
-            'SD15\\VECTOR\\VVVASIIGRECI_0.safetensors',
-            'SD15\\VECTOR\\Vectorartz.ckpt',
-            'SD15\\VECTOR\\flonixsVectorStyle_redditModelBadges.safetensors',
-            'SD15\\VECTOR\\vectorartzDiffusion_v1.ckpt',
-            'SD15\\deliberate_v2.safetensors',
-            'SD15\\dreamlike-diffusion-1.0.safetensors',
-            'SD15\\dreamshaper_8.safetensors',
-            'SD15\\dynamicrafter_1024_v1.ckpt',
-            'SD15\\dynamicrafter_512_interp_v1.ckpt',
-            'SD15\\openjourney-v2.ckpt',
-            'SD15\\pirsusComicsStyle_pirsusComicsStyle.safetensors',
-            'SD15\\reliberate_v10.safetensors',
-            'SD15\\revAnimated_v122.safetensors',
-            'SD15\\roboDiffusion_v1.ckpt',
-            'SD15\\salle_sdv15_135K_steps_v1.safetensors',
-            'SD15\\sxzLumaFp16Cleaned_09X.safetensors',
-            'SD15\\sxzLumaFp16Cleaned_09XInpaint.safetensors',
-            'SD15\\sxzLuma_09XVAE.safetensors',
-            'SD15\\v1-5-pruned.safetensors',
-            'SD21\\v2-1_768-ema-pruned.safetensors',
-            'SD21\\v2-1_768-nonema-pruned.safetensors',
-            'SDXL\\SDXLFaetastic_v24.safetensors',
-            'SDXL\\SSD-1B.safetensors',
-            'SDXL\\aetherverseLightning_v10.safetensors',
-            'SDXL\\dreamshaperXL_lightningDPMSDE.safetensors',
-            'SDXL\\dreamshaperXL_v21TurboDPMSDE.safetensors',
-            'SDXL\\fenris-xl.safetensors',
-            'SDXL\\hsxl_base_1.0.safetensors',
-            'SDXL\\juggernautXL_v9Rdphoto2Lightning.safetensors',
-            'SDXL\\juggernautXL_v9Rundiffusionphoto2.safetensors',
-            'SDXL\\juggernautXL_version6Rundiffusion.safetensors',
-            'SDXL\\leosamsHelloworldXL_helloworldXL50GPT4V.safetensors',
-            'SDXL\\proteusRundiffusion_withclip.safetensors',
-            'SDXL\\realisticStockPhoto_v10.safetensors',
-            'SDXL\\realvisxlV40_v40LightningBakedvae.safetensors',
-            'SDXL\\sd_xl_base_1.0.safetensors',
-            'SDXL\\sd_xl_base_1.0_0.9vae.safetensors',
-            'SDXL\\sd_xl_refiner_1.0.safetensors',
-            'SDXL\\sd_xl_refiner_1.0_0.9vae.safetensors',
-            'SDXL\\sd_xl_turbo_1.0_fp16.safetensors',
-            'SDXL\\turbovisionxlSuperFastXLBasedOnNew_tvxlV431Bakedvae.safetensors',
-            'STABLECASCADE\\stable_cascade_stage_b.safetensors',
-            'STABLECASCADE\\stable_cascade_stage_c.safetensors',
-            'sd_turbo.safetensors',
-            'v1-5-pruned-emaonly.safetensors',
-            'x4-upscaler-ema.safetensors']
+    # Update the available_ckpts EnumProperty for each collcection item
+    # if any exists and contains items
+    if (
+        comfyui_ckpt_loader_simple_collection
+        and comfyui_ckpt_loader_simple_collection.items()
+        ):
+        for item in comfyui_ckpt_loader_simple_collection:
+            # Access the item in the collection
+            print(item)  # <bpy_struct, ComfyUICheckpointLoaderSimple("4") at 0x0000029E823942C8>
 
+            # Access the available_ckpts EnumProperty
+            print(item.available_ckpts)
 
-def create_ckpts_tuples():
-    """ Get the models and create a list of tuples for the EnumProperty"""
-
-    models_list = get_models()
-
-    if models_list:
-        models_tuples = [(f, f, "", i) for i, f in enumerate(models_list)]
-        return models_tuples
-    else:
-        return [("none", "None", "", 0)]
+            # Fill the EnumProperty with the ckpt_tuples
+            item.available_ckpts = ckpt_tuples[0]
 
 
 def get_samplers():
@@ -944,7 +900,7 @@ def supports_negative_prompts():
 
 
 def supports_choosing_model():
-    return True
+    return False  # Setting to False, because every CheckpointLoaderSimple can have different models
 
 
 def supports_upscaling():

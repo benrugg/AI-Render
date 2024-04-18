@@ -23,16 +23,6 @@ def get_available_schedulers(self, context):
         return [("none", "None", "", 0)]
 
 
-def get_available_models(self, context):
-    current_sd_backend = utils.sd_backend()
-    if current_sd_backend == "comfyui" and comfyui_api.supports_choosing_model():
-        return comfyui_api.create_ckpts_tuples()
-    else:
-        return [
-            ("stable-diffusion-xl-1024-v1-0", "SDXL 1.0", "", 120),
-        ]
-
-
 def get_default_sampler():
     return utils.get_active_backend().default_sampler()
 
@@ -94,7 +84,8 @@ def ensure_upscaler_model(context):
     print(Fore.GREEN + "ENSURE UPSCALER MODEL" + Fore.RESET)
     scene = context.scene
     if (
-        utils.get_active_backend().is_upscaler_model_list_loaded(context)
+        utils.sd_backend() != "comfyui"
+        and utils.get_active_backend().is_upscaler_model_list_loaded(context)
         and not scene.air_props.upscaler_model
     ):
         scene.air_props.upscaler_model = get_default_upscaler_model()
@@ -106,8 +97,7 @@ def update_local_sd_url(context):
     If is set to ComfyUI, the url is http://127.0.0.1:8188
     """
 
-    print(Fore.GREEN + "UPDATE LOCAL SD URL TO:" + Fore.RESET)
-    print(utils.sd_backend())
+    print(Fore.GREEN + "UPDATE LOCAL SD URL TO: " + Fore.RESET + utils.sd_backend())
     addonprefs = utils.get_addon_preferences(context)
 
     if utils.sd_backend() == "automatic1111":
@@ -251,7 +241,7 @@ def normalpass2normalmap_node_group(context):
 def ensure_compositor_nodes(context):
     """Ensure that use nodes is enabled and the compositor nodes are set up correctly"""
 
-    print(Fore.YELLOW + "ENSURE COMPOSITOR NODES")
+    print(Fore.YELLOW + "ENSURE COMPOSITOR NODES" + Fore.RESET)
 
     # Ensure that the render passes are enabled
     ensure_use_passes(context)
@@ -392,15 +382,23 @@ def ensure_compositor_nodes(context):
         node.select = False
 
 
+def ensure_ckpt_models(context):
+    print(Fore.MAGENTA + "ENSURE CKPT MODELS" + Fore.RESET)
+    comfyui_api.get_models(context)
+
+
 def ensure_properties(self, context):
     """Ensure that any properties which could change with a change in preferences are set to valid values"""
-    print(Fore.GREEN + "ENSURE PROPERTIES" + Fore.RESET)
+    print(Fore.WHITE + "ENSURE PROPERTIES" + Fore.RESET)
     ensure_sampler(context)
-    ensure_upscaler_model(context)
     update_local_sd_url(context)
+
     if utils.sd_backend() == "comfyui":
         ensure_scheduler(context)
         ensure_compositor_nodes(context)
+        ensure_ckpt_models(context)
+    else:  # only if not comfyui
+        ensure_upscaler_model(context)
 
 
 def update_denoise(self, context):
@@ -478,8 +476,10 @@ class AIRProperties(bpy.types.PropertyGroup):
     )
     sd_model: bpy.props.EnumProperty(
         name="Stable Diffusion Model",
-        default=0,
-        items=get_available_models,
+        default=120,
+        items=[
+            ("stable-diffusion-xl-1024-v1-0", "SDXL 1.0", "", 120),
+        ],
         description="The Stable Diffusion model to use. SDXL is comparable to Midjourney. Older versions have now been removed, but newer versions may be added in the future",
     )
     sampler: bpy.props.EnumProperty(
