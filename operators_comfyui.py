@@ -30,7 +30,6 @@ class AIR_OT_UpdateWorkflowEnum(bpy.types.Operator):
 
         # Ttrigger property creation from the selected workflow
         create_property_from_workflow(context.scene.comfyui_props, context)
-        AIR_OT_UpdateSDModelEnum.execute(self, context)
 
         return {'FINISHED'}
 
