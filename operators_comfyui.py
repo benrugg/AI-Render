@@ -1,14 +1,56 @@
 import os
 import platform
 import bpy
-
-from . import utils
-from .sd_backends import comfyui_api
-
+import pprint
 from colorama import Fore
 
+from . import utils
+from .properties_comfy import create_property_from_workflow
+from .sd_backends import comfyui_api
 
-# Comfy specific operators
+from .sd_backends.comfyui_api import (
+    COMFY_SD_MODELS,
+    COMFY_WORKFLOWS
+)
+
+
+class AIR_OT_UpdateWorkflowEnum(bpy.types.Operator):
+    bl_idname = "ai_render.update_workflow_enum"
+    bl_label = "Update Workflow Enum"
+    bl_description = "Update the workflow enum with the available workflows"
+
+    def execute(self, context):
+        print(Fore.GREEN + "UPDATING WORKFLOW ENUM..." + Fore.RESET)
+
+        global COMFY_WORKFLOWS
+        COMFY_WORKFLOWS.clear()
+        workflows_list = comfyui_api.get_workflows(context)
+        for workflow in workflows_list:
+            COMFY_WORKFLOWS.append(workflow)
+
+        # Ttrigger property creation from the selected workflow
+        create_property_from_workflow(context.scene.comfyui_props, context)
+        AIR_OT_UpdateSDModelEnum.execute(self, context)
+
+        return {'FINISHED'}
+
+
+class AIR_OT_UpdateSDModelEnum(bpy.types.Operator):
+    bl_idname = "ai_render.update_sd_model_enum"
+    bl_label = "Update Model Enum"
+    bl_description = "Update the model enum with the available models"
+
+    def execute(self, context):
+        print(Fore.GREEN + "\nUPDATING SD MODEL ENUM..." + Fore.RESET)
+        global COMFY_SD_MODELS
+        COMFY_SD_MODELS.clear()
+        models_list = comfyui_api.get_models(context)
+        for model in models_list:
+            COMFY_SD_MODELS.append(model)
+
+        return {'FINISHED'}
+
+
 class AIR_OT_open_comfyui_input_folder(bpy.types.Operator):
     "Open the input folder in the windows explorer or macOSfinder"
     bl_idname = "ai_render.open_comfyui_input_folder"
@@ -61,9 +103,11 @@ class AIR_OT_open_comfyui_workflows_folder(bpy.types.Operator):
 
 
 classes = [
+    AIR_OT_UpdateWorkflowEnum,
+    AIR_OT_UpdateSDModelEnum,
     AIR_OT_open_comfyui_input_folder,
     AIR_OT_open_comfyui_output_folder,
-    AIR_OT_open_comfyui_workflows_folder
+    AIR_OT_open_comfyui_workflows_folder,
 ]
 
 

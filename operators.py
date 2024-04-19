@@ -18,7 +18,7 @@ from . import (
 from .sd_backends import automatic1111_api
 from .sd_backends import comfyui_api
 
-from colorama import Fore, Style
+from colorama import Fore
 
 
 example_dimensions_tuple_list = utils.generate_example_dimensions_tuple_list()
@@ -219,7 +219,7 @@ def load_image(filename, data_block_name=None):
     img_file = bpy.data.images.load(filename, check_existing=False)
     img_file.name = name
 
-    print(Fore.YELLOW + f"\nLOADED IMAGE: {filename}")
+    print(Fore.YELLOW + f"\nLOADED IMAGE: {filename}" + Fore.RESET)
     return img_file
 
 

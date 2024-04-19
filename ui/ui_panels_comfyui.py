@@ -25,9 +25,10 @@ class AIR_PT_comfyui(bpy.types.Panel):
         layout.separator(factor=2)
 
         # ComfyUI Workflows selector
-        row = layout.row(align=True, heading="Select Workflow")
+        row = layout.row()
         # row.label(text=")
         row.prop(props, 'comfyui_workflow', text="")
+        row.operator('ai_render.update_workflow_enum', text='', icon='FILE_REFRESH')
         row.scale_y = 1.3
 
         layout.separator(factor=1)
@@ -70,6 +71,8 @@ class AIR_PT_comfyui(bpy.types.Panel):
                             # Display the available enums. This can update the related strings
                             row = box.row()
                             row.prop(item, sub_prop[0], text="")
+                            if sub_prop[0] == 'model_enum':
+                                row.operator('ai_render.update_sd_model_enum', text='', icon='FILE_REFRESH')
 
                         elif sub_prop[1].type == 'FLOAT':
                             col = box.column()

@@ -384,7 +384,7 @@ def ensure_compositor_nodes(context):
 
 def ensure_ckpt_models(context):
     print(Fore.MAGENTA + "ENSURE CKPT MODELS" + Fore.RESET)
-    comfyui_api.get_models(context)
+    # TODO: Implement this
 
 
 def ensure_properties(self, context):

@@ -1,4 +1,3 @@
-import os
 import bpy
 from . import utils
 from .sd_backends import comfyui_api
@@ -7,30 +6,17 @@ from pprint import pprint
 from colorama import Fore
 
 
-def get_available_workflows(self, context):
-    """ Query the comfyui_api for the available workflows and return them as a list of tuples"""
-
-    if utils.sd_backend() == "comfyui":
-        return comfyui_api.create_workflows_tuples()
-    else:
-        return [("none", "None", "", 0)]
-
-
 def create_property_from_workflow(self, context):
     """ Creates the properties and add the to the comfyui_nodes collection"""
 
-    # Get Workflows_path from the addon preferences and the selected workflow
     selected_workflow_file = self.comfyui_workflow
-
-    # Load the selected workflow
     selected_workflow = comfyui_api.load_workflow(context, selected_workflow_file)
-    print(Fore.GREEN + "CREATING PROPERTIES FROM WORKFLOW: " + Fore.RESET + selected_workflow_file)
-    # pprint(selected_workflow)
+    print(Fore.WHITE + "CREATING PROPERTIES FROM WORKFLOW: " + Fore.RESET + selected_workflow_file)
 
     selected_class_types = ["LoraLoader", "ControlNetApplyAdvanced", "CheckpointLoaderSimple", "SelfAttentionGuidance"]
-    print(Fore.GREEN + "SELECTED CLASS TYPE: " + Fore.RESET + str(selected_class_types))
+    print(Fore.WHITE + "\nSELECTED CLASS TYPE: " + Fore.RESET + str(selected_class_types))
 
-    # Clear the comfyui_nodes collections
+    # Clear the comfyui_nodes collections TODO: Do it with a loop
     self.comfyui_lora_nodes.clear()
     self.comfyui_control_net_nodes.clear()
     self.comfyui_checkpoint_loader_simple.clear()
@@ -39,8 +25,23 @@ def create_property_from_workflow(self, context):
     # Cycle through the nodes in the selected workflow and create the properties
     for node_id, node in selected_workflow.items():
         if node["class_type"] in selected_class_types:
-            if node["class_type"] == "LoraLoader":
-                print(Fore.GREEN + "NODE: " + Fore.RESET + node_id)
+
+            if node["class_type"] == "CheckpointLoaderSimple":
+                print(Fore.MAGENTA + "\nNODE: " + node_id)
+                pprint(node)
+
+                # {'_meta': {'title': 'Load Checkpoint'},
+                #  'class_type': 'CheckpointLoaderSimple',
+                #  'inputs': {'ckpt_name': 'SD15\\3D\\3dAnimationDiffusion_lcm.safetensors'}}
+
+                comfyui_checkpoint_loader_simple = self.comfyui_checkpoint_loader_simple.add()
+                comfyui_checkpoint_loader_simple.name = node_id
+                comfyui_checkpoint_loader_simple.current_model = node["inputs"]["ckpt_name"]
+
+                print(Fore.WHITE + "PROPERTY CREATED: " + comfyui_checkpoint_loader_simple.name + Fore.RESET)
+
+            elif node["class_type"] == "LoraLoader":
+                print(Fore.YELLOW + "\nNODE: " + node_id)
                 pprint(node)
 
                 # {'_meta': {'title': 'Load LoRA'},
@@ -51,17 +52,16 @@ def create_property_from_workflow(self, context):
                 #             'strength_clip': 1,
                 #             'strength_model': 1}}
 
-                # Create the property group
                 comfyui_lora_node = self.comfyui_lora_nodes.add()
                 comfyui_lora_node.name = node_id
                 comfyui_lora_node.lora_name = node["inputs"]["lora_name"]
                 comfyui_lora_node.strength_model = node["inputs"]["strength_model"]
                 comfyui_lora_node.strength_clip = node["inputs"]["strength_clip"]
 
-                print(Fore.GREEN + "PROPERTY CREATED: " + Fore.RESET + comfyui_lora_node.name)
+                print(Fore.WHITE + "PROPERTY CREATED: " + Fore.RESET + comfyui_lora_node.name)
 
             elif node["class_type"] == "ControlNetApplyAdvanced":
-                print(Fore.GREEN + "NODE: " + Fore.RESET + node_id)
+                print(Fore.CYAN + "\nNODE: " + node_id)
                 pprint(node)
 
                 # {'_meta': {'title': 'Apply ControlNet (Advanced)'},
@@ -78,7 +78,6 @@ def create_property_from_workflow(self, context):
                 control_net_node = selected_workflow[node["inputs"]["control_net"][0]]
                 control_net_node_model_path = control_net_node["inputs"]["control_net_name"]
 
-                # Create the property group
                 comfyui_control_net_node = self.comfyui_control_net_nodes.add()
                 comfyui_control_net_node.name = node_id
                 comfyui_control_net_node.control_net_name = control_net_node_model_path
@@ -86,53 +85,27 @@ def create_property_from_workflow(self, context):
                 comfyui_control_net_node.start_percent = node["inputs"]["start_percent"]
                 comfyui_control_net_node.end_percent = node["inputs"]["end_percent"]
 
-                print(Fore.GREEN + "PROPERTY CREATED: " + Fore.RESET + comfyui_control_net_node.name)
-
-            elif node["class_type"] == "CheckpointLoaderSimple":
-                print(Fore.MAGENTA + "NODE: " + Fore.RESET + node_id)
-                pprint(node)
-
-                # {'_meta': {'title': 'Load Checkpoint'},
-                #  'class_type': 'CheckpointLoaderSimple',
-                #  'inputs': {'ckpt_name': 'SD15\\3D\\3dAnimationDiffusion_lcm.safetensors'}}
-
-                # Create the property group
-                comfyui_checkpoint_loader_simple = self.comfyui_checkpoint_loader_simple.add()
-                comfyui_checkpoint_loader_simple.name = node_id
-                comfyui_checkpoint_loader_simple.ckpt_name = node["inputs"]["ckpt_name"]
+                print(Fore.WHITE + "PROPERTY CREATED: " + comfyui_control_net_node.name + Fore.RESET)
 
             elif node["class_type"] == "SelfAttentionGuidance":
-                print(Fore.MAGENTA + "NODE: " + Fore.RESET + node_id)
+                print(Fore.BLUE + "\nNODE: " + node_id)
                 pprint(node)
 
                 # {'_meta': {'title': 'Self-Attention Guidance'},
                 #  'class_type': 'SelfAttentionGuidance',
                 #  'inputs': {'blur_sigma': 2, 'model': ['26', 0], 'scale': 1}}
 
-                # Create the property group
                 comfyui_self_attention_guidance = self.comfyui_self_attention_guidance.add()
                 comfyui_self_attention_guidance.name = node_id
                 comfyui_self_attention_guidance.blur_sigma = node["inputs"]["blur_sigma"]
                 comfyui_self_attention_guidance.scale = node["inputs"]["scale"]
 
-
-def get_available_ckpts(self, context):
-    """ Query the comfyui_api /object_info for the available checkpoints and return them as a list of tuples"""
-
-    if utils.sd_backend() == "comfyui":
-        return comfyui_api.get_models(context)
-    else:
-        return []
+                print(Fore.WHITE + "PROPERTY CREATED: " + comfyui_self_attention_guidance.name + Fore.RESET)
 
 
-def get_current_ckpt(self, context):
-    """ Get the current selected checkpoint"""
-
-    # Get the current selected checkpoint
-    selected_ckpt = self.available_ckpts
-
-    # Set the current selected checkpoint
-    self.ckpt_name = selected_ckpt
+def set_current_sd_model(self, context):
+    # I dont know why I'm doing this...
+    self.current_model = self.model_enum
 
 
 class ComfyUICheckpointLoaderSimple(bpy.types.PropertyGroup):
@@ -141,14 +114,15 @@ class ComfyUICheckpointLoaderSimple(bpy.types.PropertyGroup):
         default=False,
         description="Expanded"
     )
-    available_ckpts: bpy.props.EnumProperty(
-        name="available_ckpts",
+
+    model_enum: bpy.props.EnumProperty(
+        name="Available Models",
         default=0,
-        items=get_available_ckpts,
-        description="A list of the available checkpoints obtained from the running ComfyUI server",
-        update=get_current_ckpt
+        items=comfyui_api.create_models_enum,
+        description="A list of the available checkpoints",
+        update=set_current_sd_model
     )
-    ckpt_name: bpy.props.StringProperty(
+    current_model: bpy.props.StringProperty(
         name="Checkpoint Name",
         default="",
         description="Name of the checkpoint model"
@@ -250,7 +224,7 @@ class ComfyUIProps(bpy.types.PropertyGroup):
     comfyui_workflow: bpy.props.EnumProperty(
         name="comfyui_workflow",
         default=0,
-        items=get_available_workflows,
+        items=comfyui_api.create_workflows_enum,
         description="A list of the available workflows in the path specified in the addon preferences",
         update=create_property_from_workflow
     )
@@ -261,11 +235,11 @@ class ComfyUIProps(bpy.types.PropertyGroup):
 
 
 classes = [
+    ComfyUICheckpointLoaderSimple,
     ComfyUILoraNode,
     ComfyUIControlNetNode,
-    ComfyUICheckpointLoaderSimple,
     ComfyUISelfAttentionGuidance,
-    ComfyUIProps,
+    ComfyUIProps
 ]
 
 

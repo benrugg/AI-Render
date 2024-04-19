@@ -25,8 +25,7 @@ LOG_LONG_RESPONSE = False
 LOG_UPLOAD_IMAGE = False
 LOG_DOWNLOAD_IMAGE = False
 
-LOG_MODEL_REQUEST = False
-LOG_MODEL_RESPONSE = False
+LOG_MODEL_RESPONSE = True
 
 ORIGINAL_DATA = {
     "3": {
@@ -585,6 +584,11 @@ def get_comfyui_input_path(context):
     return comfyui_path + "input/"
 
 
+def get_comfyui_output_path(context):
+    comfyui_path = utils.get_addon_preferences(context).comfyui_path
+    return comfyui_path + "output/"
+
+
 def get_color_file_input_path(context):
     return get_comfyui_input_path(context) + "color/"
 
@@ -683,7 +687,8 @@ def handle_success(response, filename_prefix):
     server_url = get_server_url(f"/history/{prompt_id}")
 
     while not status_completed:
-        print(Fore.WHITE + "\nREQUEST TO: " + server_url)
+        if LOG_REQUEST:
+            print(Fore.WHITE + "\nGET REQUEST TO: " + server_url)
 
         response = requests.get(server_url, headers=create_headers(), timeout=utils.local_sd_timeout())
         response_obj = response.json()
@@ -719,12 +724,12 @@ def handle_success(response, filename_prefix):
                                 break
 
                 if LOG_DOWNLOAD_IMAGE:
-                    print(Fore.LIGHTWHITE_EX + "IMAGE NODE_NUMBER: " + Fore.RESET + save_image_node)
+                    print(Fore.LIGHTWHITE_EX + "SAVE IMAGE NODE_NUMBER: " + Fore.RESET + save_image_node)
 
                 image_file_name = response_obj[prompt_id]["outputs"][save_image_node]["images"][0]["filename"]
 
                 if LOG_DOWNLOAD_IMAGE:
-                    print(Fore.LIGHTWHITE_EX + "IMAGE FILE NAME: " + Fore.RESET + image_file_name)  # ComfyUI_00057_.png
+                    print(Fore.LIGHTWHITE_EX + "SAVE IMAGE FILE NAME: " + Fore.RESET + image_file_name)  # ComfyUI_00057_.png
                 break
         else:
             return handle_error(response)
@@ -800,7 +805,7 @@ def get_server_url(path):
 
 
 def do_get(url):
-    if LOG_REQUEST and LOG_MODEL_REQUEST:
+    if LOG_REQUEST:
         print(Fore.WHITE + "\nGET REQUEST TO: " + url)
     try:
         return requests.get(url, headers=create_headers(), timeout=utils.local_sd_timeout())
@@ -841,39 +846,43 @@ def debug_log(response):
 
 
 # PUBLIC SUPPORT FUNCTIONS:
+
+
 def get_workflows_path(context):
     return utils.get_addon_preferences().comfyui_workflows_path
 
 
-def create_workflows_tuples():
-    """ Get the workflows and create a list of tuples for the EnumProperty"""
+COMFY_WORKFLOWS = []
 
+
+def create_workflows_enum(self, context):
+    enum_items = []
+    for i, workflow in enumerate(COMFY_WORKFLOWS):
+        enum_items.append((workflow, workflow, "", i))
+    return enum_items
+
+
+def get_workflows(context):
     workflows_path = get_workflows_path(bpy.context)
-    workflow_files = [f for f in os.listdir(workflows_path) if os.path.isfile(
+    workflow_list = [f for f in os.listdir(workflows_path) if os.path.isfile(
         os.path.join(workflows_path, f)) and f.endswith(".json")]
-    workflows_tuples = [(f, f, "", i) for i, f in enumerate(workflow_files)]
 
-    return workflows_tuples
-
-
-def get_comfyui_output_path(context):
-    comfyui_path = utils.get_addon_preferences(context).comfyui_path
-    return comfyui_path + "output/"
+    return workflow_list
 
 
-def create_ckpts_tuples(models_list):
-    """ Get the models and create a list of tuples for the EnumProperty"""
+COMFY_SD_MODELS = []
 
-    if models_list:
-        models_tuples = [(f, f, "", i) for i, f in enumerate(models_list)]
-        return models_tuples
-    else:
-        return [("none", "None", "", 0)]
+
+def create_models_enum(self, context):
+    enum_items = []
+    for i, model in enumerate(COMFY_SD_MODELS):
+        enum_items.append((model, model, "", i))
+    return enum_items
 
 
 def get_models(context):
-    """ GET /object_info/CheckpointLoaderSimple endpoint to get the available models"""
-    # TODO: Operator that updates the list of models in the UI
+    """ GET /object_info/CheckpointLoaderSimple endpoint
+    to get the available models"""
 
     # prepare the server url
     try:
@@ -897,33 +906,14 @@ def get_models(context):
         if LOG_MODEL_RESPONSE:
             print(Fore.WHITE + "\nMODELS RESPONSE: " + Fore.RESET)
             if LOG_LONG_RESPONSE:
-                pprint.pp(models_list)
                 print(response.json())
             else:
                 print("LONG RESPONSE LOGGING IS DISABLED")
 
-    ckpt_tuples = create_ckpts_tuples(models_list)
-    comfyui_ckpt_loader_simple_collection = context.scene.comfyui_props.comfyui_checkpoint_loader_simple
-    # print(comfyui_ckpt_loader_simple_collection.items())
-    # print result: [('4', bpy.data.scenes['Scene'].comfyui_props.comfyui_checkpoint_loader_simple[0])]
+    return models_list
 
-    return ckpt_tuples
 
-    # Update the available_ckpts EnumProperty for each collcection item
-    # if any exists and contains items
-    if (
-        comfyui_ckpt_loader_simple_collection
-        and comfyui_ckpt_loader_simple_collection.items()
-    ):
-        for item in comfyui_ckpt_loader_simple_collection:
-            # Access the item in the collection
-            print(item)  # <bpy_struct, ComfyUICheckpointLoaderSimple("4") at 0x0000029E823942C8>
-
-            # Access the available_ckpts EnumProperty
-            print(item.available_ckpts)
-
-            # Fill the EnumProperty with the ckpt_tuples
-            item.available_ckpts = ckpt_tuples[0]
+COMFY_SAMPLERS = []
 
 
 def get_samplers():
@@ -953,6 +943,9 @@ def get_samplers():
         ('uni_pc', 'uni_pc', '', 200),
         ('uni_pc_bh2', 'uni_pc_bh2', '', 210)
     ]
+
+
+COMFY_SCHEDULERS = []
 
 
 def get_schedulers():
