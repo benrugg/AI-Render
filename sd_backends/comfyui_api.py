@@ -488,7 +488,7 @@ def upload_image(img_file, subfolder):
     try:
         resp = requests.post(server_url, files=files, data=data, headers=headers)
     except requests.exceptions.ConnectionError:
-        return operators.handle_error(f"The local Stable Diffusion server couldn't be found. It's either not running, or it's running at a different location than what you specified in the add-on preferences. [Get help]({config.HELP_WITH_LOCAL_INSTALLATION_URL})", "local_server_not_found")
+        return operators.handle_error(f"The ComfyUI Server cannot be found. It's either not running, or it's running at a different location than what you specified in the add-on preferences. [Get help]({config.HELP_WITH_LOCAL_INSTALLATION_URL})", "local_server_not_found")
     except requests.exceptions.MissingSchema:
         return operators.handle_error(f"The url for your local Stable Diffusion server is invalid. Please set it correctly in the add-on preferences. [Get help]({config.HELP_WITH_LOCAL_INSTALLATION_URL})", "local_server_url_invalid")
     except requests.exceptions.ReadTimeout:
@@ -771,14 +771,9 @@ def handle_error(response):
 
         try:
             response_obj = response.json()
-            if response_obj.get('detail') and response_obj['detail'] == "Not Found":
-                return operators.handle_error(f"It looks like the Automatic1111 server is running, but it's not in API mode. [Get help]({config.HELP_WITH_AUTOMATIC1111_NOT_IN_API_MODE_URL})", "automatic1111_not_in_api_mode")
-            elif response_obj.get('detail') and response_obj['detail'] == "Sampler not found":
-                return operators.handle_error("The sampler you selected is not available on the Automatic1111 Stable Diffusion server. Please select a different sampler.", "invalid_sampler")
-            else:
-                return operators.handle_error(f"An error occurred in the ComfyUI server. Full server response: {json.dumps(response_obj)}", "unknown_error")
+            return operators.handle_error(f"An error occurred in the ComfyUI server. Full server response: {json.dumps(response_obj)}", "unknown_error")
         except:
-            return operators.handle_error(f"It looks like the Automatic1111 server is running, but it's not in API mode. [Get help]({config.HELP_WITH_AUTOMATIC1111_NOT_IN_API_MODE_URL})", "automatic1111_not_in_api_mode")
+            return operators.handle_error(f"It looks like the ComfyUI server is running, but it's not in API mode. [Get help]({config.HELP_WITH_AUTOMATIC1111_NOT_IN_API_MODE_URL})", "automatic1111_not_in_api_mode")
 
     else:
         print(Fore.RED + "ERROR DETAILS:")
@@ -810,7 +805,7 @@ def do_get(url):
     try:
         return requests.get(url, headers=create_headers(), timeout=utils.local_sd_timeout())
     except requests.exceptions.ConnectionError:
-        return operators.handle_error(f"The local Stable Diffusion server couldn't be found. It's either not running, or it's running at a different location than what you specified in the add-on preferences. [Get help]({config.HELP_WITH_LOCAL_INSTALLATION_URL})", "local_server_not_found")
+        return operators.handle_error(f"The ComfyUI Server cannot be found. It's either not running, or it's running at a different location than what you specified in the add-on preferences. [Get help]({config.HELP_WITH_LOCAL_INSTALLATION_URL})", "local_server_not_found")
     except requests.exceptions.MissingSchema:
         return operators.handle_error(f"The url for your local Stable Diffusion server is invalid. Please set it correctly in the add-on preferences. [Get help]({config.HELP_WITH_LOCAL_INSTALLATION_URL})", "local_server_url_invalid")
     except requests.exceptions.ReadTimeout:
@@ -824,7 +819,7 @@ def do_post(url, data):
     try:
         return requests.post(url, json=data, headers=create_headers(), timeout=utils.local_sd_timeout())
     except requests.exceptions.ConnectionError:
-        return operators.handle_error(f"The local Stable Diffusion server couldn't be found. It's either not running, or it's running at a different location than what you specified in the add-on preferences. [Get help]({config.HELP_WITH_LOCAL_INSTALLATION_URL})", "local_server_not_found")
+        return operators.handle_error(f"The ComfyUI Server cannot be found. It's either not running, or it's running at a different location than what you specified in the add-on preferences. [Get help]({config.HELP_WITH_LOCAL_INSTALLATION_URL})", "local_server_not_found")
     except requests.exceptions.MissingSchema:
         return operators.handle_error(f"The url for your local Stable Diffusion server is invalid. Please set it correctly in the add-on preferences. [Get help]({config.HELP_WITH_LOCAL_INSTALLATION_URL})", "local_server_url_invalid")
     except requests.exceptions.ReadTimeout:
@@ -888,7 +883,7 @@ def get_models(context):
     try:
         server_url = get_server_url("/object_info/CheckpointLoaderSimple")
     except:
-        return operators.handle_error(f"You need to specify a location for the local Stable Diffusion server in the add-on preferences. [Get help]({config.HELP_WITH_LOCAL_INSTALLATION_URL})", "local_server_url_missing")
+        return handle_error("It seems that you local ComfyUI server is not running", "local_server_url_missing")
 
     # send the API request
     response = do_get(server_url)
@@ -909,6 +904,9 @@ def get_models(context):
                 print(response.json())
             else:
                 print("LONG RESPONSE LOGGING IS DISABLED")
+
+    else:
+        return handle_error(response)
 
     return models_list
 

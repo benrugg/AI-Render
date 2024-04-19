@@ -13,6 +13,8 @@ def create_property_from_workflow(self, context):
     selected_workflow = comfyui_api.load_workflow(context, selected_workflow_file)
     print(Fore.WHITE + "CREATING PROPERTIES FROM WORKFLOW: " + Fore.RESET + selected_workflow_file)
 
+    set_current_workflow(self, context)
+
     selected_class_types = ["LoraLoader", "ControlNetApplyAdvanced", "CheckpointLoaderSimple", "SelfAttentionGuidance"]
     print(Fore.WHITE + "\nSELECTED CLASS TYPE: " + Fore.RESET + str(selected_class_types))
 
@@ -103,6 +105,11 @@ def create_property_from_workflow(self, context):
                 print(Fore.WHITE + "PROPERTY CREATED: " + comfyui_self_attention_guidance.name + Fore.RESET)
 
 
+def set_current_workflow(self, context):
+    # Maybe I know now...
+    self.comfy_current_workflow = self.comfyui_workflow
+
+
 def set_current_sd_model(self, context):
     # I dont know why I'm doing this...
     self.current_model = self.model_enum
@@ -114,7 +121,6 @@ class ComfyUICheckpointLoaderSimple(bpy.types.PropertyGroup):
         default=False,
         description="Expanded"
     )
-
     model_enum: bpy.props.EnumProperty(
         name="Available Models",
         default=0,
@@ -221,6 +227,11 @@ class ComfyUISelfAttentionGuidance(bpy.types.PropertyGroup):
 
 
 class ComfyUIProps(bpy.types.PropertyGroup):
+    comfy_current_workflow: bpy.props.StringProperty(
+        name="comfyui_current_workflow",
+        default="",
+        description="Current workflow",
+    )
     comfyui_workflow: bpy.props.EnumProperty(
         name="comfyui_workflow",
         default=0,

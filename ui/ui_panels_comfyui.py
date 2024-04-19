@@ -16,25 +16,31 @@ class AIR_PT_comfyui(bpy.types.Panel):
         return utils.is_installation_valid() and context.scene.air_props.is_enabled and utils.sd_backend(context) == "comfyui"
 
     def draw(self, context):
-        layout = self.layout
-        layout.use_property_split = True
-        layout.use_property_decorate = False
         scene = context.scene
         props = scene.comfyui_props
 
-        layout.separator(factor=2)
+        layout = self.layout
+        layout.use_property_split = True
+        layout.use_property_decorate = False
+
+        row = layout.row(align=True)
+        row.scale_y = 1.5
+        row.prop(props, 'comfy_current_workflow', text='Current Workflow', emboss=False)
 
         # ComfyUI Workflows selector
-        row = layout.row()
-        # row.label(text=")
-        row.prop(props, 'comfyui_workflow', text="")
-        row.operator('ai_render.update_workflow_enum', text='', icon='FILE_REFRESH')
-        row.scale_y = 1.3
+        split = layout.split(factor=0.8)
+        col1,col2 = (split.column(),split.column())
 
-        layout.separator(factor=1)
+        # row.label(text=")
+        col1.prop(props, 'comfyui_workflow', text="")
+        col2.operator('ai_render.update_workflow_enum', text='Reload', icon='FILE_REFRESH')
+        split.scale_y = 1.5
+
+        layout.separator(factor=2)
 
         # Cycle all the Properties inside the comfyui_props
         for prop in props.bl_rna.properties.items():
+
             # Check if the property is a CollectionProperty and it has items
             if prop[1].type == 'COLLECTION' and getattr(props, prop[0]):
                 # Create a box for each CollectionProperty with all the items inside
@@ -70,9 +76,13 @@ class AIR_PT_comfyui(bpy.types.Panel):
                         elif sub_prop[1].type == 'ENUM':
                             # Display the available enums. This can update the related strings
                             row = box.row()
-                            row.prop(item, sub_prop[0], text="")
+                            row.scale_y = 1.25
+                            split = row.split(factor=0.9)
+                            col1,col2 = (split.column(),split.column())
+
+                            col1.prop(item, sub_prop[0], text="")
                             if sub_prop[0] == 'model_enum':
-                                row.operator('ai_render.update_sd_model_enum', text='', icon='FILE_REFRESH')
+                                col2.operator('ai_render.update_sd_model_enum', text='', icon='FILE_REFRESH')
 
                         elif sub_prop[1].type == 'FLOAT':
                             col = box.column()
