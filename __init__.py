@@ -1,5 +1,5 @@
 bl_info = {
-    "name": "AI Render - Stable Diffusion in Blender",
+    "name": "AI Render - ComfyUI Support",
     "description": "Create amazing images using Stable Diffusion AI",
     "author": "Ben Rugg",
     "version": (1, 0, 1),
