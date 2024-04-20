@@ -288,11 +288,11 @@ class AIR_PT_advanced_options(bpy.types.Panel):
         sub.prop(props, 'image_similarity', text="", slider=False)
 
         # Denoising Strength
-        row = layout.row()
-        sub = row.column()
-        sub.label(text="Denoising Strength")
-        sub = row.column()
-        sub.prop(props, 'denoising_strength', text="", slider=False)
+        # row = layout.row()
+        # sub = row.column()
+        # sub.label(text="Denoising Strength")
+        # sub = row.column()
+        # sub.prop(props, 'denoising_strength', text="", slider=False)
 
         # Steps
         row = layout.row()
