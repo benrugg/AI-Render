@@ -174,7 +174,7 @@ def set_lora_name(self, context):
 class ComfyUICheckpointLoaderSimple(bpy.types.PropertyGroup):
     expanded: bpy.props.BoolProperty(
         name="expanded",
-        default=False,
+        default=True,
         description="Expanded"
     )
     ckpt_name: bpy.props.StringProperty(
@@ -194,7 +194,7 @@ class ComfyUICheckpointLoaderSimple(bpy.types.PropertyGroup):
 class ComfyUILoraNode(bpy.types.PropertyGroup):
     expanded: bpy.props.BoolProperty(
         name="expanded",
-        default=False,
+        default=True,
         description="Expanded"
     )
     lora_name: bpy.props.StringProperty(
@@ -232,7 +232,7 @@ class ComfyUILoraNode(bpy.types.PropertyGroup):
 class ComfyUIControlNetNode(bpy.types.PropertyGroup):
     expanded: bpy.props.BoolProperty(
         name="expanded",
-        default=False,
+        default=True,
         description="Expanded"
     )
     control_net_name: bpy.props.StringProperty(
@@ -268,7 +268,7 @@ class ComfyUIControlNetNode(bpy.types.PropertyGroup):
 class ComfyUISelfAttentionGuidance(bpy.types.PropertyGroup):
     expanded: bpy.props.BoolProperty(
         name="expanded",
-        default=False,
+        default=True,
         description="Expanded"
     )
     blur_sigma: bpy.props.FloatProperty(
@@ -294,7 +294,7 @@ class ComfyUIMainKSampler(bpy.types.PropertyGroup):
 
     expanded: bpy.props.BoolProperty(
         name="expanded",
-        default=False,
+        default=True,
         description="Expanded"
     )
     seed: bpy.props.IntProperty(
@@ -361,7 +361,7 @@ class ComfyUIProps(bpy.types.PropertyGroup):
     comfyui_workflow: bpy.props.EnumProperty(
         name="comfyui_workflow",
         default=0,
-        items=comfyui_api.create_workflows_enum,
+        items=comfyui_api.create_workflow_enum_realtime,
         description="A list of the available workflows in the path specified in the addon preferences",
         update=create_property_from_workflow
     )

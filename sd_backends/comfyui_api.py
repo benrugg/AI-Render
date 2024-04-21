@@ -503,6 +503,7 @@ def map_param_to_workflow(params, workflow):
             # If the node is found, update the input_key with the parameter's value
             if node_key is not None:
                 workflow[node_key]["inputs"][input_key] = params[param_name]
+
     return workflow
 
 
@@ -548,28 +549,6 @@ def map_comfy_props(comfyui_props, workflow):
         json.dump(updated_workflow, f, indent=4)
 
     return workflow
-
-
-def get_comfyui_input_path(context):
-    comfyui_path = utils.get_addon_preferences(context).comfyui_path
-    return comfyui_path + "input/"
-
-
-def get_comfyui_output_path(context):
-    comfyui_path = utils.get_addon_preferences(context).comfyui_path
-    return comfyui_path + "output/"
-
-
-def get_color_file_input_path(context):
-    return get_comfyui_input_path(context) + "color/"
-
-
-def get_depth_file_input_path(context):
-    return get_comfyui_input_path(context) + "depth/"
-
-
-def get_normal_file_input_path(context):
-    return get_comfyui_input_path(context) + "normal/"
 
 
 def generate(params, img_file, filename_prefix, props, comfyui_props):
@@ -809,8 +788,6 @@ def debug_log(response):
 
 
 # PUBLIC SUPPORT FUNCTIONS:
-
-
 def get_workflows_path(context):
     return utils.get_addon_preferences().comfyui_workflows_path
 
@@ -821,6 +798,17 @@ COMFY_WORKFLOWS = []
 def create_workflows_enum(self, context):
     enum_items = []
     for i, workflow in enumerate(COMFY_WORKFLOWS):
+        enum_items.append((workflow, workflow, "", i))
+    return enum_items
+
+
+def create_workflow_enum_realtime(self, context):
+    workflows_path = get_workflows_path(bpy.context)
+    workflow_list = [f for f in os.listdir(workflows_path) if os.path.isfile(
+        os.path.join(workflows_path, f)) and f.endswith(".json")]
+
+    enum_items = []
+    for i, workflow in enumerate(workflow_list):
         enum_items.append((workflow, workflow, "", i))
     return enum_items
 
@@ -924,9 +912,8 @@ def get_lora_models(context):
     return models_list
 
 
-COMFY_SAMPLERS = []
-
-
+# TODO: Implement the enum trick for samplers and schedulers
+# COMFY_SAMPLERS = []
 def get_samplers(self, context):
     # NOTE: Keep the number values (fourth item in the tuples) in sync with DreamStudio's
     # values (in stability_api.py). These act like an internal unique ID for Blender
@@ -960,9 +947,7 @@ def default_sampler():
     return 'dpmpp_2m'
 
 
-COMFY_SCHEDULERS = []
-
-
+# COMFY_SCHEDULERS = []
 def get_schedulers(self, context):
     return [
         ('normal', 'normal', '', 10),
@@ -1254,9 +1239,30 @@ def ensure_compositor_nodes(context):
         node.select = False
 
 
+# PATH FUNCTIONS:
+def get_comfyui_input_path(context):
+    comfyui_path = utils.get_addon_preferences(context).comfyui_path
+    return comfyui_path + "input/"
+
+
+def get_comfyui_output_path(context):
+    comfyui_path = utils.get_addon_preferences(context).comfyui_path
+    return comfyui_path + "output/"
+
+
+def get_color_file_input_path(context):
+    return get_comfyui_input_path(context) + "color/"
+
+
+def get_depth_file_input_path(context):
+    return get_comfyui_input_path(context) + "depth/"
+
+
+def get_normal_file_input_path(context):
+    return get_comfyui_input_path(context) + "normal/"
+
+
 # AI RENDER
-
-
 def get_upscaler_models(context):
     models = context.scene.air_props.automatic1111_available_upscaler_models
 
