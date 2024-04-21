@@ -77,7 +77,7 @@ class AIR_PT_comfyui(bpy.types.Panel):
                             col1, col2 = (split.column(), split.column())
 
                             col1.prop(item, sub_prop[0], text="")
-                            if sub_prop[0] == 'model_enum':
+                            if sub_prop[0] == 'sd_model_enum':
                                 col2.operator('ai_render.update_sd_model_enum', text='', icon='FILE_REFRESH')
                             elif sub_prop[0] == 'lora_enum':
                                 col2.operator('ai_render.update_lora_model_enum', text='', icon='FILE_REFRESH')

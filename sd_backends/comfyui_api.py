@@ -542,7 +542,8 @@ def map_comfy_props(comfyui_props, workflow):
 
     # Save mapped json to local file
     workflow_path = utils.get_addon_preferences().comfyui_workflows_path
-    workflow_file_path = workflow_path + '/../example_api_mapped.json'
+    # Add _mapped to the filename and save it for debugging
+    workflow_file_path = workflow_path + '/../' + comfyui_props.comfy_current_workflow + "_mapped.json"
     with open(workflow_file_path, 'w') as f:
         json.dump(updated_workflow, f, indent=4)
 
@@ -880,11 +881,13 @@ def get_sd_models(context):
 
 COMFY_LORA_MODELS = []
 
+
 def create_lora_enum(self, context):
     enum_items = []
     for i, model in enumerate(COMFY_LORA_MODELS):
         enum_items.append((model, model, "", i))
     return enum_items
+
 
 def get_lora_models(context):
     """ GET /object_info/LoraLoader endpoint """
@@ -919,6 +922,7 @@ def get_lora_models(context):
         return handle_error(response)
 
     return models_list
+
 
 COMFY_SAMPLERS = []
 

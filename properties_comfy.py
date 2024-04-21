@@ -47,7 +47,7 @@ def create_property_from_workflow(self, context):
                 comfyui_checkpoint_loader_simple = self.comfyui_checkpoint_loader_simple.add()
                 comfyui_checkpoint_loader_simple.expanded = False
                 comfyui_checkpoint_loader_simple.name = node_id
-                comfyui_checkpoint_loader_simple.current_sd_model = node["inputs"]["ckpt_name"]
+                comfyui_checkpoint_loader_simple.ckpt_name = node["inputs"]["ckpt_name"]
 
                 print(Fore.WHITE + "PROPERTY CREATED: " + comfyui_checkpoint_loader_simple.name + Fore.RESET)
 
@@ -65,7 +65,7 @@ def create_property_from_workflow(self, context):
 
                 comfyui_lora_node = self.comfyui_lora_nodes.add()
                 comfyui_lora_node.name = node_id
-                comfyui_lora_node.current_lora_model = node["inputs"]["lora_name"]
+                comfyui_lora_node.lora_name = node["inputs"]["lora_name"]
                 comfyui_lora_node.strength_model = node["inputs"]["strength_model"]
                 comfyui_lora_node.strength_clip = node["inputs"]["strength_clip"]
 
@@ -163,12 +163,12 @@ def set_current_workflow(self, context):
     self.comfy_current_workflow = self.comfyui_workflow
 
 
-def set_current_sd_model(self, context):
-    self.current_sd_model = self.model_enum
+def set_ckpt_name(self, context):
+    self.ckpt_name = self.sd_model_enum
 
 
-def set_current_lora_model(self, context):
-    self.current_lora_model = self.lora_enum
+def set_lora_name(self, context):
+    self.lora_name = self.lora_enum
 
 
 class ComfyUICheckpointLoaderSimple(bpy.types.PropertyGroup):
@@ -177,17 +177,17 @@ class ComfyUICheckpointLoaderSimple(bpy.types.PropertyGroup):
         default=False,
         description="Expanded"
     )
-    current_sd_model: bpy.props.StringProperty(
-        name="Checkpoint Name",
+    ckpt_name: bpy.props.StringProperty(
+        name="ckpt_name",
         default="",
         description="Name of the checkpoint model"
     )
-    model_enum: bpy.props.EnumProperty(
-        name="Available SD Models",
+    sd_model_enum: bpy.props.EnumProperty(
+        name="sd_model_enum",
         default=0,
         items=comfyui_api.create_models_enum,
         description="A list of the available checkpoints",
-        update=set_current_sd_model
+        update=set_ckpt_name
     )
 
 
@@ -197,17 +197,17 @@ class ComfyUILoraNode(bpy.types.PropertyGroup):
         default=False,
         description="Expanded"
     )
-    current_lora_model: bpy.props.StringProperty(
-        name="Lora Name",
+    lora_name: bpy.props.StringProperty(
+        name="current_lora_model",
         default="",
         description="Name of the LoRA model"
     )
     lora_enum: bpy.props.EnumProperty(
-        name="Available Lora Models",
+        name="lora_enum",
         default=0,
         items=comfyui_api.create_lora_enum,
         description="A list of the available LoRA models",
-        update=set_current_lora_model
+        update=set_lora_name
     )
     strength_model: bpy.props.FloatProperty(
         name="Lora Model Strength",

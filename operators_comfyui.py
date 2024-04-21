@@ -74,14 +74,43 @@ class AIR_OT_UpdateWorkflowEnum(bpy.types.Operator):
     def execute(self, context):
         print(Fore.GREEN + "UPDATING WORKFLOW ENUM..." + Fore.RESET)
 
+        comfui_props = context.scene.comfyui_props
+
         global COMFY_WORKFLOWS
         COMFY_WORKFLOWS.clear()
-        workflows_list = comfyui_api.get_workflows(context)
+        workflows_list = comfyui_api.get_workflows(context)  # Ensure comfyui_api is available
         for workflow in workflows_list:
             COMFY_WORKFLOWS.append(workflow)
 
-        # Ttrigger property creation from the selected workflow
+        # Trigger property creation from the selected workflow
         create_property_from_workflow(context.scene.comfyui_props, context)
+
+        # Trigger the update of the update of the enums before setting the new values
+        bpy.ops.ai_render.update_sd_model_enum()
+        bpy.ops.ai_render.update_lora_model_enum()
+
+        string_enum_mapping_dict = {
+            "comfyui_checkpoint_loader_simple": {
+                "ckpt_name": "sd_model_enum"
+            },
+            "comfyui_lora_nodes": {
+                "lora_name": "lora_enum"
+            }
+        }
+
+        for prop in comfui_props.bl_rna.properties.items():
+            if (
+                prop[1].type == 'COLLECTION'
+                and getattr(comfui_props, prop[0])  # Check if the collection has items
+                and prop[0] in string_enum_mapping_dict.keys()  # Check if the collection is in the enum_to_set dict
+            ):
+                collection_property = prop[0]
+                current_property_name, enum_property_name = next(iter(string_enum_mapping_dict[collection_property].items()))
+
+                for item in getattr(comfui_props, collection_property):
+                    new_value = getattr(item, current_property_name)
+                    setattr(item, enum_property_name, new_value)  # Set the item's enum property to the corresponding string property
+                    print(Fore.GREEN + f"Setting {enum_property_name} of {collection_property} to {current_property_name}" + Fore.RESET)
 
         return {'FINISHED'}
 
