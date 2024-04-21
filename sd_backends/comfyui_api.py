@@ -842,7 +842,7 @@ def create_models_enum(self, context):
     return enum_items
 
 
-def get_models(context):
+def get_sd_models(context):
     """ GET /object_info/CheckpointLoaderSimple endpoint
     to get the available models"""
 
@@ -877,6 +877,48 @@ def get_models(context):
 
     return models_list
 
+
+COMFY_LORA_MODELS = []
+
+def create_lora_enum(self, context):
+    enum_items = []
+    for i, model in enumerate(COMFY_LORA_MODELS):
+        enum_items.append((model, model, "", i))
+    return enum_items
+
+def get_lora_models(context):
+    """ GET /object_info/LoraLoader endpoint """
+
+    # prepare the server url
+    try:
+        server_url = get_server_url("/object_info/LoraLoader")
+    except:
+        return handle_error("It seems that you local ComfyUI server is not running", "local_server_url_missing")
+
+    # send the API request
+    response = do_get(server_url)
+
+    if response == False:
+        return None
+
+    models_list = []
+
+    # handle the response
+    if response.status_code == 200:
+
+        models_list = response.json()["LoraLoader"]["input"]["required"]["lora_name"][0]
+
+        if LOG_MODEL_RESPONSE:
+            print(Fore.WHITE + "\nMODELS RESPONSE: " + Fore.RESET)
+            if LOG_LONG_RESPONSE:
+                print(response.json())
+            else:
+                print("LONG RESPONSE LOGGING IS DISABLED")
+
+    else:
+        return handle_error(response)
+
+    return models_list
 
 COMFY_SAMPLERS = []
 

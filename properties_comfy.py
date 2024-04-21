@@ -45,6 +45,7 @@ def create_property_from_workflow(self, context):
                 #  'inputs': {'ckpt_name': 'SD15\\3D\\3dAnimationDiffusion_lcm.safetensors'}}
 
                 comfyui_checkpoint_loader_simple = self.comfyui_checkpoint_loader_simple.add()
+                comfyui_checkpoint_loader_simple.expanded = False
                 comfyui_checkpoint_loader_simple.name = node_id
                 comfyui_checkpoint_loader_simple.current_sd_model = node["inputs"]["ckpt_name"]
 
@@ -146,16 +147,6 @@ def create_property_from_workflow(self, context):
                 print(Fore.WHITE + "PROPERTY CREATED: " + comfyui_ksampler.name + Fore.RESET)
 
 
-def set_current_workflow(self, context):
-    # Maybe I know now...
-    self.comfy_current_workflow = self.comfyui_workflow
-
-
-def set_current_sd_model(self, context):
-    # I dont know why I'm doing this...
-    self.current_model = self.model_enum
-
-
 def update_air_props(self, context):
     """Update the AI Render properties in the scene"""
 
@@ -166,6 +157,18 @@ def update_air_props(self, context):
 
     context.scene.air_props.image_similarity = round(
         1 - self.denoise, 4)
+
+
+def set_current_workflow(self, context):
+    self.comfy_current_workflow = self.comfyui_workflow
+
+
+def set_current_sd_model(self, context):
+    self.current_sd_model = self.model_enum
+
+
+def set_current_lora_model(self, context):
+    self.current_lora_model = self.lora_enum
 
 
 class ComfyUICheckpointLoaderSimple(bpy.types.PropertyGroup):
@@ -180,7 +183,7 @@ class ComfyUICheckpointLoaderSimple(bpy.types.PropertyGroup):
         description="Name of the checkpoint model"
     )
     model_enum: bpy.props.EnumProperty(
-        name="Available Models",
+        name="Available SD Models",
         default=0,
         items=comfyui_api.create_models_enum,
         description="A list of the available checkpoints",
@@ -198,6 +201,13 @@ class ComfyUILoraNode(bpy.types.PropertyGroup):
         name="Lora Name",
         default="",
         description="Name of the LoRA model"
+    )
+    lora_enum: bpy.props.EnumProperty(
+        name="Available Lora Models",
+        default=0,
+        items=comfyui_api.create_lora_enum,
+        description="A list of the available LoRA models",
+        update=set_current_lora_model
     )
     strength_model: bpy.props.FloatProperty(
         name="Lora Model Strength",
