@@ -29,7 +29,7 @@ class AIR_PT_comfyui(bpy.types.Panel):
 
         # ComfyUI Workflows selector
         split = layout.split(factor=0.8)
-        col1,col2 = (split.column(),split.column())
+        col1, col2 = (split.column(), split.column())
 
         # row.label(text=")
         col1.prop(props, 'comfyui_workflow', text="")
@@ -68,23 +68,24 @@ class AIR_PT_comfyui(bpy.types.Panel):
                     # Display the node number
                     # row.label(text=item.name, icon='NODE')
                     for sub_prop in item.bl_rna.properties.items():
-                        if sub_prop[1].type == 'STRING' and sub_prop[0] != 'name':
-                            # Display the model name not editable as a string (emboss=False)
-                            col = box.column()
-                            col.prop(item, sub_prop[0], text='', emboss=False)
 
-                        elif sub_prop[1].type == 'ENUM':
+                        if sub_prop[1].type == 'ENUM':
                             # Display the available enums. This can update the related strings
                             row = box.row()
                             row.scale_y = 1.25
                             split = row.split(factor=0.9)
-                            col1,col2 = (split.column(),split.column())
+                            col1, col2 = (split.column(), split.column())
 
                             col1.prop(item, sub_prop[0], text="")
                             if sub_prop[0] == 'model_enum':
                                 col2.operator('ai_render.update_sd_model_enum', text='', icon='FILE_REFRESH')
 
-                        elif sub_prop[1].type == 'FLOAT':
+                        elif sub_prop[1].type == 'STRING' and sub_prop[0] != 'name':
+                            # Display the model name not editable as a string (emboss=False)
+                            col = box.column()
+                            col.prop(item, sub_prop[0], text='', emboss=False)
+
+                        elif sub_prop[1].type == 'FLOAT' or sub_prop[1].type == 'INT':
                             col = box.column()
                             col = col.split()
                             col.label(text=sub_prop[0])

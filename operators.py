@@ -431,7 +431,6 @@ def sd_generate(scene, prompts=None, use_last_sd_image=False):
         "negative_prompt": negative_prompt,
         "seed": props.seed,
         "sampler": props.sampler,
-        "scheduler": props.scheduler,
         "steps": props.steps,
         "cfg_scale": props.cfg_scale,
         "width": utils.get_output_width(scene),

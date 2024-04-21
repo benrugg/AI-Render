@@ -190,7 +190,7 @@ class AIR_PT_prompt(bpy.types.Panel):
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
     bl_context = "render"
-    bl_options = {'DEFAULT_CLOSED'}
+    # bl_options = {'DEFAULT_CLOSED'}
 
     @classmethod
     def poll(cls, context):
@@ -322,14 +322,6 @@ class AIR_PT_advanced_options(bpy.types.Panel):
         sub.label(text="Sampler")
         sub = row.column()
         sub.prop(props, 'sampler', text="")
-
-        # Scheduler only if comfyui backend active
-        if utils.sd_backend(context) == "comfyui":
-            row = layout.row()
-            sub = row.column()
-            sub.label(text="Scheduler")
-            sub = row.column()
-            sub.prop(props, 'scheduler', text="")
 
 
 class AIR_PT_controlnet(bpy.types.Panel):
@@ -715,14 +707,14 @@ class AIR_PT_animation(bpy.types.Panel):
 classes = [
     AIR_PT_main,
     AIR_PT_setup,
-    AIR_PT_prompt,
+    AIR_PT_advanced_options,
     AIR_PT_controlnet,
     AIR_PT_operation,
     AIR_PT_upscale,
     AIR_PT_inpaint,
     AIR_PT_outpaint,
     AIR_PT_animation,
-    AIR_PT_advanced_options,
+    AIR_PT_prompt,
 ]
 
 

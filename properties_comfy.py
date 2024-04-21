@@ -15,7 +15,14 @@ def create_property_from_workflow(self, context):
 
     set_current_workflow(self, context)
 
-    selected_class_types = ["LoraLoader", "ControlNetApplyAdvanced", "CheckpointLoaderSimple", "SelfAttentionGuidance"]
+    selected_class_types = [
+        "CheckpointLoaderSimple",
+        "LoraLoader",
+        "ControlNetApplyAdvanced",
+        "SelfAttentionGuidance",
+        "KSampler",
+    ]
+
     print(Fore.WHITE + "\nSELECTED CLASS TYPE: " + Fore.RESET + str(selected_class_types))
 
     # Clear the comfyui_nodes collections TODO: Do it with a loop
@@ -23,6 +30,7 @@ def create_property_from_workflow(self, context):
     self.comfyui_control_net_nodes.clear()
     self.comfyui_checkpoint_loader_simple.clear()
     self.comfyui_self_attention_guidance.clear()
+    self.comfyui_ksampler.clear()
 
     # Cycle through the nodes in the selected workflow and create the properties
     for node_id, node in selected_workflow.items():
@@ -38,7 +46,7 @@ def create_property_from_workflow(self, context):
 
                 comfyui_checkpoint_loader_simple = self.comfyui_checkpoint_loader_simple.add()
                 comfyui_checkpoint_loader_simple.name = node_id
-                comfyui_checkpoint_loader_simple.current_model = node["inputs"]["ckpt_name"]
+                comfyui_checkpoint_loader_simple.current_sd_model = node["inputs"]["ckpt_name"]
 
                 print(Fore.WHITE + "PROPERTY CREATED: " + comfyui_checkpoint_loader_simple.name + Fore.RESET)
 
@@ -56,7 +64,7 @@ def create_property_from_workflow(self, context):
 
                 comfyui_lora_node = self.comfyui_lora_nodes.add()
                 comfyui_lora_node.name = node_id
-                comfyui_lora_node.lora_name = node["inputs"]["lora_name"]
+                comfyui_lora_node.current_lora_model = node["inputs"]["lora_name"]
                 comfyui_lora_node.strength_model = node["inputs"]["strength_model"]
                 comfyui_lora_node.strength_clip = node["inputs"]["strength_clip"]
 
@@ -104,6 +112,39 @@ def create_property_from_workflow(self, context):
 
                 print(Fore.WHITE + "PROPERTY CREATED: " + comfyui_self_attention_guidance.name + Fore.RESET)
 
+            elif node["class_type"] == "KSampler":
+                print(Fore.GREEN + "\nNODE: " + node_id)
+                pprint(node)
+
+                # {'_meta': {'title': 'main_sampler'},
+                #  'class_type': 'KSampler',
+                #  'inputs': {'cfg': 7.5,
+                #             'denoise': 1,
+                #             'latent_image': ['10', 0],
+                #             'model': ['37', 0],
+                #             'negative': ['16', 1],
+                #             'positive': ['16', 0],
+                #             'sampler_name': 'dpmpp_2m_sde_gpu',
+                #             'scheduler': 'karras',
+                #             'seed': 967975925929612,
+                #             'steps': 10}}
+
+                comfyui_ksampler = self.comfyui_ksampler.add()
+
+                if node["_meta"]["title"] == "main_sampler":
+                    comfyui_ksampler.is_main_sampler = True
+
+                comfyui_ksampler.name = node_id
+                trimmed_seed = node["inputs"]["seed"] % 1000000000
+                comfyui_ksampler.seed = trimmed_seed
+                comfyui_ksampler.steps = node["inputs"]["steps"]
+                comfyui_ksampler.cfg = node["inputs"]["cfg"]
+                comfyui_ksampler.sampler_name = node["inputs"]["sampler_name"]
+                comfyui_ksampler.scheduler = node["inputs"]["scheduler"]
+                comfyui_ksampler.denoise = node["inputs"]["denoise"]
+
+                print(Fore.WHITE + "PROPERTY CREATED: " + comfyui_ksampler.name + Fore.RESET)
+
 
 def set_current_workflow(self, context):
     # Maybe I know now...
@@ -115,11 +156,28 @@ def set_current_sd_model(self, context):
     self.current_model = self.model_enum
 
 
+def update_air_props(self, context):
+    """Update the AI Render properties in the scene"""
+
+    context.scene.air_props.seed = self.seed
+    context.scene.air_props.steps = self.steps
+    context.scene.air_props.cfg_scale = self.cfg
+    context.scene.air_props.sampler = self.sampler_name
+
+    context.scene.air_props.image_similarity = round(
+        1 - self.denoise, 4)
+
+
 class ComfyUICheckpointLoaderSimple(bpy.types.PropertyGroup):
     expanded: bpy.props.BoolProperty(
         name="expanded",
         default=False,
         description="Expanded"
+    )
+    current_sd_model: bpy.props.StringProperty(
+        name="Checkpoint Name",
+        default="",
+        description="Name of the checkpoint model"
     )
     model_enum: bpy.props.EnumProperty(
         name="Available Models",
@@ -127,11 +185,6 @@ class ComfyUICheckpointLoaderSimple(bpy.types.PropertyGroup):
         items=comfyui_api.create_models_enum,
         description="A list of the available checkpoints",
         update=set_current_sd_model
-    )
-    current_model: bpy.props.StringProperty(
-        name="Checkpoint Name",
-        default="",
-        description="Name of the checkpoint model"
     )
 
 
@@ -141,7 +194,7 @@ class ComfyUILoraNode(bpy.types.PropertyGroup):
         default=False,
         description="Expanded"
     )
-    lora_name: bpy.props.StringProperty(
+    current_lora_model: bpy.props.StringProperty(
         name="Lora Name",
         default="",
         description="Name of the LoRA model"
@@ -226,6 +279,69 @@ class ComfyUISelfAttentionGuidance(bpy.types.PropertyGroup):
     )
 
 
+class ComfyUIMainKSampler(bpy.types.PropertyGroup):
+    # """This should map only with the main_sampler node in the workflow"""
+
+    expanded: bpy.props.BoolProperty(
+        name="expanded",
+        default=False,
+        description="Expanded"
+    )
+    seed: bpy.props.IntProperty(
+        name="Seed",
+        min=0,
+        description="Seed",
+        update=update_air_props
+    )
+    is_main_sampler: bpy.props.BoolProperty(
+        name="is_main_sampler",
+        default=False,
+        description="Is the Main Sampler connected to Save Image"
+    )
+    steps: bpy.props.IntProperty(
+        name="Steps",
+        default=10,
+        soft_min=1,
+        soft_max=50,
+        min=1,
+        max=150,
+        description="Steps",
+        update=update_air_props
+    )
+    cfg: bpy.props.FloatProperty(
+        name="Cfg",
+        default=7,
+        soft_min=1,
+        soft_max=24,
+        min=0,
+        max=35,
+        description="Cfg",
+        update=update_air_props
+    )
+    sampler_name: bpy.props.EnumProperty(
+        name="Sampler",
+        default=130,
+        items=comfyui_api.get_samplers,
+        description="Sampler",
+        update=update_air_props
+    )
+    scheduler: bpy.props.EnumProperty(
+        name="Scheduler",
+        default=20,
+        items=comfyui_api.get_schedulers,
+        description="Scheduler",
+        update=update_air_props
+    )
+    denoise: bpy.props.FloatProperty(
+        name="Denoise",
+        default=0.8,
+        description="Denoise",
+        min=0.001,
+        max=1,
+        update=update_air_props
+    )
+
+
 class ComfyUIProps(bpy.types.PropertyGroup):
     comfy_current_workflow: bpy.props.StringProperty(
         name="comfyui_current_workflow",
@@ -240,6 +356,7 @@ class ComfyUIProps(bpy.types.PropertyGroup):
         update=create_property_from_workflow
     )
     comfyui_checkpoint_loader_simple: bpy.props.CollectionProperty(type=ComfyUICheckpointLoaderSimple)
+    comfyui_ksampler: bpy.props.CollectionProperty(type=ComfyUIMainKSampler)
     comfyui_lora_nodes: bpy.props.CollectionProperty(type=ComfyUILoraNode)
     comfyui_control_net_nodes: bpy.props.CollectionProperty(type=ComfyUIControlNetNode)
     comfyui_self_attention_guidance: bpy.props.CollectionProperty(type=ComfyUISelfAttentionGuidance)
@@ -247,6 +364,7 @@ class ComfyUIProps(bpy.types.PropertyGroup):
 
 classes = [
     ComfyUICheckpointLoaderSimple,
+    ComfyUIMainKSampler,
     ComfyUILoraNode,
     ComfyUIControlNetNode,
     ComfyUISelfAttentionGuidance,
