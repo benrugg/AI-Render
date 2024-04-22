@@ -6,6 +6,9 @@ from pprint import pprint
 from colorama import Fore
 
 
+LOG_PROP_CREATION = False
+
+
 def create_property_from_workflow(self, context):
     """ Creates the properties and add the to the comfyui_nodes collection"""
 
@@ -23,67 +26,77 @@ def create_property_from_workflow(self, context):
         "KSampler",
     ]
 
-    print(Fore.WHITE + "\nSELECTED CLASS TYPE: " + Fore.RESET + str(selected_class_types))
+    print(Fore.WHITE + "\nSELECTED CLASS TYPE: " + Fore.RESET)
+    pprint(selected_class_types)
 
-    # Clear the comfyui_nodes collections TODO: Do it with a loop
+    # Clear the comfyui_nodes collections TODO: Id possible to do it with a loop?
     self.comfyui_lora_nodes.clear()
     self.comfyui_control_net_nodes.clear()
     self.comfyui_checkpoint_loader_simple.clear()
     self.comfyui_self_attention_guidance.clear()
     self.comfyui_ksampler.clear()
 
+    # Update the enums
+    bpy.ops.ai_render.update_ckpt_enum()
+    bpy.ops.ai_render.update_lora_enum()
+    bpy.ops.ai_render.update_control_net_enum()
+
     # Cycle through the nodes in the selected workflow and create the properties
     for node_id, node in selected_workflow.items():
         if node["class_type"] in selected_class_types:
 
             if node["class_type"] == "CheckpointLoaderSimple":
-                print(Fore.MAGENTA + "\nNODE: " + node_id)
-                pprint(node)
-
-                # {'_meta': {'title': 'Load Checkpoint'},
-                #  'class_type': 'CheckpointLoaderSimple',
-                #  'inputs': {'ckpt_name': 'SD15\\3D\\3dAnimationDiffusion_lcm.safetensors'}}
+                if LOG_PROP_CREATION:
+                    print(Fore.MAGENTA + "\nNODE: " + node_id)
+                    pprint(node)
+                    # {'_meta': {'title': 'Load Checkpoint'},
+                    #  'class_type': 'CheckpointLoaderSimple',
+                    #  'inputs': {'ckpt_name': 'SD15\\3D\\3dAnimationDiffusion_lcm.safetensors'}}
 
                 comfyui_checkpoint_loader_simple = self.comfyui_checkpoint_loader_simple.add()
                 comfyui_checkpoint_loader_simple.expanded = False
                 comfyui_checkpoint_loader_simple.name = node_id
                 comfyui_checkpoint_loader_simple.ckpt_name = node["inputs"]["ckpt_name"]
+                comfyui_checkpoint_loader_simple.ckpt_enum = node["inputs"]["ckpt_name"]
 
-                print(Fore.WHITE + "PROPERTY CREATED: " + comfyui_checkpoint_loader_simple.name + Fore.RESET)
+                if LOG_PROP_CREATION:
+                    print(Fore.WHITE + "PROPERTY CREATED: " + comfyui_checkpoint_loader_simple.name + Fore.RESET)
 
             elif node["class_type"] == "LoraLoader":
-                print(Fore.YELLOW + "\nNODE: " + node_id)
-                pprint(node)
-
-                # {'_meta': {'title': 'Load LoRA'},
-                #  'class_type': 'LoraLoader',
-                #  'inputs': {'clip': ['28', 1],
-                #             'lora_name': 'SD15\\Robotic_Jackal-ish.safetensors',
-                #             'model': ['28', 0],
-                #             'strength_clip': 1,
-                #             'strength_model': 1}}
+                if LOG_PROP_CREATION:
+                    print(Fore.YELLOW + "\nNODE: " + node_id)
+                    pprint(node)
+                    # {'_meta': {'title': 'Load LoRA'},
+                    #  'class_type': 'LoraLoader',
+                    #  'inputs': {'clip': ['28', 1],
+                    #             'lora_name': 'SD15\\Robotic_Jackal-ish.safetensors',
+                    #             'model': ['28', 0],
+                    #             'strength_clip': 1,
+                    #             'strength_model': 1}}
 
                 comfyui_lora_node = self.comfyui_lora_nodes.add()
                 comfyui_lora_node.name = node_id
-                comfyui_lora_node.lora_name = node["inputs"]["lora_name"]
                 comfyui_lora_node.strength_model = node["inputs"]["strength_model"]
                 comfyui_lora_node.strength_clip = node["inputs"]["strength_clip"]
+                comfyui_lora_node.lora_name = node["inputs"]["lora_name"]
+                comfyui_lora_node.lora_enum = node["inputs"]["lora_name"]
 
-                print(Fore.WHITE + "PROPERTY CREATED: " + Fore.RESET + comfyui_lora_node.name)
+                if LOG_PROP_CREATION:
+                    print(Fore.WHITE + "PROPERTY CREATED: " + Fore.RESET + comfyui_lora_node.name)
 
             elif node["class_type"] == "ControlNetApplyAdvanced":
-                print(Fore.CYAN + "\nNODE: " + node_id)
-                pprint(node)
-
-                # {'_meta': {'title': 'Apply ControlNet (Advanced)'},
-                #  'class_type': 'ControlNetApplyAdvanced',
-                #  'inputs': {'control_net': ['14', 0],
-                #             'end_percent': 1,
-                #             'image': ['15', 0],
-                #             'negative': ['7', 0],
-                #             'positive': ['6', 0],
-                #             'start_percent': 0,
-                #             'strength': 1}}
+                if LOG_PROP_CREATION:
+                    print(Fore.CYAN + "\nNODE: " + node_id)
+                    pprint(node)
+                    # {'_meta': {'title': 'Apply ControlNet (Advanced)'},
+                    #  'class_type': 'ControlNetApplyAdvanced',
+                    #  'inputs': {'control_net': ['14', 0],
+                    #             'end_percent': 1,
+                    #             'image': ['15', 0],
+                    #             'negative': ['7', 0],
+                    #             'positive': ['6', 0],
+                    #             'start_percent': 0,
+                    #             'strength': 1}}
 
                 # Find ControlNet model connected to the ControlNetApplyAdvanced
                 control_net_node = selected_workflow[node["inputs"]["control_net"][0]]
@@ -91,44 +104,47 @@ def create_property_from_workflow(self, context):
 
                 comfyui_control_net_node = self.comfyui_control_net_nodes.add()
                 comfyui_control_net_node.name = node_id
-                comfyui_control_net_node.control_net_name = control_net_node_model_path
                 comfyui_control_net_node.strength = node["inputs"]["strength"]
                 comfyui_control_net_node.start_percent = node["inputs"]["start_percent"]
                 comfyui_control_net_node.end_percent = node["inputs"]["end_percent"]
+                comfyui_control_net_node.control_net_name = control_net_node_model_path
+                comfyui_control_net_node.control_net_enum = control_net_node_model_path
 
-                print(Fore.WHITE + "PROPERTY CREATED: " + comfyui_control_net_node.name + Fore.RESET)
+                if LOG_PROP_CREATION:
+                    print(Fore.WHITE + "PROPERTY CREATED: " + comfyui_control_net_node.name + Fore.RESET)
 
             elif node["class_type"] == "SelfAttentionGuidance":
-                print(Fore.BLUE + "\nNODE: " + node_id)
-                pprint(node)
-
-                # {'_meta': {'title': 'Self-Attention Guidance'},
-                #  'class_type': 'SelfAttentionGuidance',
-                #  'inputs': {'blur_sigma': 2, 'model': ['26', 0], 'scale': 1}}
+                if LOG_PROP_CREATION:
+                    print(Fore.BLUE + "\nNODE: " + node_id)
+                    pprint(node)
+                    # {'_meta': {'title': 'Self-Attention Guidance'},
+                    #  'class_type': 'SelfAttentionGuidance',
+                    #  'inputs': {'blur_sigma': 2, 'model': ['26', 0], 'scale': 1}}
 
                 comfyui_self_attention_guidance = self.comfyui_self_attention_guidance.add()
                 comfyui_self_attention_guidance.name = node_id
                 comfyui_self_attention_guidance.blur_sigma = node["inputs"]["blur_sigma"]
                 comfyui_self_attention_guidance.scale = node["inputs"]["scale"]
 
-                print(Fore.WHITE + "PROPERTY CREATED: " + comfyui_self_attention_guidance.name + Fore.RESET)
+                if LOG_PROP_CREATION:
+                    print(Fore.WHITE + "PROPERTY CREATED: " + comfyui_self_attention_guidance.name + Fore.RESET)
 
             elif node["class_type"] == "KSampler":
-                print(Fore.GREEN + "\nNODE: " + node_id)
-                pprint(node)
-
-                # {'_meta': {'title': 'main_sampler'},
-                #  'class_type': 'KSampler',
-                #  'inputs': {'cfg': 7.5,
-                #             'denoise': 1,
-                #             'latent_image': ['10', 0],
-                #             'model': ['37', 0],
-                #             'negative': ['16', 1],
-                #             'positive': ['16', 0],
-                #             'sampler_name': 'dpmpp_2m_sde_gpu',
-                #             'scheduler': 'karras',
-                #             'seed': 967975925929612,
-                #             'steps': 10}}
+                if LOG_PROP_CREATION:
+                    print(Fore.GREEN + "\nNODE: " + node_id)
+                    pprint(node)
+                    # {'_meta': {'title': 'main_sampler'},
+                    #  'class_type': 'KSampler',
+                    #  'inputs': {'cfg': 7.5,
+                    #             'denoise': 1,
+                    #             'latent_image': ['10', 0],
+                    #             'model': ['37', 0],
+                    #             'negative': ['16', 1],
+                    #             'positive': ['16', 0],
+                    #             'sampler_name': 'dpmpp_2m_sde_gpu',
+                    #             'scheduler': 'karras',
+                    #             'seed': 967975925929612,
+                    #             'steps': 10}}
 
                 comfyui_ksampler = self.comfyui_ksampler.add()
 
@@ -144,7 +160,8 @@ def create_property_from_workflow(self, context):
                 comfyui_ksampler.scheduler = node["inputs"]["scheduler"]
                 comfyui_ksampler.denoise = node["inputs"]["denoise"]
 
-                print(Fore.WHITE + "PROPERTY CREATED: " + comfyui_ksampler.name + Fore.RESET)
+                if LOG_PROP_CREATION:
+                    print(Fore.WHITE + "PROPERTY CREATED: " + comfyui_ksampler.name + Fore.RESET)
 
 
 def update_air_props(self, context):
@@ -164,7 +181,7 @@ def set_current_workflow(self, context):
 
 
 def set_ckpt_name(self, context):
-    self.ckpt_name = self.sd_model_enum
+    self.ckpt_name = self.ckpt_enum
 
 
 def set_lora_name(self, context):
@@ -182,8 +199,8 @@ class ComfyUICheckpointLoaderSimple(bpy.types.PropertyGroup):
         default="",
         description="Name of the checkpoint model"
     )
-    sd_model_enum: bpy.props.EnumProperty(
-        name="sd_model_enum",
+    ckpt_enum: bpy.props.EnumProperty(
+        name="ckpt_enum",
         default=0,
         items=comfyui_api.create_models_enum,
         description="A list of the available checkpoints",
@@ -239,6 +256,12 @@ class ComfyUIControlNetNode(bpy.types.PropertyGroup):
         name="ControlNet Name",
         default="",
         description="Name of the ControlNet model"
+    )
+    control_net_enum: bpy.props.EnumProperty(
+        name="control_net_enum",
+        default=0,
+        items=comfyui_api.create_control_net_enum,
+        description="A list of the available ControlNet models"
     )
     strength: bpy.props.FloatProperty(
         name="ControlNet Strength",

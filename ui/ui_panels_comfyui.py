@@ -33,7 +33,7 @@ class AIR_PT_comfyui(bpy.types.Panel):
 
         # row.label(text=")
         col1.prop(props, 'comfyui_workflow', text="")
-        col2.operator('ai_render.update_workflow_enum', text='Reload', icon='FILE_REFRESH')
+        # col2.operator('ai_render.update_workflow_enum', text='Reload', icon='FILE_REFRESH')
         split.scale_y = 1.5
 
         layout.separator(factor=2)
@@ -73,19 +73,21 @@ class AIR_PT_comfyui(bpy.types.Panel):
                             # Display the available enums. This can update the related strings
                             row = box.row()
                             row.scale_y = 1.25
-                            split = row.split(factor=0.9)
-                            col1, col2 = (split.column(), split.column())
+                            split = row.split(factor=0.15)
+                            col2, col1 = (split.column(), split.column())
 
                             col1.prop(item, sub_prop[0], text="")
-                            if sub_prop[0] == 'sd_model_enum':
-                                col2.operator('ai_render.update_sd_model_enum', text='', icon='FILE_REFRESH')
+                            if sub_prop[0] == 'ckpt_enum':
+                                col2.operator('ai_render.update_ckpt_enum', text='', icon='FILE_REFRESH')
                             elif sub_prop[0] == 'lora_enum':
-                                col2.operator('ai_render.update_lora_model_enum', text='', icon='FILE_REFRESH')
+                                col2.operator('ai_render.update_lora_enum', text='', icon='FILE_REFRESH')
+                            elif sub_prop[0] == 'control_net_enum':
+                                col2.operator('ai_render.update_control_net_enum', text='', icon='FILE_REFRESH')
 
-                        elif sub_prop[1].type == 'STRING' and sub_prop[0] != 'name':
-                            # Display the model name not editable as a string (emboss=False)
-                            col = box.column()
-                            col.prop(item, sub_prop[0], text='', emboss=False)
+                        # elif sub_prop[1].type == 'STRING' and sub_prop[0] != 'name':
+                        #     # Display the model name not editable as a string (emboss=False)
+                        #     col = box.column()
+                        #     col.prop(item, sub_prop[0], text='', emboss=False)
 
                         elif sub_prop[1].type == 'FLOAT' or sub_prop[1].type == 'INT':
                             col = box.column()

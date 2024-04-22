@@ -821,17 +821,17 @@ def get_workflows(context):
     return workflow_list
 
 
-COMFY_SD_MODELS = []
+COMFY_CKPT_MODELS = []
 
 
 def create_models_enum(self, context):
     enum_items = []
-    for i, model in enumerate(COMFY_SD_MODELS):
+    for i, model in enumerate(COMFY_CKPT_MODELS):
         enum_items.append((model, model, "", i))
     return enum_items
 
 
-def get_sd_models(context):
+def get_ckpt_models(context):
     """ GET /object_info/CheckpointLoaderSimple endpoint
     to get the available models"""
 
@@ -912,7 +912,7 @@ def get_lora_models(context):
     return models_list
 
 
-# TODO: Implement the enum trick for samplers and schedulers
+# TODO: Implement the enum trick for s
 # COMFY_SAMPLERS = []
 def get_samplers(self, context):
     # NOTE: Keep the number values (fourth item in the tuples) in sync with DreamStudio's
@@ -946,7 +946,7 @@ def get_samplers(self, context):
 def default_sampler():
     return 'dpmpp_2m'
 
-
+# TODO: Implement the enum trick for schedulers?
 # COMFY_SCHEDULERS = []
 def get_schedulers(self, context):
     return [
@@ -961,6 +961,51 @@ def get_schedulers(self, context):
 
 def default_scheduler():
     return 'karras'
+
+
+COMFY_CONTROL_NETS = []
+
+
+def create_control_net_enum(self, context):
+    enum_items = []
+    for i, control_net in enumerate(COMFY_CONTROL_NETS):
+        enum_items.append((control_net, control_net, "", i))
+    return enum_items
+
+
+def get_control_nets(context):
+    """ GET /object_info/ControlNetLoader endpoint """
+
+    # prepare the server url
+    try:
+        server_url = get_server_url("/object_info/ControlNetLoader")
+    except:
+        return handle_error("It seems that you local ComfyUI server is not running", "local_server_url_missing")
+
+    # send the API request
+    response = do_get(server_url)
+
+    if response == False:
+        return None
+
+    control_nets_list = []
+
+    # handle the response
+    if response.status_code == 200:
+
+        control_nets_list = response.json()["ControlNetLoader"]["input"]["required"]["control_net_name"][0]
+
+        if LOG_MODEL_RESPONSE:
+            print(Fore.WHITE + "\nCONTROL NETS RESPONSE: " + Fore.RESET)
+            if LOG_LONG_RESPONSE:
+                print(response.json())
+            else:
+                print("LONG RESPONSE LOGGING IS DISABLED")
+
+    else:
+        return handle_error(response)
+
+    return control_nets_list
 
 
 def ensure_use_passes(context):

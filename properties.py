@@ -88,6 +88,7 @@ def ensure_sampler(context):
 
 def ensure_properties(self, context):
     """Ensure that any properties which could change with a change in preferences are set to valid values"""
+
     print(Fore.WHITE + "ENSURE PROPERTIES" + Fore.RESET)
     ensure_sampler(context)
     update_local_sd_url(context)
