@@ -1012,6 +1012,51 @@ def get_control_nets(context):
     return control_nets_list
 
 
+COMFY_UPSCALE_MODELS = []
+
+
+def create_upscale_model_enum(self, context):
+    enum_items = []
+    for i, model in enumerate(COMFY_UPSCALE_MODELS):
+        enum_items.append((model, model, "", i))
+    return enum_items
+
+
+def get_upscale_models(context):
+    """ GET /object_info/UpscaleModelLoader endpoint """
+
+    # prepare the server url
+    try:
+        server_url = get_server_url("/object_info/UpscaleModelLoader")
+    except:
+        return handle_error("It seems that you local ComfyUI server is not running", "local_server_url_missing")
+
+    # send the API request
+    response = do_get(server_url)
+
+    if response == False:
+        return None
+
+    upscale_models_list = []
+
+    # handle the response
+    if response.status_code == 200:
+
+        upscale_models_list = response.json()["UpscaleModelLoader"]["input"]["required"]["model_name"][0]
+
+        if LOG_MODEL_RESPONSE:
+            print(Fore.WHITE + "\nUPSCALE MODELS RESPONSE: " + Fore.RESET)
+            if LOG_LONG_RESPONSE:
+                print(response.json())
+            else:
+                print("LONG RESPONSE LOGGING IS DISABLED")
+
+    else:
+        return handle_error(response)
+
+    return upscale_models_list
+
+
 def ensure_use_passes(context):
     """Ensure that the render passes are enabled"""
 

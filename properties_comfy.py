@@ -20,10 +20,11 @@ def create_property_from_workflow(self, context):
 
     selected_class_types = [
         "CheckpointLoaderSimple",
+        "KSampler",
         "LoraLoader",
         "ControlNetApplyAdvanced",
         "SelfAttentionGuidance",
-        "KSampler",
+        "UpscaleModelLoader",
     ]
 
     print(Fore.WHITE + "\nSELECTED CLASS TYPE: " + Fore.RESET)
@@ -35,11 +36,13 @@ def create_property_from_workflow(self, context):
     self.comfyui_checkpoint_loader_simple.clear()
     self.comfyui_self_attention_guidance.clear()
     self.comfyui_ksampler.clear()
+    self.comfyui_upscale_model_loader.clear()
 
     # Update the enums
     bpy.ops.ai_render.update_ckpt_enum()
     bpy.ops.ai_render.update_lora_enum()
     bpy.ops.ai_render.update_control_net_enum()
+    bpy.ops.ai_render.update_upscale_model_enum()
 
     # Cycle through the nodes in the selected workflow and create the properties
     for node_id, node in selected_workflow.items():
@@ -130,6 +133,7 @@ def create_property_from_workflow(self, context):
                     print(Fore.WHITE + "PROPERTY CREATED: " + comfyui_self_attention_guidance.name + Fore.RESET)
 
             elif node["class_type"] == "KSampler":
+
                 if LOG_PROP_CREATION:
                     print(Fore.GREEN + "\nNODE: " + node_id)
                     pprint(node)
@@ -163,6 +167,20 @@ def create_property_from_workflow(self, context):
                 if LOG_PROP_CREATION:
                     print(Fore.WHITE + "PROPERTY CREATED: " + comfyui_ksampler.name + Fore.RESET)
 
+            elif node["class_type"] == "UpscaleModelLoader":
+
+                if LOG_PROP_CREATION:
+                    print(Fore.RED + "\nNODE: " + node_id)
+                    pprint(node)
+                    # {'_meta': {'title': 'Load Upscale Model'},
+                    #  'class_type': 'UpscaleModelLoader',
+                    #  'inputs': {'model_name': '4x-UltraSharp.pth'}}
+
+                comfyui_upscale_model_loader = self.comfyui_upscale_model_loader.add()
+                comfyui_upscale_model_loader.name = node_id
+                comfyui_upscale_model_loader.upscale_model_name = node["inputs"]["model_name"]
+                comfyui_upscale_model_loader.upscale_model_enum = node["inputs"]["model_name"]
+
 
 def update_air_props(self, context):
     """Update the AI Render properties in the scene"""
@@ -186,6 +204,10 @@ def set_ckpt_name(self, context):
 
 def set_lora_name(self, context):
     self.lora_name = self.lora_enum
+
+
+def set_upscale_model_name(self, context):
+    self.upscale_model_name = self.upscale_model_enum
 
 
 class ComfyUICheckpointLoaderSimple(bpy.types.PropertyGroup):
@@ -285,6 +307,26 @@ class ComfyUIControlNetNode(bpy.types.PropertyGroup):
         min=0,
         max=1,
         description="End percent of the ControlNet model"
+    )
+
+
+class ComfyUIUpscaleModelLoader(bpy.types.PropertyGroup):
+    expanded: bpy.props.BoolProperty(
+        name="expanded",
+        default=True,
+        description="Expanded"
+    )
+    upscale_model_name: bpy.props.StringProperty(
+        name="upscale_model_name",
+        default="",
+        description="Name of the upscale model"
+    )
+    upscale_model_enum: bpy.props.EnumProperty(
+        name="upscale_model_enum",
+        default=0,
+        items=comfyui_api.create_upscale_model_enum,
+        description="A list of the available upscale models",
+        update=set_upscale_model_name
     )
 
 
@@ -393,6 +435,7 @@ class ComfyUIProps(bpy.types.PropertyGroup):
     comfyui_lora_nodes: bpy.props.CollectionProperty(type=ComfyUILoraNode)
     comfyui_control_net_nodes: bpy.props.CollectionProperty(type=ComfyUIControlNetNode)
     comfyui_self_attention_guidance: bpy.props.CollectionProperty(type=ComfyUISelfAttentionGuidance)
+    comfyui_upscale_model_loader: bpy.props.CollectionProperty(type=ComfyUIUpscaleModelLoader)
 
 
 classes = [
@@ -401,6 +444,7 @@ classes = [
     ComfyUILoraNode,
     ComfyUIControlNetNode,
     ComfyUISelfAttentionGuidance,
+    ComfyUIUpscaleModelLoader,
     ComfyUIProps
 ]
 

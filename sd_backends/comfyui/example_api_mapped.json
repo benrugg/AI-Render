@@ -40,7 +40,7 @@
     },
     "6": {
         "inputs": {
-            "text": "cyberpunk, muted colors ,swirling color smokes, legend, cityscape, space,",
+            "text": "cyberpunk, muted colors, legend, cityscape, space, intricate mechanical details",
             "clip": [
                 "26",
                 1
@@ -120,7 +120,7 @@
     },
     "12": {
         "inputs": {
-            "image": "E:/COMFY/ComfyUI-robe/input/color/Image0001.png",
+            "image": "E:/COMFY/ComfyUI-robe/input/color/Image0002.png",
             "upload": "image"
         },
         "class_type": "LoadImage",
@@ -166,7 +166,7 @@
     },
     "15": {
         "inputs": {
-            "image": "E:/COMFY/ComfyUI-robe/input/depth/Image0001.png",
+            "image": "E:/COMFY/ComfyUI-robe/input/depth/Image0002.png",
             "upload": "image"
         },
         "class_type": "LoadImage",
@@ -212,7 +212,7 @@
     },
     "18": {
         "inputs": {
-            "image": "E:/COMFY/ComfyUI-robe/input/normal/Image0001.png",
+            "image": "E:/COMFY/ComfyUI-robe/input/normal/Image0002.png",
             "upload": "image"
         },
         "class_type": "LoadImage",
@@ -260,7 +260,7 @@
     },
     "34": {
         "inputs": {
-            "model_name": "4x-UltraSharp.pth"
+            "model_name": "4xNomos8kDAT.pth"
         },
         "class_type": "UpscaleModelLoader",
         "_meta": {

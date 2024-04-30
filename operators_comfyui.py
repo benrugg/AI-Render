@@ -13,6 +13,7 @@ from .sd_backends.comfyui_api import (
     COMFY_CKPT_MODELS,
     COMFY_LORA_MODELS,
     COMFY_CONTROL_NETS,
+    COMFY_UPSCALE_MODELS,
 )
 
 
@@ -164,11 +165,28 @@ class AIR_OT_UpdateControlNetEnum(bpy.types.Operator):
         return {'FINISHED'}
 
 
+class AIR_OT_UpdateUpscaleModelEnum(bpy.types.Operator):
+    bl_idname = "ai_render.update_upscale_model_enum"
+    bl_label = "Update Upscale Model Enum"
+    bl_description = "Update the upscale model enum with the available models"
+
+    def execute(self, context):
+        print(Fore.GREEN + "\nUPDATING UPSCALE MODEL ENUM..." + Fore.RESET)
+        global COMFY_UPSCALE_MODELS
+        COMFY_UPSCALE_MODELS.clear()
+        upscale_models_list = comfyui_api.get_upscale_models(context)
+        for upscale_model in upscale_models_list:
+            COMFY_UPSCALE_MODELS.append(upscale_model)
+
+        return {'FINISHED'}
+
+
 classes = [
     # AIR_OT_UpdateWorkflowEnum,
     AIR_OT_UpdateSDModelEnum,
     AIR_OT_UpdateLoraModelEnum,
     AIR_OT_UpdateControlNetEnum,
+    AIR_OT_UpdateUpscaleModelEnum,
     AIR_OT_open_comfyui_input_folder,
     AIR_OT_open_comfyui_output_folder,
     AIR_OT_open_comfyui_workflows_folder,

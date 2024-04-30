@@ -83,11 +83,13 @@ class AIR_PT_comfyui(bpy.types.Panel):
                                 col2.operator('ai_render.update_lora_enum', text='', icon='FILE_REFRESH')
                             elif sub_prop[0] == 'control_net_enum':
                                 col2.operator('ai_render.update_control_net_enum', text='', icon='FILE_REFRESH')
+                            elif sub_prop[0] == 'upscale_model_enum':
+                                col2.operator('ai_render.update_upscale_model_enum', text='', icon='FILE_REFRESH')
 
-                        # elif sub_prop[1].type == 'STRING' and sub_prop[0] != 'name':
-                        #     # Display the model name not editable as a string (emboss=False)
-                        #     col = box.column()
-                        #     col.prop(item, sub_prop[0], text='', emboss=False)
+                        elif sub_prop[1].type == 'STRING' and sub_prop[0] != 'name':
+                            # Display the model name not editable as a string (emboss=False)
+                            col = box.column()
+                            col.prop(item, sub_prop[0], text='', emboss=False)
 
                         elif sub_prop[1].type == 'FLOAT' or sub_prop[1].type == 'INT':
                             col = box.column()
