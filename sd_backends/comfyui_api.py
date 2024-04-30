@@ -543,8 +543,12 @@ def map_comfy_props(comfyui_props, workflow):
 
     # Save mapped json to local file
     workflow_path = utils.get_addon_preferences().comfyui_workflows_path
-    # Add _mapped to the filename and save it for debugging
-    workflow_file_path = workflow_path + '/../' + comfyui_props.comfy_current_workflow + "_mapped.json"
+
+    workflow_file_name = comfyui_props.comfy_current_workflow[:-5] + '_mapped.json'
+
+    # Add _mapped to the filename only and save it for debugging
+    workflow_file_path = workflow_path + '/../' + workflow_file_name
+
     with open(workflow_file_path, 'w') as f:
         json.dump(updated_workflow, f, indent=4)
 

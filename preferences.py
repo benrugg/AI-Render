@@ -117,7 +117,7 @@ class AIRPreferences(bpy.types.AddonPreferences):
     # ComfyUI
     comfyui_path: bpy.props.StringProperty(
         name="ComfyUI Path",
-        default="",
+        default="E:/COMFY/ComfyUI/",  # TODO: Autoset this
         description="The path to the ComfyUI Installation",
         subtype="DIR_PATH",
     )
