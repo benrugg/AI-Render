@@ -1,3 +1,4 @@
+import os
 import bpy
 import functools
 import math
@@ -1314,6 +1315,45 @@ class AIR_OT_outpaint_from_last_sd_image(bpy.types.Operator):
         return {'FINISHED'}
 
 
+class AIR_OT_SetExportPathAsSceneName(bpy.types.Operator):
+    """ Set the output path to be the same as the blender project name"""
+
+    bl_idname = "ai_render.set_path_as_scene_name"
+    bl_label = "Set Path As Scene Name"
+
+    def execute(self, context):
+        relative_path = "//"
+        blender_file_name = bpy.path.basename(bpy.data.filepath)[0:-6]
+        full_path = relative_path + blender_file_name
+
+        context.scene.air_props.animation_output_path = full_path
+
+        abs_path = bpy.path.abspath(full_path)
+        print(abs_path)
+
+        # Create the folder if it doesn't exist
+        if not os.path.exists(abs_path):
+            print(f"Creating folder {abs_path}")
+            os.makedirs(abs_path)
+
+        return {'FINISHED'}
+
+class AIR_OT_OpenRenderFolder(bpy.types.Operator):
+    """ Open the animation_output_path folder in the file browser"""
+
+    bl_idname = "ai_render.open_render_folder"
+    bl_label = "Open Render Folder"
+
+    def execute(self, context):
+        abs_path = bpy.path.abspath(context.scene.air_props.animation_output_path)
+        print(abs_path)
+
+        # Open the folder in the file browser
+        if os.path.exists(abs_path):
+            bpy.ops.wm.path_open(filepath=abs_path)
+
+        return {'FINISHED'}
+
 classes = [
     AIR_OT_enable,
     AIR_OT_disable,
@@ -1334,6 +1374,8 @@ classes = [
     AIR_OT_automatic1111_load_controlnet_models_and_modules,
     AIR_OT_inpaint_from_last_sd_image,
     AIR_OT_outpaint_from_last_sd_image,
+    AIR_OT_SetExportPathAsSceneName,
+    AIR_OT_OpenRenderFolder
 ]
 
 

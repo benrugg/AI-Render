@@ -661,8 +661,29 @@ class AIR_PT_animation(bpy.types.Panel):
 
         width_guess = 220
 
+        # Path
+        row = layout.row()
+        row.prop(props, "animation_output_path", text="")
+        row = layout.row()
+
+        row.operator(operators.AIR_OT_SetExportPathAsSceneName.bl_idname, text="Set/Create", icon="NEWFOLDER")
+        row.operator(operators.AIR_OT_OpenRenderFolder.bl_idname, text="Open", icon="FOLDER_REDIRECT")
+
+        layout.separator()
+
+        # Animated Prompts
+        row = layout.row()
+        row.prop(props, "use_animated_prompts", text="Use Animated Prompts")
+
+        if props.use_animated_prompts:
+            # row = layout.row()
+            row.operator(operators.AIR_OT_edit_animated_prompts.bl_idname)
+
+        layout.separator()
+
         # Render Animation
         row = layout.row()
+        row.scale_y = 1.5
         is_animation_enabled_button_enabled = props.animation_output_path != ""
         if is_animation_enabled_button_enabled:
             num_frames = math.floor(((scene.frame_end - scene.frame_start) / scene.frame_step) + 1)
@@ -673,20 +694,6 @@ class AIR_PT_animation(bpy.types.Panel):
 
         row.operator(operators.AIR_OT_render_animation.bl_idname, icon="RENDER_ANIMATION", text=render_animation_text)
         row.enabled = is_animation_enabled_button_enabled
-
-        # Path
-        row = layout.row()
-        row.prop(props, "animation_output_path", text="Path")
-
-        # Animated Prompts
-        layout.separator()
-
-        row = layout.row()
-        row.prop(props, "use_animated_prompts", text="Use Animated Prompts")
-
-        if props.use_animated_prompts:
-            row = layout.row()
-            row.operator(operators.AIR_OT_edit_animated_prompts.bl_idname)
 
         # Tips
         if round(props.image_similarity, 2) < 0.7 and not props.close_animation_tips:
