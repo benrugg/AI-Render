@@ -1,14 +1,14 @@
 {
   "3": {
     "inputs": {
-      "seed": 542669900244471,
-      "steps": 10,
+      "seed": 123456810,
+      "steps": 20,
       "cfg": 7.5,
-      "sampler_name": "dpmpp_2m_sde_gpu",
+      "sampler_name": "euler_ancestral",
       "scheduler": "karras",
       "denoise": 1,
       "model": [
-        "36",
+        "37",
         0
       ],
       "positive": [
@@ -31,7 +31,7 @@
   },
   "4": {
     "inputs": {
-      "ckpt_name": "SD15\\3D\\3dAnimationDiffusion_lcm.safetensors"
+      "ckpt_name": "SD15\\PHOTO\\realisticVisionV51_v51VAE.safetensors"
     },
     "class_type": "CheckpointLoaderSimple",
     "_meta": {
@@ -40,7 +40,7 @@
   },
   "6": {
     "inputs": {
-      "text": "positive",
+      "text": "a beautiful (robotic:1) castle, vibrant, color, saturated, highly detailed, ultra HD, sharp photo, 8k, dark background, in focus",
       "clip": [
         "26",
         1
@@ -53,7 +53,7 @@
   },
   "7": {
     "inputs": {
-      "text": "negative",
+      "text": "",
       "clip": [
         "26",
         1
@@ -84,7 +84,7 @@
     "inputs": {
       "filename_prefix": "ComfyUI",
       "images": [
-        "35",
+        "55",
         0
       ]
     },
@@ -120,7 +120,7 @@
   },
   "12": {
     "inputs": {
-      "image": "castel-3dscan-color.png",
+      "image": "Image0000.png",
       "upload": "image"
     },
     "class_type": "LoadImage",
@@ -130,16 +130,16 @@
   },
   "13": {
     "inputs": {
-      "strength": 1,
+      "strength": 0,
       "start_percent": 0,
-      "end_percent": 1,
+      "end_percent": 0.7000000000000001,
       "positive": [
-        "6",
+        "40",
         0
       ],
       "negative": [
-        "7",
-        0
+        "40",
+        1
       ],
       "control_net": [
         "14",
@@ -166,7 +166,7 @@
   },
   "15": {
     "inputs": {
-      "image": "castle-3dmodel-depth.png",
+      "image": "Image0000 (1).png",
       "upload": "image"
     },
     "class_type": "LoadImage",
@@ -176,9 +176,9 @@
   },
   "16": {
     "inputs": {
-      "strength": 1,
+      "strength": 0,
       "start_percent": 0,
-      "end_percent": 1,
+      "end_percent": 0.7000000000000001,
       "positive": [
         "13",
         0
@@ -212,7 +212,7 @@
   },
   "18": {
     "inputs": {
-      "image": "castle-3dmodel-normal.png",
+      "image": "Image0000 (2).png",
       "upload": "image"
     },
     "class_type": "LoadImage",
@@ -222,8 +222,8 @@
   },
   "26": {
     "inputs": {
-      "lora_name": "SD15\\Robotic_Jackal-ish.safetensors",
-      "strength_model": 1,
+      "lora_name": "SD15\\AS style_Mechanical disc.safetensors",
+      "strength_model": 0,
       "strength_clip": 1,
       "model": [
         "28",
@@ -241,16 +241,16 @@
   },
   "28": {
     "inputs": {
-      "lora_name": "SD15\\Mermaids.safetensors",
-      "strength_model": 1,
+      "lora_name": "SD15\\Robotic_Jackal-ish.safetensors",
+      "strength_model": 0,
       "strength_clip": 1,
       "model": [
         "4",
         0
       ],
       "clip": [
-        "4",
-        1
+        "48",
+        0
       ]
     },
     "class_type": "LoraLoader",
@@ -283,9 +283,9 @@
       "title": "Upscale Image (using Model)"
     }
   },
-  "36": {
+  "37": {
     "inputs": {
-      "scale": 1,
+      "scale": 0,
       "blur_sigma": 2,
       "model": [
         "26",
@@ -295,6 +295,157 @@
     "class_type": "SelfAttentionGuidance",
     "_meta": {
       "title": "Self-Attention Guidance"
+    }
+  },
+  "38": {
+    "inputs": {
+      "coarse": "enable",
+      "resolution": 1024,
+      "image": [
+        "12",
+        0
+      ]
+    },
+    "class_type": "LineArtPreprocessor",
+    "_meta": {
+      "title": "Realistic Lineart"
+    }
+  },
+  "39": {
+    "inputs": {
+      "images": [
+        "38",
+        0
+      ]
+    },
+    "class_type": "PreviewImage",
+    "_meta": {
+      "title": "Preview Image"
+    }
+  },
+  "40": {
+    "inputs": {
+      "strength": 0,
+      "start_percent": 0,
+      "end_percent": 0.7000000000000001,
+      "positive": [
+        "6",
+        0
+      ],
+      "negative": [
+        "7",
+        0
+      ],
+      "control_net": [
+        "41",
+        0
+      ],
+      "image": [
+        "38",
+        0
+      ]
+    },
+    "class_type": "ControlNetApplyAdvanced",
+    "_meta": {
+      "title": "Apply ControlNet (Advanced)"
+    }
+  },
+  "41": {
+    "inputs": {
+      "control_net_name": "SD15\\control_v11\\control_v11p_sd15_lineart.pth"
+    },
+    "class_type": "ControlNetLoader",
+    "_meta": {
+      "title": "Load ControlNet Model"
+    }
+  },
+  "48": {
+    "inputs": {
+      "stop_at_clip_layer": -2,
+      "clip": [
+        "4",
+        1
+      ]
+    },
+    "class_type": "CLIPSetLastLayer",
+    "_meta": {
+      "title": "CLIP Set Last Layer"
+    }
+  },
+  "55": {
+    "inputs": {
+      "method": "default",
+      "images": [
+        "35",
+        0
+      ],
+      "mask": [
+        "61",
+        0
+      ]
+    },
+    "class_type": "AlphaChanelAddByMask",
+    "_meta": {
+      "title": "AlphaChanelAddByMask"
+    }
+  },
+  "56": {
+    "inputs": {
+      "upscale_method": "nearest-exact",
+      "width": [
+        "57",
+        2
+      ],
+      "height": [
+        "57",
+        1
+      ],
+      "crop": "disabled",
+      "image": [
+        "59",
+        0
+      ]
+    },
+    "class_type": "ImageScale",
+    "_meta": {
+      "title": "Upscale Image"
+    }
+  },
+  "57": {
+    "inputs": {
+      "value": [
+        "35",
+        0
+      ]
+    },
+    "class_type": "ImpactImageInfo",
+    "_meta": {
+      "title": "ImpactImageInfo"
+    }
+  },
+  "59": {
+    "inputs": {
+      "mask": [
+        "12",
+        1
+      ]
+    },
+    "class_type": "MaskToImage",
+    "_meta": {
+      "title": "Convert Mask to Image"
+    }
+  },
+  "61": {
+    "inputs": {
+      "channel": "red",
+      "image": [
+        "56",
+        0
+      ]
+    },
+    "class_type": "ImageToMask",
+    "_meta": {
+      "title": "Convert Image to Mask"
     }
   }
 }

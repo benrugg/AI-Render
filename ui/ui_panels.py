@@ -7,6 +7,7 @@ from .. import (
     utils,
 )
 
+
 def show_error_if_it_exists(layout, context, width_guess):
     props = context.scene.air_props
     if (props.error_message):
@@ -61,6 +62,7 @@ class AIR_PT_setup(bpy.types.Panel):
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
     bl_context = "render"
+    bl_options = {'DEFAULT_CLOSED'}
 
     @classmethod
     def is_api_key_valid(cls, context):
@@ -166,19 +168,19 @@ class AIR_PT_setup(bpy.types.Panel):
             row.prop(utils.get_addon_preferences(context), "sd_backend", text="")
             row.prop(utils.get_addon_preferences(context), "local_sd_url", text="")
 
-            # ComfyUI Path
-            box.prop(utils.get_addon_preferences(context), 'comfyui_path', text="Comfy")
+            if utils.sd_backend(context) == "comfyui":
+                # ComfyUI Path
+                box.prop(utils.get_addon_preferences(context), 'comfyui_path', text="Comfy")
 
-            # ComfyUI Workflows Path
-            box.prop(utils.get_addon_preferences(context), 'comfyui_workflows_path', text="Workflows")
+                # ComfyUI Workflows Path
+                box.prop(utils.get_addon_preferences(context), 'comfyui_workflows_path', text="Workflows")
 
-            # Open ComfyUI workflow, input and output folder operator
-            box = layout.box()
-            row = box.row()
-            row.operator("ai_render.open_comfyui_workflows_folder", text="Workflow Folder")  # Had to do this to fix the circular import error
-            row.operator("ai_render.open_comfyui_input_folder", text="Input Folder")  # Had to do this to fix the circular import error
-            row.operator("ai_render.open_comfyui_output_folder", text="Output Folder")  # Had to do this to fix the circular import error
-
+                # Open ComfyUI workflow, input and output folder operator
+                box = layout.box()
+                row = box.row()
+                row.operator("ai_render.open_comfyui_workflows_folder", text="Workflow Folder")
+                row.operator("ai_render.open_comfyui_input_folder", text="Input Folder")
+                row.operator("ai_render.open_comfyui_output_folder", text="Output Folder")
 
 
 class AIR_PT_prompt(bpy.types.Panel):
@@ -188,7 +190,7 @@ class AIR_PT_prompt(bpy.types.Panel):
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
     bl_context = "render"
-    bl_options = {'DEFAULT_CLOSED'}
+    # bl_options = {'DEFAULT_CLOSED'}
 
     @classmethod
     def poll(cls, context):
@@ -286,11 +288,11 @@ class AIR_PT_advanced_options(bpy.types.Panel):
         sub.prop(props, 'image_similarity', text="", slider=False)
 
         # Denoising Strength
-        row = layout.row()
-        sub = row.column()
-        sub.label(text="Denoising Strength")
-        sub = row.column()
-        sub.prop(props, 'denoising_strength', text="", slider=False)
+        # row = layout.row()
+        # sub = row.column()
+        # sub.label(text="Denoising Strength")
+        # sub = row.column()
+        # sub.prop(props, 'denoising_strength', text="", slider=False)
 
         # Steps
         row = layout.row()
@@ -320,14 +322,6 @@ class AIR_PT_advanced_options(bpy.types.Panel):
         sub.label(text="Sampler")
         sub = row.column()
         sub.prop(props, 'sampler', text="")
-
-        # Scheduler only if comfyui backend active
-        if utils.sd_backend(context) == "comfyui":
-            row = layout.row()
-            sub = row.column()
-            sub.label(text="Scheduler")
-            sub = row.column()
-            sub.prop(props, 'scheduler', text="")
 
 
 class AIR_PT_controlnet(bpy.types.Panel):
@@ -667,8 +661,29 @@ class AIR_PT_animation(bpy.types.Panel):
 
         width_guess = 220
 
+        # Path
+        row = layout.row()
+        row.prop(props, "animation_output_path", text="")
+        row = layout.row()
+
+        row.operator(operators.AIR_OT_SetExportPathAsSceneName.bl_idname, text="Set/Create", icon="NEWFOLDER")
+        row.operator(operators.AIR_OT_OpenRenderFolder.bl_idname, text="Open", icon="FOLDER_REDIRECT")
+
+        layout.separator()
+
+        # Animated Prompts
+        row = layout.row()
+        row.prop(props, "use_animated_prompts", text="Use Animated Prompts")
+
+        if props.use_animated_prompts:
+            # row = layout.row()
+            row.operator(operators.AIR_OT_edit_animated_prompts.bl_idname)
+
+        layout.separator()
+
         # Render Animation
         row = layout.row()
+        row.scale_y = 1.5
         is_animation_enabled_button_enabled = props.animation_output_path != ""
         if is_animation_enabled_button_enabled:
             num_frames = math.floor(((scene.frame_end - scene.frame_start) / scene.frame_step) + 1)
@@ -679,20 +694,6 @@ class AIR_PT_animation(bpy.types.Panel):
 
         row.operator(operators.AIR_OT_render_animation.bl_idname, icon="RENDER_ANIMATION", text=render_animation_text)
         row.enabled = is_animation_enabled_button_enabled
-
-        # Path
-        row = layout.row()
-        row.prop(props, "animation_output_path", text="Path")
-
-        # Animated Prompts
-        layout.separator()
-
-        row = layout.row()
-        row.prop(props, "use_animated_prompts", text="Use Animated Prompts")
-
-        if props.use_animated_prompts:
-            row = layout.row()
-            row.operator(operators.AIR_OT_edit_animated_prompts.bl_idname)
 
         # Tips
         if round(props.image_similarity, 2) < 0.7 and not props.close_animation_tips:
@@ -713,14 +714,14 @@ class AIR_PT_animation(bpy.types.Panel):
 classes = [
     AIR_PT_main,
     AIR_PT_setup,
-    AIR_PT_prompt,
+    AIR_PT_advanced_options,
     AIR_PT_controlnet,
     AIR_PT_operation,
     AIR_PT_upscale,
     AIR_PT_inpaint,
     AIR_PT_outpaint,
     AIR_PT_animation,
-    AIR_PT_advanced_options,
+    AIR_PT_prompt,
 ]
 
 

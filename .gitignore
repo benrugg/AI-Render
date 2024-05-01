@@ -11,3 +11,8 @@ ai-render-comfyui-support_updater
 
 # client-side config files
 .analytics_client_id
+
+# Discard all the files that starts with `mdx_` and ends with `.json` in all folders
+**/mdx_*.json
+
+

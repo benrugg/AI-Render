@@ -7,38 +7,36 @@ from . import (
 )
 from .ui import ui_preset_styles
 from .sd_backends import automatic1111_api
-from .sd_backends import comfyui_api
+from .sd_backends.comfyui_api import ensure_compositor_nodes
 
 from colorama import Fore
 
 
-def get_available_samplers(self, context):
-    return utils.get_active_backend().get_samplers()
+def ensure_upscaler_model(context):
+    # """Ensure that the upscale model is set to a valid value"""
+    print(Fore.GREEN + "ENSURE UPSCALER MODEL" + Fore.RESET)
+    scene = context.scene
+    if (
+        utils.sd_backend() != "comfyui"
+        and utils.get_active_backend().is_upscaler_model_list_loaded(context)
+        and not scene.air_props.upscaler_model
+    ):
+        scene.air_props.upscaler_model = get_default_upscaler_model()
 
 
-def get_available_schedulers(self, context):
-    if utils.sd_backend() == "comfyui":
-        return comfyui_api.get_schedulers()
-    else:
-        return [("none", "None", "", 0)]
+def update_local_sd_url(context):
+    """
+    If is set to Automatic1111, the url is http://127.0.0.1:7860
+    If is set to ComfyUI, the url is http://127.0.0.1:8188
+    """
 
+    print(Fore.GREEN + "UPDATE LOCAL SD URL TO: " + Fore.RESET + utils.sd_backend())
+    addonprefs = utils.get_addon_preferences(context)
 
-def get_available_models(self, context):
-    current_sd_backend = utils.sd_backend()
-    if current_sd_backend == "comfyui" and comfyui_api.supports_choosing_model():
-        return comfyui_api.create_ckpts_tuples()
-    else:
-        return [
-            ("stable-diffusion-xl-1024-v1-0", "SDXL 1.0", "", 120),
-        ]
-
-
-def get_default_sampler():
-    return utils.get_active_backend().default_sampler()
-
-
-def get_default_scheduler():
-    return utils.get_active_backend().default_scheduler()
+    if utils.sd_backend() == "automatic1111":
+        addonprefs.local_sd_url = "http://127.0.0.1:7860"
+    elif utils.sd_backend() == "comfyui":
+        addonprefs.local_sd_url = "http://127.0.0.1:8188"
 
 
 def get_available_upscaler_models(self, context):
@@ -72,65 +70,50 @@ def get_outpaint_directions(self, context):
     ]
 
 
+def get_available_samplers(self, context):
+    return utils.get_active_backend().get_samplers(self, context)
+
+
+def get_default_sampler():
+    return utils.get_active_backend().default_sampler()
+
+
 def ensure_sampler(context):
     """Ensure that the sampler is set to a valid value"""
     print(Fore.GREEN + "ENSURE SAMPLER" + Fore.RESET)
-    scene = context.scene
-    if not scene.air_props.sampler:
-        scene.air_props.sampler = get_default_sampler()
 
-
-def ensure_scheduler(context):
-    # """Ensure that the scheduler is set to a valid value"""
-    print(Fore.GREEN + "ENSURE SCHEDULER" + Fore.RESET)
-    if utils.sd_backend() == "comfyui":
-        scene = context.scene
-        if not scene.air_props.scheduler:
-            scene.air_props.scheduler = get_default_scheduler()
-
-
-def ensure_upscaler_model(context):
-    # """Ensure that the upscale model is set to a valid value"""
-    print(Fore.GREEN + "ENSURE UPSCALER MODEL" + Fore.RESET)
-    scene = context.scene
-    if (
-        utils.get_active_backend().is_upscaler_model_list_loaded(context)
-        and not scene.air_props.upscaler_model
-    ):
-        scene.air_props.upscaler_model = get_default_upscaler_model()
-
-
-def update_local_sd_url(context):
-    """
-    If is set to Automatic1111, the url is http://127.0.0.1:7860
-    If is set to ComfyUI, the url is http://127.0.0.1:8188
-    """
-
-    print(Fore.GREEN + "UPDATE LOCAL SD URL TO:" + Fore.RESET)
-    print(utils.sd_backend())
-    addonprefs = utils.get_addon_preferences(context)
-
-    if utils.sd_backend() == "automatic1111":
-        addonprefs.local_sd_url = "http://127.0.0.1:7860"
-    elif utils.sd_backend() == "comfyui":
-        addonprefs.local_sd_url = "http://127.0.0.1:8188"
+    if not context.scene.air_props.sampler:
+        context.scene.air_props.sampler = get_default_sampler()
 
 
 def ensure_properties(self, context):
     """Ensure that any properties which could change with a change in preferences are set to valid values"""
-    print(Fore.GREEN + "ENSURE PROPERTIES" + Fore.RESET)
+
+    print(Fore.WHITE + "ENSURE PROPERTIES" + Fore.RESET)
     ensure_sampler(context)
-    ensure_upscaler_model(context)
     update_local_sd_url(context)
+
     if utils.sd_backend() == "comfyui":
-        ensure_scheduler(context)
+        ensure_compositor_nodes(context)
+    else:  # only if not comfyui
+        ensure_upscaler_model(context)
 
 
-def update_denoise(self, context):
-    """round(1 - params["image_similarity"], 2)"""
+# def update_comfyui_props(self, context):
+#     """Update the main sampler based of comfyui"""
 
-    context.scene.air_props.denoising_strength = round(
-        1 - context.scene.air_props.image_similarity, 4)
+#     ksamplers = context.scene.comfyui_props.comfyui_ksampler
+#     print(Fore.GREEN + "UPDATE COMFYUI PROPS" + Fore.RESET)
+
+#     if ksamplers:
+#         for item in ksamplers.items():
+#             if item[1].is_main_sampler:
+#                 item[1].seed = self.seed
+#                 item[1].steps = self.steps
+#                 item[1].cfg = self.cfg_scale
+#                 item[1].sampler_name = self.sampler
+#                 item[1].denoise = round(
+#                     1 - context.scene.air_props.image_similarity, 4)
 
 
 class AIRProperties(bpy.types.PropertyGroup):
@@ -143,7 +126,7 @@ class AIRProperties(bpy.types.PropertyGroup):
         name="Prompt",
         description="Describe anything for Stable Diffusion to create",
         default=config.default_prompt_text,
-        update=operators.clear_error_handler,
+        # update=operators.clear_error_handler,
     )
     negative_prompt_text: bpy.props.StringProperty(
         name="Negative Prompt",
@@ -152,23 +135,11 @@ class AIRProperties(bpy.types.PropertyGroup):
     )
     image_similarity: bpy.props.FloatProperty(
         name="Image Similarity",
-        default=0.4,
-        soft_min=0.0,
-        soft_max=0.9,
+        default=0.2,
         min=0.0,
-        max=1.0,
+        max=0.999,
         description="How closely the final image will match the initial rendered image. Values around 0.1-0.4 will turn simple renders into new creations. Around 0.5 will keep a lot of the composition, and transform into something like the prompt. 0.6-0.7 keeps things more stable between renders. Higher values may require more steps for best results. You can set this to 0.0 to use only the prompt",
-        update=update_denoise
-    )
-    denoising_strength: bpy.props.FloatProperty(
-        name="Denoising Strength",
-        default=0.6,
-        soft_min=0.0,
-        soft_max=1.0,
-        min=0.0,
-        max=1.0,
-        description="How much to denoise the image. Higher values will remove more noise, but may also remove detail",
-        update=update_denoise
+        # update=update_comfyui_props
     )
     cfg_scale: bpy.props.FloatProperty(
         name="Prompt Strength",
@@ -178,10 +149,11 @@ class AIRProperties(bpy.types.PropertyGroup):
         min=0,
         max=35,
         description="How closely the text prompt will be followed. Too high can 'overcook' your image",
+        # update=update_comfyui_props
     )
     use_random_seed: bpy.props.BoolProperty(
         name="Random Seed",
-        default=True,
+        default=False,
         description="Use a random seed to create a new starting point for each rendered image",
     )
     seed: bpy.props.IntProperty(
@@ -189,6 +161,7 @@ class AIRProperties(bpy.types.PropertyGroup):
         default=random.randint(1000000000, 2147483647),
         min=0,
         description="The seed for the initial randomization of the algorithm. Use the same seed between images to keep the result more stable. Changing the seed by any amount will give a completely different result",
+        # update=update_comfyui_props
     )
     steps: bpy.props.IntProperty(
         name="Steps",
@@ -198,11 +171,14 @@ class AIRProperties(bpy.types.PropertyGroup):
         min=1,
         max=150,
         description="How long to process the image. Values in the range of 20-40 generally work well. Higher values take longer (and use more credits) and may or may not improve results",
+        # update=update_comfyui_props
     )
     sd_model: bpy.props.EnumProperty(
         name="Stable Diffusion Model",
-        default=0,
-        items=get_available_models,
+        default=120,
+        items=[
+            ("stable-diffusion-xl-1024-v1-0", "SDXL 1.0", "", 120),
+        ],
         description="The Stable Diffusion model to use. SDXL is comparable to Midjourney. Older versions have now been removed, but newer versions may be added in the future",
     )
     sampler: bpy.props.EnumProperty(
@@ -210,12 +186,7 @@ class AIRProperties(bpy.types.PropertyGroup):
         default=130,  # maps to DPM++ 2M, which is a good, fast sampler
         items=get_available_samplers,
         description="Which sampler method to use",
-    )
-    scheduler: bpy.props.EnumProperty(
-        name="Scheduler",
-        default=10,
-        items=get_available_schedulers,
-        description="Which scheduler method to use",
+        # update=update_comfyui_props
     )
     auto_run: bpy.props.BoolProperty(
         name="Run Automatically on Render",

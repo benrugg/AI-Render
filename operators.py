@@ -1,3 +1,4 @@
+import os
 import bpy
 import functools
 import math
@@ -5,7 +6,7 @@ import random
 import re
 import time
 
-from .operators_comfyui import ensure_compositor_nodes
+# from .operators_comfyui import ensure_compositor_nodes
 
 from . import (
     analytics,
@@ -18,7 +19,7 @@ from . import (
 from .sd_backends import automatic1111_api
 from .sd_backends import comfyui_api
 
-from colorama import Fore, Style
+from colorama import Fore
 
 
 example_dimensions_tuple_list = utils.generate_example_dimensions_tuple_list()
@@ -219,7 +220,7 @@ def load_image(filename, data_block_name=None):
     img_file = bpy.data.images.load(filename, check_existing=False)
     img_file.name = name
 
-    print(Fore.YELLOW + f"\nLOADED IMAGE: {filename}")
+    print(Fore.YELLOW + f"\nLOADED IMAGE: {filename}" + Fore.RESET)
     return img_file
 
 
@@ -227,7 +228,7 @@ def do_pre_render_setup(scene):
     # Lock the user interface when rendering, so that we can change
     # compositor nodes in the render_init handler without causing a crash!
     # See: https://docs.blender.org/api/current/bpy.app.handlers.html#note-on-altering-data
-    scene.render.use_lock_interface = True
+    scene.render.use_lock_interface = False
 
     # clear any previous errors
     clear_error(scene)
@@ -241,8 +242,8 @@ def do_pre_render_setup(scene):
     # It seems that it is not possible to change the base_path of the
     # file output node, cause it takes only the path and saves the file
     # with the name of 'Image0001' and the extension of the file format.
-    if utils.sd_backend() == "comfyui":
-        ensure_compositor_nodes(bpy.context)
+    # if utils.sd_backend() == "comfyui":
+    #     ensure_compositor_nodes(bpy.context)
 
 
 def do_pre_api_setup(scene):
@@ -431,7 +432,6 @@ def sd_generate(scene, prompts=None, use_last_sd_image=False):
         "negative_prompt": negative_prompt,
         "seed": props.seed,
         "sampler": props.sampler,
-        "scheduler": props.scheduler,
         "steps": props.steps,
         "cfg_scale": props.cfg_scale,
         "width": utils.get_output_width(scene),
@@ -1315,6 +1315,45 @@ class AIR_OT_outpaint_from_last_sd_image(bpy.types.Operator):
         return {'FINISHED'}
 
 
+class AIR_OT_SetExportPathAsSceneName(bpy.types.Operator):
+    """ Set the output path to be the same as the blender project name"""
+
+    bl_idname = "ai_render.set_path_as_scene_name"
+    bl_label = "Set Path As Scene Name"
+
+    def execute(self, context):
+        relative_path = "//"
+        blender_file_name = bpy.path.basename(bpy.data.filepath)[0:-6]
+        full_path = relative_path + blender_file_name
+
+        context.scene.air_props.animation_output_path = full_path
+
+        abs_path = bpy.path.abspath(full_path)
+        print(abs_path)
+
+        # Create the folder if it doesn't exist
+        if not os.path.exists(abs_path):
+            print(f"Creating folder {abs_path}")
+            os.makedirs(abs_path)
+
+        return {'FINISHED'}
+
+class AIR_OT_OpenRenderFolder(bpy.types.Operator):
+    """ Open the animation_output_path folder in the file browser"""
+
+    bl_idname = "ai_render.open_render_folder"
+    bl_label = "Open Render Folder"
+
+    def execute(self, context):
+        abs_path = bpy.path.abspath(context.scene.air_props.animation_output_path)
+        print(abs_path)
+
+        # Open the folder in the file browser
+        if os.path.exists(abs_path):
+            bpy.ops.wm.path_open(filepath=abs_path)
+
+        return {'FINISHED'}
+
 classes = [
     AIR_OT_enable,
     AIR_OT_disable,
@@ -1335,6 +1374,8 @@ classes = [
     AIR_OT_automatic1111_load_controlnet_models_and_modules,
     AIR_OT_inpaint_from_last_sd_image,
     AIR_OT_outpaint_from_last_sd_image,
+    AIR_OT_SetExportPathAsSceneName,
+    AIR_OT_OpenRenderFolder
 ]
 
 

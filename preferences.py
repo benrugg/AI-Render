@@ -117,7 +117,7 @@ class AIRPreferences(bpy.types.AddonPreferences):
     # ComfyUI
     comfyui_path: bpy.props.StringProperty(
         name="ComfyUI Path",
-        default="E:/COMFY/ComfyUI/",
+        default="E:/COMFY/ComfyUI-robe/",  # TODO: Autoset this
         description="The path to the ComfyUI Installation",
         subtype="DIR_PATH",
     )
@@ -262,7 +262,7 @@ class AIRPreferences(bpy.types.AddonPreferences):
                 row = box.row()
                 row.prop(self, "comfyui_path")
                 row = box.row()
-                row.prop(self, "workflows_path")
+                row.prop(self, "comfyui_workflows_path")
 
             # Notes
             box = layout.box()
