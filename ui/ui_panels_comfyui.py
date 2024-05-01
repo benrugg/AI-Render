@@ -70,7 +70,8 @@ class AIR_PT_comfyui(bpy.types.Panel):
                     for sub_prop in item.bl_rna.properties.items():
 
                         if sub_prop[1].type == 'ENUM':
-                            # Display the available enums. This can update the related strings
+                            # Display the available enums.
+                            # Those can update the corresponding strings which is commented below
                             row = box.row()
                             row.scale_y = 1.25
                             split = row.split(factor=0.15)
@@ -86,10 +87,10 @@ class AIR_PT_comfyui(bpy.types.Panel):
                             elif sub_prop[0] == 'upscale_model_enum':
                                 col2.operator('ai_render.update_upscale_model_enum', text='', icon='FILE_REFRESH')
 
-                        elif sub_prop[1].type == 'STRING' and sub_prop[0] != 'name':
-                            # Display the model name not editable as a string (emboss=False)
-                            col = box.column()
-                            col.prop(item, sub_prop[0], text='', emboss=False)
+                        # elif sub_prop[1].type == 'STRING' and sub_prop[0] != 'name':
+                        #     # Display the model name not editable as a string (emboss=False)
+                        #     col = box.column()
+                        #     col.prop(item, sub_prop[0], text='', emboss=False)
 
                         elif sub_prop[1].type == 'FLOAT' or sub_prop[1].type == 'INT':
                             col = box.column()

@@ -1,12 +1,12 @@
 {
     "3": {
         "inputs": {
-            "seed": 123456810,
+            "seed": 123456789,
             "steps": 20,
             "cfg": 7.5,
             "sampler_name": "euler_ancestral",
             "scheduler": "karras",
-            "denoise": 1.0,
+            "denoise": 0.8999999761581421,
             "model": [
                 "37",
                 0
@@ -40,7 +40,7 @@
     },
     "6": {
         "inputs": {
-            "text": "cyberpunk, muted colors, legend, cityscape, space, intricate mechanical details",
+            "text": "cyberpunk, (robotic:1.00) castle, vivid colors, legend, cityscape, space, intricate musical details",
             "clip": [
                 "26",
                 1
@@ -120,7 +120,7 @@
     },
     "12": {
         "inputs": {
-            "image": "E:/COMFY/ComfyUI-robe/input/color/Image0002.png",
+            "image": "E:/COMFY/ComfyUI-robe/input/color/Image0100.png",
             "upload": "image"
         },
         "class_type": "LoadImage",
@@ -130,7 +130,7 @@
     },
     "13": {
         "inputs": {
-            "strength": 0.0,
+            "strength": 0.5,
             "start_percent": 0.0,
             "end_percent": 0.699999988079071,
             "positive": [
@@ -166,7 +166,7 @@
     },
     "15": {
         "inputs": {
-            "image": "E:/COMFY/ComfyUI-robe/input/depth/Image0002.png",
+            "image": "E:/COMFY/ComfyUI-robe/input/depth/Image0100.png",
             "upload": "image"
         },
         "class_type": "LoadImage",
@@ -212,7 +212,7 @@
     },
     "18": {
         "inputs": {
-            "image": "E:/COMFY/ComfyUI-robe/input/normal/Image0002.png",
+            "image": "E:/COMFY/ComfyUI-robe/input/normal/Image0100.png",
             "upload": "image"
         },
         "class_type": "LoadImage",
@@ -223,7 +223,7 @@
     "26": {
         "inputs": {
             "lora_name": "SD15\\AS style_Mechanical disc.safetensors",
-            "strength_model": 0.0,
+            "strength_model": 0.5,
             "strength_clip": 1.0,
             "model": [
                 "28",
@@ -242,7 +242,7 @@
     "28": {
         "inputs": {
             "lora_name": "SD15\\Robotic_Jackal-ish.safetensors",
-            "strength_model": 0.0,
+            "strength_model": 0.3499999940395355,
             "strength_clip": 1.0,
             "model": [
                 "4",
@@ -260,7 +260,7 @@
     },
     "34": {
         "inputs": {
-            "model_name": "4xNomos8kDAT.pth"
+            "model_name": "4x-UltraSharp.pth"
         },
         "class_type": "UpscaleModelLoader",
         "_meta": {
@@ -285,7 +285,7 @@
     },
     "37": {
         "inputs": {
-            "scale": 0.0,
+            "scale": 0.5,
             "blur_sigma": 2.0,
             "model": [
                 "26",
