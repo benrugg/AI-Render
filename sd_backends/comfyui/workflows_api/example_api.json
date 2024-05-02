@@ -391,7 +391,7 @@
   },
   "56": {
     "inputs": {
-      "upscale_method": "nearest-exact",
+      "upscale_method": "lanczos",
       "width": [
         "57",
         2

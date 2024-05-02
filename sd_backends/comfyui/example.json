@@ -1,5 +1,5 @@
 {
-  "last_node_id": 65,
+  "last_node_id": 66,
   "last_link_id": 117,
   "nodes": [
     {
@@ -245,62 +245,6 @@
       ]
     },
     {
-      "id": 27,
-      "type": "Note",
-      "pos": [
-        1271,
-        -1081
-      ],
-      "size": {
-        "0": 887.397705078125,
-        "1": 235.27618408203125
-      },
-      "flags": {},
-      "order": 4,
-      "mode": 0,
-      "properties": {
-        "text": ""
-      },
-      "widgets_values": [
-        "Note that the following node title has been renamed from the Property Panel:\n\npositive\nnegative\n\ncolor\ndepth\nnormal\n\nmain_sampler\noutput_image\n\n\n"
-      ],
-      "color": "#432",
-      "bgcolor": "#653"
-    },
-    {
-      "id": 11,
-      "type": "VAELoader",
-      "pos": [
-        1463,
-        339
-      ],
-      "size": {
-        "0": 420,
-        "1": 60
-      },
-      "flags": {},
-      "order": 5,
-      "mode": 0,
-      "outputs": [
-        {
-          "name": "VAE",
-          "type": "VAE",
-          "links": [
-            11,
-            18
-          ],
-          "shape": 3,
-          "slot_index": 0
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "VAELoader"
-      },
-      "widgets_values": [
-        "vae-ft-mse-840000-ema-pruned.safetensors"
-      ]
-    },
-    {
       "id": 10,
       "type": "VAEEncode",
       "pos": [
@@ -352,7 +296,7 @@
         "1": 60
       },
       "flags": {},
-      "order": 6,
+      "order": 4,
       "mode": 0,
       "outputs": [
         {
@@ -408,7 +352,7 @@
         "1": 60
       },
       "flags": {},
-      "order": 7,
+      "order": 5,
       "mode": 0,
       "outputs": [
         {
@@ -621,89 +565,6 @@
         "enable",
         1024
       ]
-    },
-    {
-      "id": 15,
-      "type": "LoadImage",
-      "pos": [
-        1290,
-        -700
-      ],
-      "size": {
-        "0": 440,
-        "1": 310
-      },
-      "flags": {},
-      "order": 8,
-      "mode": 0,
-      "outputs": [
-        {
-          "name": "IMAGE",
-          "type": "IMAGE",
-          "links": [
-            17
-          ],
-          "shape": 3
-        },
-        {
-          "name": "MASK",
-          "type": "MASK",
-          "links": null,
-          "shape": 3
-        }
-      ],
-      "title": "depth",
-      "properties": {
-        "Node name for S&R": "LoadImage"
-      },
-      "widgets_values": [
-        "Image0000 (1).png",
-        "image"
-      ],
-      "color": "#222",
-      "bgcolor": "#000"
-    },
-    {
-      "id": 18,
-      "type": "LoadImage",
-      "pos": [
-        1780,
-        -700
-      ],
-      "size": {
-        "0": 460,
-        "1": 314
-      },
-      "flags": {},
-      "order": 9,
-      "mode": 0,
-      "outputs": [
-        {
-          "name": "IMAGE",
-          "type": "IMAGE",
-          "links": [
-            38
-          ],
-          "shape": 3,
-          "slot_index": 0
-        },
-        {
-          "name": "MASK",
-          "type": "MASK",
-          "links": null,
-          "shape": 3
-        }
-      ],
-      "title": "normal",
-      "properties": {
-        "Node name for S&R": "LoadImage"
-      },
-      "widgets_values": [
-        "Image0000 (2).png",
-        "image"
-      ],
-      "color": "#223",
-      "bgcolor": "#335"
     },
     {
       "id": 6,
@@ -1000,7 +861,7 @@
         "1": 122.61135864257812
       },
       "flags": {},
-      "order": 10,
+      "order": 6,
       "mode": 0,
       "outputs": [
         {
@@ -1033,45 +894,6 @@
       },
       "widgets_values": [
         "SD15\\PHOTO\\realisticVisionV51_v51VAE.safetensors"
-      ]
-    },
-    {
-      "id": 48,
-      "type": "CLIPSetLastLayer",
-      "pos": [
-        -860,
-        -50
-      ],
-      "size": {
-        "0": 315,
-        "1": 58
-      },
-      "flags": {},
-      "order": 14,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "clip",
-          "type": "CLIP",
-          "link": 87
-        }
-      ],
-      "outputs": [
-        {
-          "name": "CLIP",
-          "type": "CLIP",
-          "links": [
-            88
-          ],
-          "shape": 3,
-          "slot_index": 0
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "CLIPSetLastLayer"
-      },
-      "widgets_values": [
-        -2
       ]
     },
     {
@@ -1214,65 +1036,6 @@
       "bgcolor": "#535"
     },
     {
-      "id": 56,
-      "type": "ImageScale",
-      "pos": [
-        3510,
-        -600
-      ],
-      "size": {
-        "0": 320,
-        "1": 130
-      },
-      "flags": {},
-      "order": 33,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "image",
-          "type": "IMAGE",
-          "link": 108,
-          "slot_index": 0
-        },
-        {
-          "name": "width",
-          "type": "INT",
-          "link": 104,
-          "widget": {
-            "name": "width"
-          }
-        },
-        {
-          "name": "height",
-          "type": "INT",
-          "link": 99,
-          "widget": {
-            "name": "height"
-          }
-        }
-      ],
-      "outputs": [
-        {
-          "name": "IMAGE",
-          "type": "IMAGE",
-          "links": [
-            110
-          ],
-          "shape": 3,
-          "slot_index": 0
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "ImageScale"
-      },
-      "widgets_values": [
-        "nearest-exact",
-        1024,
-        256,
-        "disabled"
-      ]
-    },
-    {
       "id": 34,
       "type": "UpscaleModelLoader",
       "pos": [
@@ -1284,7 +1047,7 @@
         "1": 60
       },
       "flags": {},
-      "order": 11,
+      "order": 7,
       "mode": 0,
       "outputs": [
         {
@@ -1303,101 +1066,6 @@
       "widgets_values": [
         "4x-UltraSharp.pth"
       ]
-    },
-    {
-      "id": 57,
-      "type": "ImpactImageInfo",
-      "pos": [
-        3510,
-        -750
-      ],
-      "size": {
-        "0": 320,
-        "1": 90
-      },
-      "flags": {},
-      "order": 32,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "value",
-          "type": "IMAGE",
-          "link": 105,
-          "slot_index": 0
-        }
-      ],
-      "outputs": [
-        {
-          "name": "batch",
-          "type": "INT",
-          "links": null,
-          "shape": 3,
-          "slot_index": 0
-        },
-        {
-          "name": "height",
-          "type": "INT",
-          "links": [
-            99
-          ],
-          "shape": 3,
-          "slot_index": 1
-        },
-        {
-          "name": "width",
-          "type": "INT",
-          "links": [
-            104
-          ],
-          "shape": 3,
-          "slot_index": 2
-        },
-        {
-          "name": "channel",
-          "type": "INT",
-          "links": null,
-          "shape": 3
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "ImpactImageInfo"
-      }
-    },
-    {
-      "id": 59,
-      "type": "MaskToImage",
-      "pos": [
-        3130,
-        -530
-      ],
-      "size": {
-        "0": 210,
-        "1": 26
-      },
-      "flags": {},
-      "order": 21,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "mask",
-          "type": "MASK",
-          "link": 107
-        }
-      ],
-      "outputs": [
-        {
-          "name": "IMAGE",
-          "type": "IMAGE",
-          "links": [
-            108
-          ],
-          "shape": 3,
-          "slot_index": 0
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "MaskToImage"
-      }
     },
     {
       "id": 35,
@@ -1471,57 +1139,205 @@
       "bgcolor": "#593930"
     },
     {
-      "id": 12,
-      "type": "LoadImage",
+      "id": 61,
+      "type": "ImageToMask",
       "pos": [
-        60,
-        -830
+        3510,
+        -410
       ],
       "size": {
-        "0": 420,
-        "1": 314
+        "0": 315,
+        "1": 58
       },
       "flags": {},
-      "order": 12,
+      "order": 34,
       "mode": 0,
+      "inputs": [
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "link": 110,
+          "slot_index": 0
+        }
+      ],
+      "outputs": [
+        {
+          "name": "MASK",
+          "type": "MASK",
+          "links": [
+            111
+          ],
+          "shape": 3,
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ImageToMask"
+      },
+      "widgets_values": [
+        "red"
+      ]
+    },
+    {
+      "id": 59,
+      "type": "MaskToImage",
+      "pos": [
+        3146,
+        -543
+      ],
+      "size": {
+        "0": 210,
+        "1": 26
+      },
+      "flags": {},
+      "order": 21,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "mask",
+          "type": "MASK",
+          "link": 107
+        }
+      ],
       "outputs": [
         {
           "name": "IMAGE",
           "type": "IMAGE",
           "links": [
-            10,
-            64
+            108
           ],
+          "shape": 3,
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "MaskToImage"
+      }
+    },
+    {
+      "id": 56,
+      "type": "ImageScale",
+      "pos": [
+        3514,
+        -603
+      ],
+      "size": {
+        "0": 320,
+        "1": 130
+      },
+      "flags": {},
+      "order": 33,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "link": 108,
+          "slot_index": 0
+        },
+        {
+          "name": "width",
+          "type": "INT",
+          "link": 104,
+          "widget": {
+            "name": "width"
+          }
+        },
+        {
+          "name": "height",
+          "type": "INT",
+          "link": 99,
+          "widget": {
+            "name": "height"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            110
+          ],
+          "shape": 3,
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ImageScale"
+      },
+      "widgets_values": [
+        "lanczos",
+        1024,
+        256,
+        "disabled"
+      ]
+    },
+    {
+      "id": 57,
+      "type": "ImpactImageInfo",
+      "pos": [
+        3516,
+        -748
+      ],
+      "size": {
+        "0": 320,
+        "1": 90
+      },
+      "flags": {},
+      "order": 32,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "value",
+          "type": "IMAGE",
+          "link": 105,
+          "slot_index": 0
+        }
+      ],
+      "outputs": [
+        {
+          "name": "batch",
+          "type": "INT",
+          "links": null,
           "shape": 3,
           "slot_index": 0
         },
         {
-          "name": "MASK",
-          "type": "MASK",
+          "name": "height",
+          "type": "INT",
           "links": [
-            106
+            99
           ],
           "shape": 3,
           "slot_index": 1
+        },
+        {
+          "name": "width",
+          "type": "INT",
+          "links": [
+            104
+          ],
+          "shape": 3,
+          "slot_index": 2
+        },
+        {
+          "name": "channel",
+          "type": "INT",
+          "links": null,
+          "shape": 3
         }
       ],
-      "title": "color",
       "properties": {
-        "Node name for S&R": "LoadImage"
-      },
-      "widgets_values": [
-        "Image0000.png",
-        "image"
-      ],
-      "color": "#233",
-      "bgcolor": "#355"
+        "Node name for S&R": "ImpactImageInfo"
+      }
     },
     {
       "id": 55,
       "type": "AlphaChanelAddByMask",
       "pos": [
-        3510,
-        -300
+        3509,
+        -287
       ],
       "size": {
         "0": 320,
@@ -1561,43 +1377,227 @@
       ]
     },
     {
-      "id": 61,
-      "type": "ImageToMask",
+      "id": 11,
+      "type": "VAELoader",
       "pos": [
-        3510,
-        -410
+        1470,
+        350
       ],
       "size": {
-        "0": 315,
-        "1": 58
+        "0": 420,
+        "1": 60
       },
       "flags": {},
-      "order": 34,
+      "order": 8,
       "mode": 0,
-      "inputs": [
-        {
-          "name": "image",
-          "type": "IMAGE",
-          "link": 110,
-          "slot_index": 0
-        }
-      ],
       "outputs": [
         {
-          "name": "MASK",
-          "type": "MASK",
+          "name": "VAE",
+          "type": "VAE",
           "links": [
-            111
+            11,
+            18
           ],
           "shape": 3,
           "slot_index": 0
         }
       ],
       "properties": {
-        "Node name for S&R": "ImageToMask"
+        "Node name for S&R": "VAELoader"
       },
       "widgets_values": [
-        "red"
+        "vae-ft-mse-840000-ema-pruned.safetensors"
+      ]
+    },
+    {
+      "id": 27,
+      "type": "Note",
+      "pos": [
+        1280,
+        -1080
+      ],
+      "size": {
+        "0": 887.397705078125,
+        "1": 235.27618408203125
+      },
+      "flags": {},
+      "order": 9,
+      "mode": 0,
+      "properties": {
+        "text": ""
+      },
+      "widgets_values": [
+        "Note that the following node title has been renamed from the Property Panel:\n\npositive\nnegative\n\ncolor\ndepth\nnormal\n\nmain_sampler\noutput_image\n\nThis ensure that Blender can map the values correctly in the workflow json\n"
+      ],
+      "color": "#432",
+      "bgcolor": "#653"
+    },
+    {
+      "id": 12,
+      "type": "LoadImage",
+      "pos": [
+        60,
+        -830
+      ],
+      "size": {
+        "0": 420,
+        "1": 314
+      },
+      "flags": {},
+      "order": 10,
+      "mode": 0,
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            10,
+            64
+          ],
+          "shape": 3,
+          "slot_index": 0
+        },
+        {
+          "name": "MASK",
+          "type": "MASK",
+          "links": [
+            106
+          ],
+          "shape": 3,
+          "slot_index": 1
+        }
+      ],
+      "title": "color",
+      "properties": {
+        "Node name for S&R": "LoadImage"
+      },
+      "widgets_values": [
+        "Image0000.png",
+        "image"
+      ],
+      "color": "#233",
+      "bgcolor": "#355"
+    },
+    {
+      "id": 15,
+      "type": "LoadImage",
+      "pos": [
+        1290,
+        -700
+      ],
+      "size": {
+        "0": 440,
+        "1": 314
+      },
+      "flags": {},
+      "order": 11,
+      "mode": 0,
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            17
+          ],
+          "shape": 3
+        },
+        {
+          "name": "MASK",
+          "type": "MASK",
+          "links": null,
+          "shape": 3
+        }
+      ],
+      "title": "depth",
+      "properties": {
+        "Node name for S&R": "LoadImage"
+      },
+      "widgets_values": [
+        "Image0000 (1).png",
+        "image"
+      ],
+      "color": "#222",
+      "bgcolor": "#000"
+    },
+    {
+      "id": 18,
+      "type": "LoadImage",
+      "pos": [
+        1780,
+        -700
+      ],
+      "size": {
+        "0": 460,
+        "1": 314
+      },
+      "flags": {},
+      "order": 12,
+      "mode": 0,
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            38
+          ],
+          "shape": 3,
+          "slot_index": 0
+        },
+        {
+          "name": "MASK",
+          "type": "MASK",
+          "links": null,
+          "shape": 3
+        }
+      ],
+      "title": "normal",
+      "properties": {
+        "Node name for S&R": "LoadImage"
+      },
+      "widgets_values": [
+        "Image0000 (2).png",
+        "image"
+      ],
+      "color": "#223",
+      "bgcolor": "#335"
+    },
+    {
+      "id": 48,
+      "type": "CLIPSetLastLayer",
+      "pos": [
+        -860,
+        -50
+      ],
+      "size": {
+        "0": 315,
+        "1": 58
+      },
+      "flags": {},
+      "order": 14,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 87
+        }
+      ],
+      "outputs": [
+        {
+          "name": "CLIP",
+          "type": "CLIP",
+          "links": [
+            88
+          ],
+          "shape": 3,
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "CLIPSetLastLayer"
+      },
+      "widgets_values": [
+        -2
       ]
     }
   ],
