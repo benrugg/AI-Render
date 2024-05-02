@@ -2,6 +2,10 @@ import bpy
 from .. import utils
 from pprint import pprint
 
+from ..operators_comfyui import (
+    AIR_OT_ReloadWorkflow,
+)
+
 
 class AIR_PT_comfyui(bpy.types.Panel):
     bl_label = "ComfyUI"
@@ -33,7 +37,7 @@ class AIR_PT_comfyui(bpy.types.Panel):
 
         # row.label(text=")
         col1.prop(props, 'comfyui_workflow', text="")
-        # col2.operator('ai_render.update_workflow_enum', text='Reload', icon='FILE_REFRESH')
+        col2.operator(AIR_OT_ReloadWorkflow.bl_idname, text='Reload', icon='FILE_REFRESH')
         split.scale_y = 1.5
 
         layout.separator(factor=2)
@@ -71,7 +75,7 @@ class AIR_PT_comfyui(bpy.types.Panel):
 
                         if sub_prop[1].type == 'ENUM':
                             # Display the available enums.
-                            # Those can update the corresponding strings which is commented below
+                            # Those can update the corresponding strings which is uncommented below
                             row = box.row()
                             row.scale_y = 1.25
                             split = row.split(factor=0.15)
@@ -87,10 +91,11 @@ class AIR_PT_comfyui(bpy.types.Panel):
                             elif sub_prop[0] == 'upscale_model_enum':
                                 col2.operator('ai_render.update_upscale_model_enum', text='', icon='FILE_REFRESH')
 
-                        # elif sub_prop[1].type == 'STRING' and sub_prop[0] != 'name':
-                        #     # Display the model name not editable as a string (emboss=False)
-                        #     col = box.column()
-                        #     col.prop(item, sub_prop[0], text='', emboss=False)
+                        # Those strings come from the workflow on first load, then are updated by the enums above
+                        elif sub_prop[1].type == 'STRING' and sub_prop[0] != 'name':
+                            # Display the string not editable (emboss=False)
+                            col = box.column()
+                            col.prop(item, sub_prop[0], text='', emboss=False)
 
                         elif sub_prop[1].type == 'FLOAT' or sub_prop[1].type == 'INT':
                             col = box.column()

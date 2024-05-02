@@ -9,7 +9,7 @@ from colorama import Fore
 LOG_PROP_CREATION = False
 
 
-def create_property_from_workflow(self, context):
+def create_props_from_workflow(self, context):
     """ Creates the properties and add the to the comfyui_nodes collection"""
 
     selected_workflow_file = self.comfyui_workflow
@@ -349,7 +349,7 @@ class ComfyUISelfAttentionGuidance(bpy.types.PropertyGroup):
         name="Self-Attention Guidance Scale",
         default=0.5,
         min=-2,
-        max=6,
+        max=5,
         description="Scale"
     )
 
@@ -428,7 +428,7 @@ class ComfyUIProps(bpy.types.PropertyGroup):
         default=0,
         items=comfyui_api.create_workflow_enum_realtime,
         description="A list of the available workflows in the path specified in the addon preferences",
-        update=create_property_from_workflow
+        update=create_props_from_workflow
     )
     comfyui_checkpoint_loader_simple: bpy.props.CollectionProperty(type=ComfyUICheckpointLoaderSimple)
     comfyui_ksampler: bpy.props.CollectionProperty(type=ComfyUIMainKSampler)

@@ -264,7 +264,7 @@ class AIR_PT_advanced_options(bpy.types.Panel):
 
     @classmethod
     def poll(cls, context):
-        return utils.is_installation_valid() and context.scene.air_props.is_enabled
+        return utils.is_installation_valid() and context.scene.air_props.is_enabled and utils.sd_backend(context) != "comfyui"
 
     def draw(self, context):
         layout = self.layout
@@ -475,7 +475,7 @@ class AIR_PT_upscale(bpy.types.Panel):
 
     @classmethod
     def poll(cls, context):
-        return utils.is_installation_valid() and context.scene.air_props.is_enabled
+        return utils.is_installation_valid() and context.scene.air_props.is_enabled and utils.sd_backend(context) != "comfyui"
 
     @classmethod
     def does_backend_support_upscaling(cls, context):

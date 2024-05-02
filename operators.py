@@ -228,7 +228,7 @@ def do_pre_render_setup(scene):
     # Lock the user interface when rendering, so that we can change
     # compositor nodes in the render_init handler without causing a crash!
     # See: https://docs.blender.org/api/current/bpy.app.handlers.html#note-on-altering-data
-    scene.render.use_lock_interface = False
+    scene.render.use_lock_interface = True
 
     # clear any previous errors
     clear_error(scene)

@@ -607,8 +607,8 @@ def generate(params, img_file, filename_prefix, props, comfyui_props):
     if response == False:
         return False
 
-    # handle the response
-    if response.status_code == 200:
+    # Check if the response is successful and not containing node_errors
+    if response.status_code == 200 and not response.json().get("node_errors"):
         return handle_success(response, filename_prefix)
     else:
         return handle_error(response)
@@ -724,13 +724,13 @@ def handle_error(response):
             response_obj = response.json()
             return operators.handle_error(f"An error occurred in the ComfyUI server. Full server response: {json.dumps(response_obj)}", "unknown_error")
         except:
-            return operators.handle_error(f"It looks like the ComfyUI server is running, but it's not in API mode. [Get help]({config.HELP_WITH_AUTOMATIC1111_NOT_IN_API_MODE_URL})", "automatic1111_not_in_api_mode")
+            return operators.handle_error(f"It looks like the ComfyUI server is running, but it's not in API mode.")
 
     else:
         print(Fore.RED + "ERROR DETAILS:")
-        pprint.pp(response.json(), indent=2)
+        pprint.pp(response.json())
         print(Fore.RESET)
-        return operators.handle_error(f"AN ERROR occurred in the ComfyUI server.", "unknown_error_response")
+        return operators.handle_error(f"AN ERROR occurred in the ComfyUI server.\n {response.json()}", "unknown_error_response")
 
 
 # PRIVATE SUPPORT FUNCTIONS:
@@ -859,7 +859,7 @@ def get_ckpt_models(context):
         models_list = response.json()["CheckpointLoaderSimple"]["input"]["required"]["ckpt_name"][0]
 
         if LOG_MODEL_RESPONSE:
-            print(Fore.WHITE + "\nMODELS RESPONSE: " + Fore.RESET)
+            print(Fore.MAGENTA + "\nMODELS RESPONSE: " + Fore.RESET)
             if LOG_LONG_RESPONSE:
                 print(response.json())
             else:
@@ -904,7 +904,7 @@ def get_lora_models(context):
         models_list = response.json()["LoraLoader"]["input"]["required"]["lora_name"][0]
 
         if LOG_MODEL_RESPONSE:
-            print(Fore.WHITE + "\nMODELS RESPONSE: " + Fore.RESET)
+            print(Fore.YELLOW + "\nMODELS RESPONSE: " + Fore.RESET)
             if LOG_LONG_RESPONSE:
                 print(response.json())
             else:
@@ -952,6 +952,8 @@ def default_sampler():
 
 # TODO: Implement the enum trick for schedulers?
 # COMFY_SCHEDULERS = []
+
+
 def get_schedulers(self, context):
     return [
         ('normal', 'normal', '', 10),
@@ -1000,7 +1002,7 @@ def get_control_nets(context):
         control_nets_list = response.json()["ControlNetLoader"]["input"]["required"]["control_net_name"][0]
 
         if LOG_MODEL_RESPONSE:
-            print(Fore.WHITE + "\nCONTROL NETS RESPONSE: " + Fore.RESET)
+            print(Fore.BLUE + "\nCONTROL NETS RESPONSE: " + Fore.RESET)
             if LOG_LONG_RESPONSE:
                 print(response.json())
             else:
@@ -1045,7 +1047,7 @@ def get_upscale_models(context):
         upscale_models_list = response.json()["UpscaleModelLoader"]["input"]["required"]["model_name"][0]
 
         if LOG_MODEL_RESPONSE:
-            print(Fore.WHITE + "\nUPSCALE MODELS RESPONSE: " + Fore.RESET)
+            print(Fore.CYAN + "\nUPSCALE MODELS RESPONSE: " + Fore.RESET)
             if LOG_LONG_RESPONSE:
                 print(response.json())
             else:
