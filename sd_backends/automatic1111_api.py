@@ -209,7 +209,7 @@ def debug_log(response):
 
 # PUBLIC SUPPORT FUNCTIONS:
 
-def get_samplers():
+def get_samplers(self, context):
     # NOTE: Keep the number values (fourth item in the tuples) in sync with DreamStudio's
     # values (in stability_api.py). These act like an internal unique ID for Blender
     # to use when switching between the lists.
