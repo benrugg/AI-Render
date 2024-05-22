@@ -6,7 +6,7 @@ from pprint import pprint
 from colorama import Fore
 
 
-LOG_PROP_CREATION = False
+LOG_PROP_CREATION = True
 
 
 def create_property_from_workflow(self, context):
@@ -25,6 +25,7 @@ def create_property_from_workflow(self, context):
         "ControlNetApplyAdvanced",
         "SelfAttentionGuidance",
         "UpscaleModelLoader",
+        "CLIPSetLastLayer"
     ]
 
     print(Fore.WHITE + "\nSELECTED CLASS TYPE: " + Fore.RESET)
@@ -37,6 +38,7 @@ def create_property_from_workflow(self, context):
     self.comfyui_self_attention_guidance.clear()
     self.comfyui_ksampler.clear()
     self.comfyui_upscale_model_loader.clear()
+    self.comfyui_CLIP_set_last_layer.clear()
 
     # Update the enums
     bpy.ops.ai_render.update_ckpt_enum()
@@ -78,6 +80,7 @@ def create_property_from_workflow(self, context):
                     #             'strength_model': 1}}
 
                 comfyui_lora_node = self.comfyui_lora_nodes.add()
+                comfyui_lora_node.expanded = False
                 comfyui_lora_node.name = node_id
                 comfyui_lora_node.strength_model = node["inputs"]["strength_model"]
                 comfyui_lora_node.strength_clip = node["inputs"]["strength_clip"]
@@ -106,6 +109,7 @@ def create_property_from_workflow(self, context):
                 control_net_node_model_path = control_net_node["inputs"]["control_net_name"]
 
                 comfyui_control_net_node = self.comfyui_control_net_nodes.add()
+                comfyui_control_net_node.expanded = False
                 comfyui_control_net_node.name = node_id
                 comfyui_control_net_node.strength = node["inputs"]["strength"]
                 comfyui_control_net_node.start_percent = node["inputs"]["start_percent"]
@@ -125,6 +129,7 @@ def create_property_from_workflow(self, context):
                     #  'inputs': {'blur_sigma': 2, 'model': ['26', 0], 'scale': 1}}
 
                 comfyui_self_attention_guidance = self.comfyui_self_attention_guidance.add()
+                comfyui_self_attention_guidance.expanded = False
                 comfyui_self_attention_guidance.name = node_id
                 comfyui_self_attention_guidance.blur_sigma = node["inputs"]["blur_sigma"]
                 comfyui_self_attention_guidance.scale = node["inputs"]["scale"]
@@ -155,6 +160,7 @@ def create_property_from_workflow(self, context):
                 if node["_meta"]["title"] == "main_sampler":
                     comfyui_ksampler.is_main_sampler = True
 
+                comfyui_ksampler.expanded = False
                 comfyui_ksampler.name = node_id
                 trimmed_seed = node["inputs"]["seed"] % 1000000000
                 comfyui_ksampler.seed = trimmed_seed
@@ -177,9 +183,24 @@ def create_property_from_workflow(self, context):
                     #  'inputs': {'model_name': '4x-UltraSharp.pth'}}
 
                 comfyui_upscale_model_loader = self.comfyui_upscale_model_loader.add()
+                comfyui_upscale_model_loader.expanded = False
                 comfyui_upscale_model_loader.name = node_id
                 comfyui_upscale_model_loader.upscale_model_name = node["inputs"]["model_name"]
                 comfyui_upscale_model_loader.upscale_model_enum = node["inputs"]["model_name"]
+
+            elif node["class_type"] == "CLIPSetLastLayer":
+                if LOG_PROP_CREATION:
+                    print(Fore.MAGENTA + "\nNODE: " + node_id)
+                    pprint(node)
+                    # {'_meta': {'title': 'CLIP Set Last Layer'},
+                    # 'class_type': 'CLIPSetLastLayer',
+                    # 'inputs': {'clip': ['4', 1], 'stop_at_clip_layer': -24}}
+
+                comfyui_clip_set_last_layer = self.comfyui_CLIP_set_last_layer.add()
+                comfyui_clip_set_last_layer.name = node_id
+                comfyui_clip_set_last_layer.expanded = False
+                comfyui_clip_set_last_layer.stop_at_clip_layer = node["inputs"]["stop_at_clip_layer"]
+
 
 
 def update_air_props(self, context):
@@ -417,6 +438,21 @@ class ComfyUIMainKSampler(bpy.types.PropertyGroup):
     )
 
 
+class ComfyUICLIPSetLastLayer(bpy.types.PropertyGroup):
+    expanded: bpy.props.BoolProperty(
+        name="expanded",
+        default=True,
+        description="Expanded"
+    )
+    stop_at_clip_layer: bpy.props.IntProperty(
+        name="stop_at_clip_layer",
+        default=-1,
+        min=-24,
+        max=-1,
+        description="Stop at Clip Layer"
+    )
+
+
 class ComfyUIProps(bpy.types.PropertyGroup):
     comfy_current_workflow: bpy.props.StringProperty(
         name="comfyui_current_workflow",
@@ -436,6 +472,7 @@ class ComfyUIProps(bpy.types.PropertyGroup):
     comfyui_control_net_nodes: bpy.props.CollectionProperty(type=ComfyUIControlNetNode)
     comfyui_self_attention_guidance: bpy.props.CollectionProperty(type=ComfyUISelfAttentionGuidance)
     comfyui_upscale_model_loader: bpy.props.CollectionProperty(type=ComfyUIUpscaleModelLoader)
+    comfyui_CLIP_set_last_layer: bpy.props.CollectionProperty(type=ComfyUICLIPSetLastLayer)
 
 
 classes = [
@@ -445,6 +482,7 @@ classes = [
     ComfyUIControlNetNode,
     ComfyUISelfAttentionGuidance,
     ComfyUIUpscaleModelLoader,
+    ComfyUICLIPSetLastLayer,
     ComfyUIProps
 ]
 

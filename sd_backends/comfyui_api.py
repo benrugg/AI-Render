@@ -1192,7 +1192,7 @@ def normalpass2normalmap_node_group(context):
 def ensure_compositor_nodes(context):
     """Ensure that use nodes is enabled and the compositor nodes are set up correctly"""
 
-    print(Fore.YELLOW + "ENSURE COMPOSITOR NODES" + Fore.RESET)
+    print(Fore.RED + "ENSURE COMPOSITOR NODES" + Fore.RESET)
 
     # Ensure that the render passes are enabled
     ensure_use_passes(context)

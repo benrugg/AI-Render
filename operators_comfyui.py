@@ -76,11 +76,13 @@ class AIR_OT_open_comfyui_workflows_folder(bpy.types.Operator):
 #     def execute(self, context):
 #         print(Fore.GREEN + "UPDATING WORKFLOW ENUM..." + Fore.RESET)
 
-#         global COMFY_WORKFLOWS
-#         COMFY_WORKFLOWS.clear()
-#         workflows_list = comfyui_api.get_workflows(context)  # Ensure comfyui_api is available
-#         for workflow in workflows_list:
-#             COMFY_WORKFLOWS.append(workflow)
+#        comfyui_api.ensure_compositor_nodes(context)
+
+#        global COMFY_WORKFLOWS
+#        COMFY_WORKFLOWS.clear()
+#        workflows_list = comfyui_api.get_workflows(context)  # Ensure comfyui_api is available
+#        for workflow in workflows_list:
+#            COMFY_WORKFLOWS.append(workflow)
 
 #         # Trigger the update of the update of the enums before setting the new values
 #         bpy.ops.ai_render.update_ckpt_enum()
