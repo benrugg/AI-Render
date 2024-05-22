@@ -1,4 +1,13 @@
-# AI Render - Stable Diffusion in Blender
+# AI Render - ComfyUI Support
+
+> **DISCLAIMER - WORK IN PROGRESS:**
+> 
+> In this fork, I'm attempting to add ComfyUI support to the [AI Render by Ben Rugg](https://github.com/benrugg/AI-Render) Blender Addon.  
+> Check Discord if interested in joining:
+> [Blending Pixels Discord](https://discord.gg/G3yfB87ScU)  
+> Last Update on my [Patreon](https://www.patreon.com/RobeSantoro) (free)  
+>   
+
 
 Render with Stable Diffusion in Blender. This add-on renders an AI generated image based on a text prompt and your scene.
 
