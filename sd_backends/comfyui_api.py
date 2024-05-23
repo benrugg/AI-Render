@@ -414,7 +414,12 @@ PARAM_TO_WORKFLOW = {
         "class_type": "LoadImage",
         "input_key": "image",
         "meta_title": "normal"
-    }
+    },
+    "openpose_body_image": {
+        "class_type": "LoadImage",
+        "input_key": "image",
+        "meta_title": "openpose_body"
+    },
 }
 
 
@@ -578,14 +583,17 @@ def generate(params, img_file, filename_prefix, props, comfyui_props):
     # color_image_path = comfyui_input_path + "color/Image" + frame_number + ".png"
     # depth_image_path = comfyui_input_path + "depth/Image" + frame_number + ".png"
     # normal_image_path = comfyui_input_path + "normal/Image" + frame_number + ".png"
+    # openpose_body_image_path = comfyui_input_path + "openpose_body/Image" + frame_number + ".png"
 
     color_image_path = f"{get_color_file_input_path(bpy.context)}Image{frame_number}.png"
     depth_image_path = f"{get_depth_file_input_path(bpy.context)}Image{frame_number}.png"
     normal_image_path = f"{get_normal_file_input_path(bpy.context)}Image{frame_number}.png"
+    openpose_body_image_path = f"{get_openpose_body_file_input_path(bpy.context)}Image{frame_number}.png"
 
     params['color_image'] = color_image_path
     params['depth_image'] = depth_image_path
     params['normal_image'] = normal_image_path
+    params['openpose_body_image'] = openpose_body_image_path
 
     # map the params to the ComfyUI nodes
     mapped_workflow = map_params(params, selected_workflow)
@@ -1225,8 +1233,9 @@ def ensure_compositor_nodes(context):
 
     # Set the node group to the normalpass2normalmap node group
     NormalNodeGroup.node_tree = Normal_Node_Tree
-    # Socket_2
     NormalNodeGroup.inputs[1].default_value = 1.0
+    NormalNodeGroup.location = (360, -170)
+    NormalNodeGroup.width, NormalNodeGroup.height = 245, 100
 
     # node Color Ramp
     color_ramp = nodes.new("CompositorNodeValToRGB")
@@ -1234,6 +1243,8 @@ def ensure_compositor_nodes(context):
     color_ramp.color_ramp.color_mode = 'RGB'
     color_ramp.color_ramp.hue_interpolation = 'NEAR'
     color_ramp.color_ramp.interpolation = 'EASE'
+    color_ramp.location = (360, 74)
+    color_ramp.width, color_ramp.height = 245.0, 100.0
 
     # initialize color ramp elements
     color_ramp.color_ramp.elements.remove(color_ramp.color_ramp.elements[0])
@@ -1252,12 +1263,16 @@ def ensure_compositor_nodes(context):
     normal_file_output.name = "normal_file_output"
     normal_file_output.active_input_index = 0
     normal_file_output.base_path = get_normal_file_input_path(context)
+    normal_file_output.location = (690, -7)
+    normal_file_output.width, normal_file_output.height = 300.0, 100.0
 
     # node Render Layers
     render_layers = nodes.new("CompositorNodeRLayers")
     render_layers.label = "Render Layers"
     render_layers.name = "Render Layers"
     render_layers.layer = 'ViewLayer'
+    render_layers.location = (3.5, 180)
+    render_layers.width, render_layers.height = 240.0, 100.0
 
     # node Viewer
     viewer = nodes.new("CompositorNodeViewer")
@@ -1268,6 +1283,8 @@ def ensure_compositor_nodes(context):
     viewer.use_alpha = True
     # Alpha
     viewer.inputs[1].default_value = 1.0
+    viewer.location = (370, 280)
+    viewer.width, viewer.height = 235, 100.0
 
     # node Composite
     composite = nodes.new("CompositorNodeComposite")
@@ -1276,6 +1293,8 @@ def ensure_compositor_nodes(context):
     composite.use_alpha = True
     # Alpha
     composite.inputs[1].default_value = 1.0
+    composite.location = (380, 400)
+    composite.width, composite.height = 240.0, 100.0
 
     # node color_file_output
     color_file_output = nodes.new("CompositorNodeOutputFile")
@@ -1283,6 +1302,8 @@ def ensure_compositor_nodes(context):
     color_file_output.name = "color_file_output"
     color_file_output.active_input_index = 0
     color_file_output.base_path = get_color_file_input_path(context)
+    color_file_output.location = (690, 240)
+    color_file_output.width, color_file_output.height = 300.0, 100.0
 
     # node depth_file_output
     depth_file_output = nodes.new("CompositorNodeOutputFile")
@@ -1290,26 +1311,28 @@ def ensure_compositor_nodes(context):
     depth_file_output.name = "depth_file_output"
     depth_file_output.active_input_index = 0
     depth_file_output.base_path = get_depth_file_input_path(context)
-
-    # Set locations
-    NormalNodeGroup.location = (361.5553894042969, -169.21304321289062)
-    color_ramp.location = (365.3896179199219, 73.5697250366211)
-    normal_file_output.location = (691.8238525390625, -7.402432441711426)
-    render_layers.location = (3.578803300857544, 178.27804565429688)
-    viewer.location = (370.6922302246094, 283.4913330078125)
-    composite.location = (377.6049499511719, 407.1597900390625)
-    color_file_output.location = (693.7745971679688, 238.85935974121094)
-    depth_file_output.location = (694.5862426757812, 120.32701873779297)
-
-    # Set dimensions
-    NormalNodeGroup.width, NormalNodeGroup.height = 244.50103759765625, 100.0
-    color_ramp.width, color_ramp.height = 240.0, 100.0
-    normal_file_output.width, normal_file_output.height = 300.0, 100.0
-    render_layers.width, render_layers.height = 240.0, 100.0
-    viewer.width, viewer.height = 236.62774658203125, 100.0
-    composite.width, composite.height = 232.3331756591797, 100.0
-    color_file_output.width, color_file_output.height = 300.0, 100.0
+    depth_file_output.location = (700, 120)
     depth_file_output.width, depth_file_output.height = 300.0, 100.0
+
+    # if Openpose_body view layer exists
+    if context.scene.view_layers.get("Openpose_body"):
+
+        # node OpenPose_body file_output
+        openpose_body_file_output = nodes.new("CompositorNodeOutputFile")
+        openpose_body_file_output.label = "OpenPose_body"
+        openpose_body_file_output.name = "OpenPose_body_file_output"
+        openpose_body_file_output.active_input_index = 0
+        openpose_body_file_output.base_path = get_openpose_body_file_input_path(context)
+        openpose_body_file_output.location = (700, -260)
+        openpose_body_file_output.width, openpose_body_file_output.height = 300.0, 100.0
+
+        # node OpenPose Render Layers
+        open_pose_render_layer = nodes.new("CompositorNodeRLayers")
+        open_pose_render_layer.label = "OpenPose Render Layers"
+        open_pose_render_layer.name = "OpenPose Render Layers"
+        open_pose_render_layer.layer = 'Openpose_body'
+        open_pose_render_layer.location = (3.5, -300)
+        open_pose_render_layer.width, open_pose_render_layer.height = 240.0, 100.0
 
     # initialize links
     links = tree.links
@@ -1327,6 +1350,10 @@ def ensure_compositor_nodes(context):
     links.new(render_layers.outputs[3], color_ramp.inputs[0])
     # render_layers.Image -> viewer.Image
     links.new(render_layers.outputs[0], viewer.inputs[0])
+
+    if context.scene.view_layers.get("Openpose_body"):
+        # open_pose_render_layer.Image -> openpose_body_file_output.Image
+        links.new(open_pose_render_layer.outputs[0], openpose_body_file_output.inputs[0])
 
     # Deselect all nodes
     for node in nodes:
@@ -1356,7 +1383,12 @@ def get_normal_file_input_path(context):
     return get_comfyui_input_path(context) + "normal/"
 
 
+def get_openpose_body_file_input_path(context):
+    return get_comfyui_input_path(context) + "openpose_body/"
+
 # AI RENDER
+
+
 def get_upscaler_models(context):
     models = context.scene.air_props.automatic1111_available_upscaler_models
 

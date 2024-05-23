@@ -6,7 +6,7 @@ from pprint import pprint
 from colorama import Fore
 
 
-LOG_PROP_CREATION = True
+LOG_PROP_CREATION = False
 
 
 def create_property_from_workflow(self, context):
