@@ -68,55 +68,69 @@ class AIR_OT_open_comfyui_workflows_folder(bpy.types.Operator):
         return {'FINISHED'}
 
 
-# class AIR_OT_UpdateWorkflowEnum(bpy.types.Operator):
-#     bl_idname = "ai_render.update_workflow_enum"
-#     bl_label = "Update Workflow Enum"
-#     bl_description = "Update the workflow enum with the available workflows"
+class AIR_OT_convert_path_in_workflow(bpy.types.Operator):
+    bl_idname = "ai_render.convert_path_in_workflow"
+    bl_label = "Convert Path in Workflow"
+    bl_description = "Convert the path in the selected workflow to the current platform"
 
-#     def execute(self, context):
-#         print(Fore.GREEN + "UPDATING WORKFLOW ENUM..." + Fore.RESET)
+    def invoke(self, context, event):
+        # Ask for confirmation
+        return context.window_manager.invoke_confirm(self, event)
 
-#         comfyui_api.ensure_compositor_nodes(context)
+    def execute(self, context):
+        comfyui_api.convert_path_in_workflow(context)
+        return {'FINISHED'}
 
-#         global COMFY_WORKFLOWS
-#         COMFY_WORKFLOWS.clear()
-#         workflows_list = comfyui_api.get_workflows(context)  # Ensure comfyui_api is available
-#         for workflow in workflows_list:
-#            COMFY_WORKFLOWS.append(workflow)
 
-#         # Trigger the update of the update of the enums before setting the new values
-#         bpy.ops.ai_render.update_ckpt_enum()
-#         bpy.ops.ai_render.update_lora_enum()
-#         bpy.ops.ai_render.update_control_net_enum()
+class AIR_OT_ReloadWorkflow(bpy.types.Operator):
+    bl_idname = "ai_render.reload_workflow"
+    bl_label = "Update Workflow Enum"
+    bl_description = "Save the selected workflow to the scene properties"
 
-#         # Trigger property creation from the selected workflow
-#         create_property_from_workflow(context.scene.comfyui_props, context)
+    def execute(self, context):
+        print(Fore.GREEN + "UPDATING WORKFLOW ENUM..." + Fore.RESET)
 
-#         # comfui_props = context.scene.comfyui_props
-#         # string_enum_mapping_dict = {
-#         #     "comfyui_checkpoint_loader_simple": {
-#         #         "ckpt_name": "ckpt_enum"
-#         #     },
-#         #     "comfyui_lora_nodes": {
-#         #         "lora_name": "lora_enum"
-#         #     }
-#         # }
+        # comfyui_api.ensure_compositor_nodes(context)
 
-#         # for prop in comfui_props.bl_rna.properties.items():
-#         #     if (
-#         #         prop[1].type == 'COLLECTION'
-#         #         and getattr(comfui_props, prop[0])  # Check if the collection has items
-#         #         and prop[0] in string_enum_mapping_dict.keys()  # Check if the collection is in the enum_to_set dict
-#         #     ):
-#         #         collection_property = prop[0]
-#         #         current_property_name, enum_property_name = next(iter(string_enum_mapping_dict[collection_property].items()))
+        global COMFY_WORKFLOWS
+        COMFY_WORKFLOWS.clear()
+        workflows_list = comfyui_api.get_workflows(context)  # Ensure comfyui_api is available
+        for workflow in workflows_list:
+           COMFY_WORKFLOWS.append(workflow)
 
-#         #         for item in getattr(comfui_props, collection_property):
-#         #             new_value = getattr(item, current_property_name)
-#         #             setattr(item, enum_property_name, new_value)  # Set the item's enum property to the corresponding string property
-#         #             print(Fore.GREEN + f"Setting {enum_property_name} of {collection_property} to {current_property_name}" + Fore.RESET)
+        # Trigger the update of the update of the enums before setting the new values
+        bpy.ops.ai_render.update_ckpt_enum()
+        bpy.ops.ai_render.update_lora_enum()
+        bpy.ops.ai_render.update_control_net_enum()
 
-#         return {'FINISHED'}
+        # Trigger property creation from the selected workflow
+        create_property_from_workflow(context.scene.comfyui_props, context)
+
+        # comfui_props = context.scene.comfyui_props
+        # string_enum_mapping_dict = {
+        #     "comfyui_checkpoint_loader_simple": {
+        #         "ckpt_name": "ckpt_enum"
+        #     },
+        #     "comfyui_lora_nodes": {
+        #         "lora_name": "lora_enum"
+        #     }
+        # }
+
+        # for prop in comfui_props.bl_rna.properties.items():
+        #     if (
+        #         prop[1].type == 'COLLECTION'
+        #         and getattr(comfui_props, prop[0])  # Check if the collection has items
+        #         and prop[0] in string_enum_mapping_dict.keys()  # Check if the collection is in the enum_to_set dict
+        #     ):
+        #         collection_property = prop[0]
+        #         current_property_name, enum_property_name = next(iter(string_enum_mapping_dict[collection_property].items()))
+
+        #         for item in getattr(comfui_props, collection_property):
+        #             new_value = getattr(item, current_property_name)
+        #             setattr(item, enum_property_name, new_value)  # Set the item's enum property to the corresponding string property
+        #             print(Fore.GREEN + f"Setting {enum_property_name} of {collection_property} to {current_property_name}" + Fore.RESET)
+
+        return {'FINISHED'}
 
 
 class AIR_OT_UpdateSDModelEnum(bpy.types.Operator):
@@ -192,6 +206,8 @@ classes = [
     AIR_OT_open_comfyui_input_folder,
     AIR_OT_open_comfyui_output_folder,
     AIR_OT_open_comfyui_workflows_folder,
+    AIR_OT_ReloadWorkflow,
+    AIR_OT_convert_path_in_workflow
 ]
 
 

@@ -4,6 +4,7 @@ import base64
 import requests
 import json
 import pprint
+import platform
 from time import sleep
 from colorama import Fore
 
@@ -833,6 +834,42 @@ def get_workflows(context):
     return workflow_list
 
 
+def convert_path_in_workflow(context):
+    """ Convert "\\" to "/" and "/" to "\\" in the current json workflow overwriting it"""
+
+    current_workflow = context.scene.comfyui_props.comfy_current_workflow
+    current_workflow_path = get_workflows_path(
+        context) + "/" + current_workflow
+
+    print(Fore.WHITE + "\nCURRENT WORKFLOW PATH:" + Fore.RESET)
+    print(current_workflow_path)
+
+    if current_workflow is None or current_workflow == "":
+        print(Fore.RED + "Please select a workflow first")
+        return
+
+    if platform.system() == "Darwin":
+        print(Fore.GREEN + "Changing Paths to '/'")
+        with open(current_workflow_path, "r") as f:
+            lines = f.readlines()
+        with open(current_workflow_path, "w") as f:
+            for line in lines:
+                line = line.replace('\\\\', '/') if '\\\\' in line else line
+                f.write(line)
+                print(Fore.GREEN + "Updated:" + line[:-1]) if '/' in line else None
+
+    elif platform.system() == "Windows":
+        print(Fore.GREEN + "Changing Paths to '\\\\'")
+        with open(current_workflow_path, "r") as f:
+            lines = f.readlines()
+        with open(current_workflow_path, "w") as f:
+            for line in lines:
+                line = line.replace('/', '\\\\') if '/' in line else line
+                f.write(line)
+                print(Fore.GREEN + "Updated:" + line[:-1]) if '\\\\' in line else None
+    return
+
+
 COMFY_CKPT_MODELS = []
 
 
@@ -1249,7 +1286,7 @@ def ensure_compositor_nodes(context):
     # initialize color ramp elements
     color_ramp.color_ramp.elements.remove(color_ramp.color_ramp.elements[0])
     color_ramp_cre_0 = color_ramp.color_ramp.elements[0]
-    color_ramp_cre_0.position = 0.913193
+    color_ramp_cre_0.position = 0
     color_ramp_cre_0.alpha = 1.0
     color_ramp_cre_0.color = (1.0, 1.0, 1.0, 1.0)
 
@@ -1386,9 +1423,8 @@ def get_normal_file_input_path(context):
 def get_openpose_body_file_input_path(context):
     return get_comfyui_input_path(context) + "openpose_body/"
 
+
 # AI RENDER
-
-
 def get_upscaler_models(context):
     models = context.scene.air_props.automatic1111_available_upscaler_models
 
