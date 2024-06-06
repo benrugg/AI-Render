@@ -5,7 +5,13 @@
 > In this fork, I'm attempting to add ComfyUI support to the [AI Render by Ben Rugg](https://github.com/benrugg/AI-Render) Blender Addon.  
 > Check Discord if interested in joining:
 > [Blending Pixels Discord](https://discord.gg/G3yfB87ScU)  
-> Last Update on my [Patreon](https://www.patreon.com/RobeSantoro) (free)  
+> Last Update on my [Patreon](https://www.patreon.com/RobeSantoro) (free)
+>
+> The core concept is simple: going from this:  
+> ![ComfyUI](https://i.imgur.com/xCy2kYj_d.webp?maxwidth=1520&fidelity=grand)  
+>
+> to this:  
+> ![Blender](https://i.imgur.com/Aw1uff0_d.webp?maxwidth=1520&fidelity=grand)  
 >   
 
 
