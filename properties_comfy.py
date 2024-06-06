@@ -23,6 +23,7 @@ def create_property_from_workflow(self, context):
         "KSampler",
         "LoraLoader",
         "ControlNetApplyAdvanced",
+        "ACN_AdvancedControlNetApply",
         "SelfAttentionGuidance",
         "UpscaleModelLoader",
         "CLIPSetLastLayer"
@@ -61,8 +62,14 @@ def create_property_from_workflow(self, context):
                 comfyui_checkpoint_loader_simple = self.comfyui_checkpoint_loader_simple.add()
                 comfyui_checkpoint_loader_simple.expanded = False
                 comfyui_checkpoint_loader_simple.name = node_id
-                comfyui_checkpoint_loader_simple.ckpt_name = node["inputs"]["ckpt_name"]
-                comfyui_checkpoint_loader_simple.ckpt_enum = node["inputs"]["ckpt_name"]
+                try:
+                    comfyui_checkpoint_loader_simple.ckpt_enum = node["inputs"]["ckpt_name"]
+                    comfyui_checkpoint_loader_simple.ckpt_name = node["inputs"]["ckpt_name"]
+                except KeyError as e:
+                    print(Fore.RED + "KEY ERROR: " + Fore.RESET + e)
+                    print("Check the workflow for missing keys in the node: " + node_id)
+                    bpy.window_manager.popup_menu(
+                        utils.error_message, title="Error", icon='ERROR')
 
                 if LOG_PROP_CREATION:
                     print(Fore.WHITE + "PROPERTY CREATED: " + comfyui_checkpoint_loader_simple.name + Fore.RESET)
@@ -119,6 +126,37 @@ def create_property_from_workflow(self, context):
 
                 if LOG_PROP_CREATION:
                     print(Fore.WHITE + "PROPERTY CREATED: " + comfyui_control_net_node.name + Fore.RESET)
+
+            elif node["class_type"] == "ACN_AdvancedControlNetApply":
+                if LOG_PROP_CREATION:
+                    print(Fore.CYAN + "\nNODE: " + node_id)
+                    pprint(node)
+                    # {'_meta': {'title': 'Apply Advanced ControlNet 🛂🅐🅒🅝'},
+                    #  'class_type': 'ACN_AdvancedControlNetApply',
+                    #  'inputs': {'control_net': ['85', 0],
+                    #             'end_percent': 0.5,
+                    #             'image': ['18', 0],
+                    #             'model_optional': ['37', 0],
+                    #             'negative': ['13', 1],
+                    #             'positive': ['13', 0],
+                    #             'start_percent': 0,
+                    #             'strength': 0.5}}
+
+                # Find ControlNet model connected to the ACN_AdvancedControlNetApply
+                control_net_node = selected_workflow[node["inputs"]["control_net"][0]]
+                control_net_node_model_path = control_net_node["inputs"]["control_net_name"]
+
+                comfyui_acn_advanced_control_net_apply = self.comfyui_acn_advanced_control_net_apply.add()
+                comfyui_acn_advanced_control_net_apply.expanded = False
+                comfyui_acn_advanced_control_net_apply.name = node_id
+                comfyui_acn_advanced_control_net_apply.strength = node["inputs"]["strength"]
+                comfyui_acn_advanced_control_net_apply.start_percent = node["inputs"]["start_percent"]
+                comfyui_acn_advanced_control_net_apply.end_percent = node["inputs"]["end_percent"]
+                comfyui_acn_advanced_control_net_apply.control_net_name = control_net_node_model_path
+                comfyui_acn_advanced_control_net_apply.control_net_enum = control_net_node_model_path
+
+                if LOG_PROP_CREATION:
+                    print(Fore.WHITE + "PROPERTY CREATED: " + comfyui_acn_advanced_control_net_apply.name + Fore.RESET)
 
             elif node["class_type"] == "SelfAttentionGuidance":
                 if LOG_PROP_CREATION:
@@ -200,7 +238,6 @@ def create_property_from_workflow(self, context):
                 comfyui_clip_set_last_layer.name = node_id
                 comfyui_clip_set_last_layer.expanded = False
                 comfyui_clip_set_last_layer.stop_at_clip_layer = node["inputs"]["stop_at_clip_layer"]
-
 
 
 def update_air_props(self, context):
@@ -290,6 +327,48 @@ class ComfyUILoraNode(bpy.types.PropertyGroup):
 
 
 class ComfyUIControlNetNode(bpy.types.PropertyGroup):
+    expanded: bpy.props.BoolProperty(
+        name="expanded",
+        default=True,
+        description="Expanded"
+    )
+    control_net_name: bpy.props.StringProperty(
+        name="ControlNet Name",
+        default="",
+        description="Name of the ControlNet model"
+    )
+    control_net_enum: bpy.props.EnumProperty(
+        name="control_net_enum",
+        default=0,
+        items=comfyui_api.create_control_net_enum,
+        description="A list of the available ControlNet models"
+    )
+    strength: bpy.props.FloatProperty(
+        name="ControlNet Strength",
+        default=1,
+        soft_min=0,
+        soft_max=1,
+        min=0,
+        max=10,
+        description="Strength of the ControlNet model",
+    )
+    start_percent: bpy.props.FloatProperty(
+        name="ControlNet Start Percent",
+        default=0,
+        min=0,
+        max=1,
+        description="Start percent of the ControlNet model"
+    )
+    end_percent: bpy.props.FloatProperty(
+        name="ControlNet End Percent",
+        default=1,
+        min=0,
+        max=1,
+        description="End percent of the ControlNet model"
+    )
+
+
+class ComfyUIACNAdvancedControlNetApply(bpy.types.PropertyGroup):
     expanded: bpy.props.BoolProperty(
         name="expanded",
         default=True,
@@ -470,6 +549,7 @@ class ComfyUIProps(bpy.types.PropertyGroup):
     comfyui_ksampler: bpy.props.CollectionProperty(type=ComfyUIMainKSampler)
     comfyui_lora_nodes: bpy.props.CollectionProperty(type=ComfyUILoraNode)
     comfyui_control_net_nodes: bpy.props.CollectionProperty(type=ComfyUIControlNetNode)
+    comfyui_acn_advanced_control_net_apply: bpy.props.CollectionProperty(type=ComfyUIACNAdvancedControlNetApply)
     comfyui_self_attention_guidance: bpy.props.CollectionProperty(type=ComfyUISelfAttentionGuidance)
     comfyui_upscale_model_loader: bpy.props.CollectionProperty(type=ComfyUIUpscaleModelLoader)
     comfyui_CLIP_set_last_layer: bpy.props.CollectionProperty(type=ComfyUICLIPSetLastLayer)
@@ -480,6 +560,7 @@ classes = [
     ComfyUIMainKSampler,
     ComfyUILoraNode,
     ComfyUIControlNetNode,
+    ComfyUIACNAdvancedControlNetApply,
     ComfyUISelfAttentionGuidance,
     ComfyUIUpscaleModelLoader,
     ComfyUICLIPSetLastLayer,
