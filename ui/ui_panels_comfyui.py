@@ -34,7 +34,7 @@ class AIR_PT_comfyui(bpy.types.Panel):
 
         # Reload Workflow
         col1.prop(props, 'comfyui_workflow', text="")
-        # col2.operator('ai_render.update_workflow_enum', text='Reload', icon='FILE_REFRESH')
+        col2.operator('ai_render.reload_workflow', text='Reload', icon='FILE_REFRESH')
         split.scale_y = 1.5
 
         # Convert Path in workflow

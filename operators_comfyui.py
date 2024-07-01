@@ -90,7 +90,8 @@ class AIR_OT_ReloadWorkflow(bpy.types.Operator):
     def execute(self, context):
         print(Fore.GREEN + "UPDATING WORKFLOW ENUM..." + Fore.RESET)
 
-        # comfyui_api.ensure_compositor_nodes(context)
+        # Ensure the compositor nodes are available (DISABLED FOR NOW)
+        comfyui_api.ensure_compositor_nodes(context)
 
         global COMFY_WORKFLOWS
         COMFY_WORKFLOWS.clear()
