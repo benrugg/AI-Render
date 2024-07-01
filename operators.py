@@ -371,19 +371,23 @@ def sd_generate(scene, prompts=None, use_last_sd_image=False):
     # get the prompt if we haven't been given one
     if not prompts:
         if props.use_animated_prompts:
+            print(Fore.LIGHTGREEN_EX + "USING ANIMATED PROMPTS" + Fore.RESET)
             prompt, negative_prompt = validate_and_process_animated_prompt_text_for_single_frame(
                 scene, scene.frame_current)
             if not prompt:
                 return False
         else:
+            print(Fore.LIGHTGREEN_EX + "USING SINGLE PROMPT" + Fore.RESET)
             prompt = get_full_prompt(scene)
             negative_prompt = props.negative_prompt_text.strip()
     else:
+        print(Fore.LIGHTGREEN_EX + "USING PROMPTS" + Fore.RESET)
         prompt = prompts["prompt"]
         negative_prompt = prompts["negative_prompt"]
 
     # validate the parameters we will send
     if not validate_params(scene, prompt):
+        print(Fore.RED + "COULD NOT VALIDATE PARAMS" + Fore.RESET)
         return False
 
     # generate a new seed, if we want a random one
@@ -413,6 +417,7 @@ def sd_generate(scene, prompts=None, use_last_sd_image=False):
         temp_input_file = save_render_to_file(scene, before_output_filename_prefix)
 
         if not temp_input_file:
+            print(Fore.RED + "Couldn't save the rendered image to a temp file" + Fore.RESET)
             return False
 
         img_file = open(temp_input_file, 'rb')
@@ -424,6 +429,7 @@ def sd_generate(scene, prompts=None, use_last_sd_image=False):
             and not props.is_rendering_animation
             and not props.is_rendering_animation_manually
         ):
+            print(Fore.YELLOW + "Autosaving before image")
             save_before_image(scene, before_output_filename_prefix)
 
     # prepare data for the API request
@@ -447,6 +453,7 @@ def sd_generate(scene, prompts=None, use_last_sd_image=False):
     start_time = time.time()
 
     if sd_backend_name == "comfyui":
+        print(Fore.YELLOW + "Using ComfyUI API" + Fore.RESET)
         generated_image_file = comfyui_api.generate(
             params,
             img_file,
