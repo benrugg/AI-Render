@@ -4,7 +4,8 @@ from .. import utils
 from pprint import pprint
 
 from ..operators_comfyui import (
-    AIR_OT_ReloadWorkflow,
+    AIR_OT_convert_path_in_workflow,
+    AIR_OT_ReloadWorkflow
 )
 
 
@@ -38,15 +39,15 @@ class AIR_PT_comfyui(bpy.types.Panel):
 
         # Reload Workflow
         col1.prop(props, 'comfyui_workflow', text="")
-        col2.operator('ai_render.reload_workflow', text='Reload', icon='FILE_REFRESH')
+        col2.operator(AIR_OT_ReloadWorkflow.bl_idname, text='Reload', icon='FILE_REFRESH')
         split.scale_y = 1.5
 
         # Convert Path in workflow
         if platform.system() == "Darwin":
-            text = 'Convert "\\\\" to "/" in Workflow'
+            op_label = 'Convert "\\\\" to "/" in Workflow'
         elif platform.system() == "Windows":
-            text = 'Convert "/" to "\\\\" in Workflow'
-        layout.operator('ai_render.convert_path_in_workflow', text=text)
+            op_label = 'Convert "/" to "\\\\" in Workflow'
+        layout.operator(AIR_OT_convert_path_in_workflow.bl_idname, text=op_label)
 
         layout.separator(factor=2)
 

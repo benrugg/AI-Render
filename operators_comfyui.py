@@ -71,7 +71,7 @@ class AIR_OT_open_comfyui_workflows_folder(bpy.types.Operator):
 class AIR_OT_convert_path_in_workflow(bpy.types.Operator):
     bl_idname = "ai_render.convert_path_in_workflow"
     bl_label = "Convert Path in Workflow"
-    bl_description = "Convert the path in the selected workflow to the current platform"
+    bl_description = "Use this operator to change the slashes to the ones your mac or windows uses"
 
     def invoke(self, context, event):
         # Ask for confirmation
@@ -190,6 +190,8 @@ classes = [
     AIR_OT_open_comfyui_input_folder,
     AIR_OT_open_comfyui_output_folder,
     AIR_OT_open_comfyui_workflows_folder,
+    AIR_OT_convert_path_in_workflow,
+    AIR_OT_ReloadWorkflow,
 ]
 
 
