@@ -1316,10 +1316,11 @@ def ensure_compositor_nodes(context):
     # node Viewer
     viewer = nodes.new("CompositorNodeViewer")
     viewer.name = "Viewer"
-    viewer.center_x = 0.5
-    viewer.center_y = 0.5
-    viewer.tile_order = 'CENTEROUT'
+    # viewer.center_x = 0.5  æ not compatible with 4.2.0 LTS
+    # viewer.center_y = 0.5  æ not compatible with 4.2.0 LTS
+    # viewer.tile_order = 'CENTEROUT'  æ not compatible with 4.2.0 LTS
     viewer.use_alpha = True
+
     # Alpha
     viewer.inputs[1].default_value = 1.0
     viewer.location = (370, 280)
