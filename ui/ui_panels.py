@@ -62,6 +62,7 @@ class AIR_PT_setup(bpy.types.Panel):
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
     bl_context = "render"
+    bl_options = {'DEFAULT_CLOSED'}
 
     @classmethod
     def is_api_key_valid(cls, context):
@@ -120,9 +121,11 @@ class AIR_PT_setup(bpy.types.Panel):
             if not AIR_PT_setup.are_dimensions_valid(context):
                 utils.label_multiline(layout, text="Adjust Image Size: \nStable Diffusion only works on certain image dimensions.", icon="INFO", width=width_guess)
             elif not AIR_PT_setup.are_dimensions_small_enough(context):
-                utils.label_multiline(layout, text=f"Adjust Image Size: \nImage dimensions are too large. Please decrease width and/or height. Total pixel area must be at most {round(utils.get_active_backend().max_image_size() / (1024*1024), 1)} megapixels.", icon="INFO", width=width_guess)
+                utils.label_multiline(
+                    layout, text=f"Adjust Image Size: \nImage dimensions are too large. Please decrease width and/or height. Total pixel area must be at most {round(utils.get_active_backend().max_image_size() / (1024*1024), 1)} megapixels.", icon="INFO", width=width_guess)
             else:
-                utils.label_multiline(layout, text=f"Adjust Image Size: \nImage dimensions are too small. Please increase width and/or height. Total pixel area must be at least {round(utils.get_active_backend().min_image_size() / (1024*1024), 1)} megapixels.", icon="INFO", width=width_guess)
+                utils.label_multiline(
+                    layout, text=f"Adjust Image Size: \nImage dimensions are too small. Please increase width and/or height. Total pixel area must be at least {round(utils.get_active_backend().min_image_size() / (1024*1024), 1)} megapixels.", icon="INFO", width=width_guess)
 
             layout.separator()
 
@@ -146,8 +149,9 @@ class AIR_PT_setup(bpy.types.Panel):
         # else, show the ready / getting started message and disable and change image size buttons
         else:
             utils.label_multiline(layout, text="You're ready to start rendering!", width=width_guess, alignment="CENTER")
-            row = layout.row()
-            row.operator("wm.url_open", text="Help Getting Started", icon="URL").url = config.VIDEO_TUTORIAL_URL
+
+            # row = layout.row()
+            # row.operator("wm.url_open", text="Help Getting Started", icon="URL").url = config.VIDEO_TUTORIAL_URL
 
             row = layout.row(align=True)
             if utils.is_using_sdxl_1024_model(scene):
@@ -157,6 +161,27 @@ class AIR_PT_setup(bpy.types.Panel):
             row.separator()
             row.operator(operators.AIR_OT_disable.bl_idname, text="Disable AI Render")
 
+            box = layout.box()
+            box.label(text="Addon Preferences")
+
+            row = box.row()
+            row.prop(utils.get_addon_preferences(context), "sd_backend", text="")
+            row.prop(utils.get_addon_preferences(context), "local_sd_url", text="")
+
+            if utils.sd_backend(context) == "comfyui":
+                # ComfyUI Path
+                box.prop(utils.get_addon_preferences(context), 'comfyui_path', text="Comfy")
+
+                # ComfyUI Workflows Path
+                box.prop(utils.get_addon_preferences(context), 'comfyui_workflows_path', text="Workflows")
+
+                # Open ComfyUI workflow, input and output folder operator
+                box = layout.box()
+                row = box.row()
+                row.operator("ai_render.open_comfyui_workflows_folder", text="Workflow Folder")
+                row.operator("ai_render.open_comfyui_input_folder", text="Input Folder")
+                row.operator("ai_render.open_comfyui_output_folder", text="Output Folder")
+
 
 class AIR_PT_prompt(bpy.types.Panel):
     bl_label = "Prompt"
@@ -165,6 +190,7 @@ class AIR_PT_prompt(bpy.types.Panel):
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
     bl_context = "render"
+    # bl_options = {'DEFAULT_CLOSED'}
 
     @classmethod
     def poll(cls, context):
@@ -238,7 +264,7 @@ class AIR_PT_advanced_options(bpy.types.Panel):
 
     @classmethod
     def poll(cls, context):
-        return utils.is_installation_valid() and context.scene.air_props.is_enabled
+        return utils.is_installation_valid() and context.scene.air_props.is_enabled and utils.sd_backend(context) != "comfyui"
 
     def draw(self, context):
         layout = self.layout
@@ -260,6 +286,13 @@ class AIR_PT_advanced_options(bpy.types.Panel):
         sub.label(text="Image Similarity")
         sub = row.column()
         sub.prop(props, 'image_similarity', text="", slider=False)
+
+        # Denoising Strength
+        # row = layout.row()
+        # sub = row.column()
+        # sub.label(text="Denoising Strength")
+        # sub = row.column()
+        # sub.prop(props, 'denoising_strength', text="", slider=False)
 
         # Steps
         row = layout.row()
@@ -442,7 +475,7 @@ class AIR_PT_upscale(bpy.types.Panel):
 
     @classmethod
     def poll(cls, context):
-        return utils.is_installation_valid() and context.scene.air_props.is_enabled
+        return utils.is_installation_valid() and context.scene.air_props.is_enabled and utils.sd_backend(context) != "comfyui"
 
     @classmethod
     def does_backend_support_upscaling(cls, context):
@@ -470,7 +503,8 @@ class AIR_PT_upscale(bpy.types.Panel):
         # if backend does not support upscaling, show message
         if not AIR_PT_upscale.does_backend_support_upscaling(context):
             box = layout.box()
-            utils.label_multiline(box, text=f"Upscaling is not supported by {utils.sd_backend_formatted_name()}. If you'd like to upscale your image, switch to DreamStudio or Automatic1111 in AI Render's preferences.", icon="ERROR", width=width_guess)
+            utils.label_multiline(
+                box, text=f"Upscaling is not supported by {utils.sd_backend_formatted_name()}. If you'd like to upscale your image, switch to DreamStudio or Automatic1111 in AI Render's preferences.", icon="ERROR", width=width_guess)
             return
 
         # if the upscaler model list hasn't been loaded, show message and button
@@ -627,8 +661,29 @@ class AIR_PT_animation(bpy.types.Panel):
 
         width_guess = 220
 
+        # Path
+        row = layout.row()
+        row.prop(props, "animation_output_path", text="")
+        row = layout.row()
+
+        row.operator(operators.AIR_OT_SetExportPathAsSceneName.bl_idname, text="Set/Create", icon="NEWFOLDER")
+        row.operator(operators.AIR_OT_OpenRenderFolder.bl_idname, text="Open", icon="FOLDER_REDIRECT")
+
+        layout.separator()
+
+        # Animated Prompts
+        row = layout.row()
+        row.prop(props, "use_animated_prompts", text="Use Animated Prompts")
+
+        if props.use_animated_prompts:
+            # row = layout.row()
+            row.operator(operators.AIR_OT_edit_animated_prompts.bl_idname)
+
+        layout.separator()
+
         # Render Animation
         row = layout.row()
+        row.scale_y = 1.5
         is_animation_enabled_button_enabled = props.animation_output_path != ""
         if is_animation_enabled_button_enabled:
             num_frames = math.floor(((scene.frame_end - scene.frame_start) / scene.frame_step) + 1)
@@ -639,20 +694,6 @@ class AIR_PT_animation(bpy.types.Panel):
 
         row.operator(operators.AIR_OT_render_animation.bl_idname, icon="RENDER_ANIMATION", text=render_animation_text)
         row.enabled = is_animation_enabled_button_enabled
-
-        # Path
-        row = layout.row()
-        row.prop(props, "animation_output_path", text="Path")
-
-        # Animated Prompts
-        layout.separator()
-
-        row = layout.row()
-        row.prop(props, "use_animated_prompts", text="Use Animated Prompts")
-
-        if props.use_animated_prompts:
-            row = layout.row()
-            row.operator(operators.AIR_OT_edit_animated_prompts.bl_idname)
 
         # Tips
         if round(props.image_similarity, 2) < 0.7 and not props.close_animation_tips:
@@ -673,7 +714,6 @@ class AIR_PT_animation(bpy.types.Panel):
 classes = [
     AIR_PT_main,
     AIR_PT_setup,
-    AIR_PT_prompt,
     AIR_PT_advanced_options,
     AIR_PT_controlnet,
     AIR_PT_operation,
@@ -681,6 +721,7 @@ classes = [
     AIR_PT_inpaint,
     AIR_PT_outpaint,
     AIR_PT_animation,
+    AIR_PT_prompt,
 ]
 
 

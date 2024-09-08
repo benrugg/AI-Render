@@ -1,4 +1,4 @@
-package_name = 'AI-Render'
+package_name = 'AI-Render-ComfyUI-Support'
 default_prompt_text = 'Describe anything you can imagine'
 default_image_filename_template = "ai-render-{timestamp}-{prompt}"
 filename_template_allowed_vars = ['timestamp', 'prompt', 'width', 'height', 'seed', 'steps', 'image_similarity', 'sampler', 'negative_prompt']

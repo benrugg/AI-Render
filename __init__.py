@@ -1,5 +1,5 @@
 bl_info = {
-    "name": "AI Render - Stable Diffusion in Blender",
+    "name": "AI Render - ComfyUI Support",
     "description": "Create amazing images using Stable Diffusion AI",
     "author": "Ben Rugg",
     "version": (1, 0, 1),
@@ -27,9 +27,13 @@ if "bpy" in locals():
     imp.reload(ui_panels)
     imp.reload(ui_preset_styles)
     imp.reload(utils)
+    imp.reload(comfyui_api)
     imp.reload(automatic1111_api)
     imp.reload(stability_api)
     imp.reload(stablehorde_api)
+    imp.reload(properties_comfy)
+    imp.reload(operators_comfyui)
+    imp.reload(ui_panels_comfyui)
 else:
     from . import (
         addon_updater_ops,
@@ -42,12 +46,16 @@ else:
         properties,
         task_queue,
         utils,
+        properties_comfy,
+        operators_comfyui,
     )
     from .ui import (
         ui_panels,
         ui_preset_styles,
+        ui_panels_comfyui
     )
     from .sd_backends import (
+        comfyui_api,
         automatic1111_api,
         stability_api,
         stablehorde_api,
@@ -67,6 +75,9 @@ def register():
     task_queue.register()
     ui_panels.register()
     ui_preset_styles.register()
+    properties_comfy.register()
+    operators_comfyui.register()
+    ui_panels_comfyui.register()
 
 
 def unregister():
@@ -80,6 +91,9 @@ def unregister():
     task_queue.unregister()
     ui_panels.unregister()
     ui_preset_styles.unregister()
+    properties_comfy.unregister()
+    operators_comfyui.unregister()
+    ui_panels_comfyui.unregister()
 
 
 if __name__ == "__main__":

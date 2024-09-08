@@ -1,0 +1,525 @@
+{
+    "3": {
+        "inputs": {
+            "seed": 7,
+            "steps": 20,
+            "cfg": 7.5,
+            "sampler_name": "euler_ancestral",
+            "scheduler": "karras",
+            "denoise": 0.6600000262260437,
+            "model": [
+                "37",
+                0
+            ],
+            "positive": [
+                "67",
+                0
+            ],
+            "negative": [
+                "67",
+                1
+            ],
+            "latent_image": [
+                "10",
+                0
+            ]
+        },
+        "class_type": "KSampler",
+        "_meta": {
+            "title": "main_sampler"
+        }
+    },
+    "4": {
+        "inputs": {
+            "ckpt_name": "SD15\\28DSTABLEBESTVERSION_v6.safetensors"
+        },
+        "class_type": "CheckpointLoaderSimple",
+        "_meta": {
+            "title": "Load Checkpoint"
+        }
+    },
+    "6": {
+        "inputs": {
+            "text": "",
+            "clip": [
+                "26",
+                1
+            ]
+        },
+        "class_type": "CLIPTextEncode",
+        "_meta": {
+            "title": "positive"
+        }
+    },
+    "7": {
+        "inputs": {
+            "text": "ugly, bad art",
+            "clip": [
+                "26",
+                1
+            ]
+        },
+        "class_type": "CLIPTextEncode",
+        "_meta": {
+            "title": "negative"
+        }
+    },
+    "8": {
+        "inputs": {
+            "samples": [
+                "3",
+                0
+            ],
+            "vae": [
+                "11",
+                0
+            ]
+        },
+        "class_type": "VAEDecode",
+        "_meta": {
+            "title": "VAE Decode"
+        }
+    },
+    "9": {
+        "inputs": {
+            "filename_prefix": "ComfyUI",
+            "images": [
+                "35",
+                0
+            ]
+        },
+        "class_type": "SaveImage",
+        "_meta": {
+            "title": "output_image"
+        }
+    },
+    "10": {
+        "inputs": {
+            "pixels": [
+                "12",
+                0
+            ],
+            "vae": [
+                "11",
+                0
+            ]
+        },
+        "class_type": "VAEEncode",
+        "_meta": {
+            "title": "VAE Encode"
+        }
+    },
+    "11": {
+        "inputs": {
+            "vae_name": "vae-ft-mse-840000-ema-pruned.safetensors"
+        },
+        "class_type": "VAELoader",
+        "_meta": {
+            "title": "Load VAE"
+        }
+    },
+    "12": {
+        "inputs": {
+            "image": "E:/COMFY/ComfyUI-robe/input/color/Image0000.png",
+            "upload": "image"
+        },
+        "class_type": "LoadImage",
+        "_meta": {
+            "title": "color"
+        }
+    },
+    "13": {
+        "inputs": {
+            "strength": 0.800000011920929,
+            "start_percent": 0.0,
+            "end_percent": 0.699999988079071,
+            "positive": [
+                "40",
+                0
+            ],
+            "negative": [
+                "40",
+                1
+            ],
+            "control_net": [
+                "14",
+                0
+            ],
+            "image": [
+                "15",
+                0
+            ]
+        },
+        "class_type": "ControlNetApplyAdvanced",
+        "_meta": {
+            "title": "Apply ControlNet (Advanced)"
+        }
+    },
+    "14": {
+        "inputs": {
+            "control_net_name": "SD15\\control_v11\\control_v11f1p_sd15_depth.pth"
+        },
+        "class_type": "ControlNetLoader",
+        "_meta": {
+            "title": "Load ControlNet Model"
+        }
+    },
+    "15": {
+        "inputs": {
+            "image": "E:/COMFY/ComfyUI-robe/input/depth/Image0000.png",
+            "upload": "image"
+        },
+        "class_type": "LoadImage",
+        "_meta": {
+            "title": "depth"
+        }
+    },
+    "16": {
+        "inputs": {
+            "strength": 0.800000011920929,
+            "start_percent": 0.0,
+            "end_percent": 0.699999988079071,
+            "positive": [
+                "13",
+                0
+            ],
+            "negative": [
+                "13",
+                1
+            ],
+            "control_net": [
+                "17",
+                0
+            ],
+            "image": [
+                "18",
+                0
+            ]
+        },
+        "class_type": "ControlNetApplyAdvanced",
+        "_meta": {
+            "title": "Apply ControlNet (Advanced)"
+        }
+    },
+    "17": {
+        "inputs": {
+            "control_net_name": "SD15\\control_v11\\control_v11p_sd15_normalbae.pth"
+        },
+        "class_type": "ControlNetLoader",
+        "_meta": {
+            "title": "Load ControlNet Model"
+        }
+    },
+    "18": {
+        "inputs": {
+            "image": "E:/COMFY/ComfyUI-robe/input/normal/Image0000.png",
+            "upload": "image"
+        },
+        "class_type": "LoadImage",
+        "_meta": {
+            "title": "normal"
+        }
+    },
+    "26": {
+        "inputs": {
+            "lora_name": "SD15\\FilmVelvia3.safetensors",
+            "strength_model": 0.0,
+            "strength_clip": 1.0,
+            "model": [
+                "28",
+                0
+            ],
+            "clip": [
+                "28",
+                1
+            ]
+        },
+        "class_type": "LoraLoader",
+        "_meta": {
+            "title": "Load LoRA"
+        }
+    },
+    "28": {
+        "inputs": {
+            "lora_name": "SD15\\add_detail.safetensors",
+            "strength_model": 0.0,
+            "strength_clip": 1.0,
+            "model": [
+                "4",
+                0
+            ],
+            "clip": [
+                "48",
+                0
+            ]
+        },
+        "class_type": "LoraLoader",
+        "_meta": {
+            "title": "Load LoRA"
+        }
+    },
+    "34": {
+        "inputs": {
+            "model_name": "4xNomos8kDAT.pth"
+        },
+        "class_type": "UpscaleModelLoader",
+        "_meta": {
+            "title": "Load Upscale Model"
+        }
+    },
+    "35": {
+        "inputs": {
+            "upscale_model": [
+                "34",
+                0
+            ],
+            "image": [
+                "73",
+                0
+            ]
+        },
+        "class_type": "ImageUpscaleWithModel",
+        "_meta": {
+            "title": "Upscale Image (using Model)"
+        }
+    },
+    "37": {
+        "inputs": {
+            "scale": 0.0,
+            "blur_sigma": 2.0,
+            "model": [
+                "26",
+                0
+            ]
+        },
+        "class_type": "SelfAttentionGuidance",
+        "_meta": {
+            "title": "Self-Attention Guidance"
+        }
+    },
+    "38": {
+        "inputs": {
+            "coarse": "disable",
+            "resolution": 512,
+            "image": [
+                "12",
+                0
+            ]
+        },
+        "class_type": "LineArtPreprocessor",
+        "_meta": {
+            "title": "Realistic Lineart"
+        }
+    },
+    "39": {
+        "inputs": {
+            "images": [
+                "38",
+                0
+            ]
+        },
+        "class_type": "PreviewImage",
+        "_meta": {
+            "title": "Preview Image"
+        }
+    },
+    "40": {
+        "inputs": {
+            "strength": 0.44999998807907104,
+            "start_percent": 0.0,
+            "end_percent": 0.6000000238418579,
+            "positive": [
+                "6",
+                0
+            ],
+            "negative": [
+                "7",
+                0
+            ],
+            "control_net": [
+                "41",
+                0
+            ],
+            "image": [
+                "38",
+                0
+            ]
+        },
+        "class_type": "ControlNetApplyAdvanced",
+        "_meta": {
+            "title": "Apply ControlNet (Advanced)"
+        }
+    },
+    "41": {
+        "inputs": {
+            "control_net_name": "SD15\\control_v11\\control_v11p_sd15_lineart.pth"
+        },
+        "class_type": "ControlNetLoader",
+        "_meta": {
+            "title": "Load ControlNet Model"
+        }
+    },
+    "48": {
+        "inputs": {
+            "stop_at_clip_layer": -2,
+            "clip": [
+                "4",
+                1
+            ]
+        },
+        "class_type": "CLIPSetLastLayer",
+        "_meta": {
+            "title": "CLIP Set Last Layer"
+        }
+    },
+    "56": {
+        "inputs": {
+            "upscale_method": "lanczos",
+            "width": [
+                "57",
+                2
+            ],
+            "height": [
+                "57",
+                1
+            ],
+            "crop": "disabled",
+            "image": [
+                "59",
+                0
+            ]
+        },
+        "class_type": "ImageScale",
+        "_meta": {
+            "title": "Upscale Image"
+        }
+    },
+    "57": {
+        "inputs": {
+            "value": [
+                "35",
+                0
+            ]
+        },
+        "class_type": "ImpactImageInfo",
+        "_meta": {
+            "title": "ImpactImageInfo"
+        }
+    },
+    "59": {
+        "inputs": {
+            "mask": [
+                "12",
+                1
+            ]
+        },
+        "class_type": "MaskToImage",
+        "_meta": {
+            "title": "Convert Mask to Image"
+        }
+    },
+    "61": {
+        "inputs": {
+            "channel": "red",
+            "image": [
+                "56",
+                0
+            ]
+        },
+        "class_type": "ImageToMask",
+        "_meta": {
+            "title": "Convert Image to Mask"
+        }
+    },
+    "67": {
+        "inputs": {
+            "strength": 1.0,
+            "start_percent": 0.0,
+            "end_percent": 1.0,
+            "positive": [
+                "16",
+                0
+            ],
+            "negative": [
+                "16",
+                1
+            ],
+            "control_net": [
+                "68",
+                0
+            ],
+            "image": [
+                "70",
+                0
+            ]
+        },
+        "class_type": "ControlNetApplyAdvanced",
+        "_meta": {
+            "title": "Apply ControlNet (Advanced)"
+        }
+    },
+    "68": {
+        "inputs": {
+            "control_net_name": "SD15\\control_v11\\control_v11p_sd15_openpose.pth"
+        },
+        "class_type": "ControlNetLoader",
+        "_meta": {
+            "title": "Load ControlNet Model"
+        }
+    },
+    "70": {
+        "inputs": {
+            "detect_hand": "enable",
+            "detect_body": "enable",
+            "detect_face": "enable",
+            "resolution": 512,
+            "image": [
+                "12",
+                0
+            ]
+        },
+        "class_type": "OpenposePreprocessor",
+        "_meta": {
+            "title": "OpenPose Pose"
+        }
+    },
+    "72": {
+        "inputs": {
+            "images": [
+                "70",
+                0
+            ]
+        },
+        "class_type": "PreviewImage",
+        "_meta": {
+            "title": "Preview Image"
+        }
+    },
+    "73": {
+        "inputs": {
+            "facedetection": "retinaface_resnet50",
+            "codeformer_fidelity": 0,
+            "facerestore_model": [
+                "74",
+                0
+            ],
+            "image": [
+                "8",
+                0
+            ]
+        },
+        "class_type": "FaceRestoreCFWithModel",
+        "_meta": {
+            "title": "FaceRestoreCFWithModel"
+        }
+    },
+    "74": {
+        "inputs": {
+            "model_name": "codeformer-v0.1.0.pth"
+        },
+        "class_type": "FaceRestoreModelLoader",
+        "_meta": {
+            "title": "FaceRestoreModelLoader"
+        }
+    }
+}

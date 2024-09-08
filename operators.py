@@ -1,9 +1,12 @@
+import os
 import bpy
 import functools
 import math
 import random
 import re
 import time
+
+# from .operators_comfyui import ensure_compositor_nodes
 
 from . import (
     analytics,
@@ -14,6 +17,9 @@ from . import (
 )
 
 from .sd_backends import automatic1111_api
+from .sd_backends import comfyui_api
+
+from colorama import Fore
 
 
 example_dimensions_tuple_list = utils.generate_example_dimensions_tuple_list()
@@ -46,15 +52,16 @@ def set_image_dimensions(context, width, height):
     clear_error(context.scene)
 
 
-def handle_error(msg, error_key = ''):
+def handle_error(msg, error_key=''):
     """Show an error popup, and set the error message to be displayed in the ui"""
     print("AI Render Error:", msg)
-    task_queue.add(functools.partial(bpy.ops.ai_render.show_error_popup, 'INVOKE_DEFAULT', error_message=msg, error_key=error_key))
+    task_queue.add(functools.partial(bpy.ops.ai_render.show_error_popup,
+                   'INVOKE_DEFAULT', error_message=msg, error_key=error_key))
     analytics.track_event('ai_render_error', value=error_key)
     return False
 
 
-def set_silent_error(scene, msg, error_key = ''):
+def set_silent_error(scene, msg, error_key=''):
     """Set the error message to be displayed in the ui, but don't show a popup"""
     print("AI Render Error:", msg)
     scene.air_props.error_message = msg
@@ -88,7 +95,8 @@ def ensure_animated_prompts_text():
         text.write("# etc...\n")
         text.write("\n")
         text.write("# You can also include negative prompts\n")
-        text.write(f"# See more info at {config.HELP_WITH_NEGATIVE_PROMPTS_URL}\n")
+        text.write(
+            f"# See more info at {config.HELP_WITH_NEGATIVE_PROMPTS_URL}\n")
         text.write("Negative:\n")
         text.write("1: ugly, bad art, poorly drawn hands, poorly drawn feet, poorly drawn face, out of frame, extra limbs, disfigured, deformed, body out of frame, blurry, bad anatomy, blurred, watermark, grainy, tiling, signature, cut off, draft\n")
 
@@ -131,7 +139,11 @@ def render_frame(context, current_frame, prompts):
 
 def save_render_to_file(scene, filename_prefix):
     try:
-        temp_file = utils.create_temp_file(filename_prefix + "-", suffix=f".{utils.get_image_format()}")
+        print(Fore.MAGENTA + "Creating temp file for image")
+        temp_file = utils.create_temp_file(
+            filename_prefix + "-",
+            suffix=f".{utils.get_image_format()}"
+        )
     except:
         return handle_error("Couldn't create temp file for image", "temp_file")
 
@@ -144,6 +156,7 @@ def save_render_to_file(scene, filename_prefix):
         scene.render.image_settings.color_mode = 'RGBA'
         scene.render.image_settings.color_depth = '8'
 
+        print(Fore.MAGENTA + "Saving rendered image to temp file")
         bpy.data.images['Render Result'].save_render(temp_file)
 
         scene.render.image_settings.file_format = orig_render_file_format
@@ -156,20 +169,24 @@ def save_render_to_file(scene, filename_prefix):
 
 
 def save_before_image(scene, filename_prefix):
-    ext = utils.get_extension_from_file_format(scene.render.image_settings.file_format)
+    ext = utils.get_extension_from_file_format(
+        scene.render.image_settings.file_format)
     if ext:
         ext = f".{ext}"
     filename = f"{filename_prefix}{ext}"
-    full_path_and_filename = utils.get_absolute_path_for_output_file(scene.air_props.autosave_image_path, filename)
+    full_path_and_filename = utils.get_absolute_path_for_output_file(
+        scene.air_props.autosave_image_path, filename)
     try:
-        bpy.data.images['Render Result'].save_render(bpy.path.abspath(full_path_and_filename))
+        bpy.data.images['Render Result'].save_render(
+            bpy.path.abspath(full_path_and_filename))
     except:
         return handle_error(f"Couldn't save 'before' image to {bpy.path.abspath(full_path_and_filename)}", "save_image")
 
 
 def save_after_image(scene, filename_prefix, img_file):
     filename = f"{filename_prefix}.{utils.get_image_format()}"
-    full_path_and_filename = utils.get_absolute_path_for_output_file(scene.air_props.autosave_image_path, filename)
+    full_path_and_filename = utils.get_absolute_path_for_output_file(
+        scene.air_props.autosave_image_path, filename)
     try:
         utils.copy_file(img_file, full_path_and_filename)
         return full_path_and_filename
@@ -179,7 +196,8 @@ def save_after_image(scene, filename_prefix, img_file):
 
 def save_animation_image(scene, filename_prefix, img_file):
     filename = f"{filename_prefix}{str(scene.frame_current).zfill(4)}.{utils.get_image_format()}"
-    full_path_and_filename = utils.get_absolute_path_for_output_file(scene.air_props.animation_output_path, filename)
+    full_path_and_filename = utils.get_absolute_path_for_output_file(
+        scene.air_props.animation_output_path, filename)
     try:
         utils.copy_file(img_file, full_path_and_filename)
         return full_path_and_filename
@@ -195,11 +213,16 @@ def load_image(filename, data_block_name=None):
     if name in bpy.data.images:
         existing_img = bpy.data.images[name]
         existing_img.filepath = filename
+
+        print(Fore.YELLOW + f"Existing image: {filename}")
         return existing_img
 
     img_file = bpy.data.images.load(filename, check_existing=False)
     img_file.name = name
+
+    print(Fore.YELLOW + f"\nLOADED IMAGE: {filename}" + Fore.RESET)
     return img_file
+
 
 def do_pre_render_setup(scene):
     # Lock the user interface when rendering, so that we can change
@@ -213,9 +236,19 @@ def do_pre_render_setup(scene):
     # mute the legacy compositor node group, if it exists
     mute_legacy_compositor_node_group(scene)
 
+    # ensure the compositor nodes are set up correctly to send color,
+    # depth, and normal data to comfyui.
+
+    # It seems that it is not possible to change the base_path of the
+    # file output node, cause it takes only the path and saves the file
+    # with the name of 'Image0001' and the extension of the file format.
+    # if utils.sd_backend() == "comfyui":
+    #     ensure_compositor_nodes(bpy.context)
+
 
 def do_pre_api_setup(scene):
-    # TODO: does nothing at the moment
+    # TODO: does nothing at the moment - INTERESTING
+    # could be used to set up any other things we need before calling the API
     pass
 
 
@@ -228,8 +261,8 @@ def validate_params(scene, prompt=None):
         return handle_error("Image dimensions are too small. Please increase width and/or height", "dimensions_too_small")
     if utils.are_dimensions_too_large(scene):
         return handle_error("Image dimensions are too large. Please decrease width and/or height", "dimensions_too_large")
-    if prompt == "":
-        return handle_error("Please enter a prompt for Stable Diffusion", "prompt")
+    # if prompt == "":
+    #     return handle_error("Please enter a prompt for Stable Diffusion", "prompt")
     return True
 
 
@@ -301,14 +334,16 @@ def validate_and_process_animated_prompt_text(scene):
                 })
 
         if is_positive:
-            processed_lines = list(filter(lambda x: x['prompt'] != "", processed_lines))
+            processed_lines = list(
+                filter(lambda x: x['prompt'] != "", processed_lines))
 
         if len(processed_lines) == 0 and is_positive:
             return handle_error(f"Animated Prompt text is empty or invalid. [Get help with animated prompts]({config.HELP_WITH_ANIMATED_PROMPTS_URL})", "animated_prompt_text")
 
         if len(processed_lines) > 0:
             processed_lines.sort(key=lambda x: x['start_frame'])
-            processed_lines[0]['start_frame'] = 1 # ensure the first frame is 1
+            # ensure the first frame is 1
+            processed_lines[0]['start_frame'] = 1
 
         return processed_lines
 
@@ -319,7 +354,8 @@ def validate_and_process_animated_prompt_text(scene):
 
 
 def validate_and_process_animated_prompt_text_for_single_frame(scene, frame):
-    positive_lines, negative_lines = validate_and_process_animated_prompt_text(scene)
+    positive_lines, negative_lines = validate_and_process_animated_prompt_text(
+        scene)
     if not positive_lines:
         return None, None
     else:
@@ -328,31 +364,42 @@ def validate_and_process_animated_prompt_text_for_single_frame(scene, frame):
 
 def sd_generate(scene, prompts=None, use_last_sd_image=False):
     """Post to the API to generate a Stable Diffusion image and then process it"""
+
     props = scene.air_props
+    comfyui_props = scene.comfyui_props
 
     # get the prompt if we haven't been given one
     if not prompts:
         if props.use_animated_prompts:
-            prompt, negative_prompt = validate_and_process_animated_prompt_text_for_single_frame(scene, scene.frame_current)
+            print(Fore.LIGHTGREEN_EX + "USING ANIMATED PROMPTS" + Fore.RESET)
+            prompt, negative_prompt = validate_and_process_animated_prompt_text_for_single_frame(
+                scene, scene.frame_current)
             if not prompt:
                 return False
         else:
+            print(Fore.LIGHTGREEN_EX + "USING SINGLE PROMPT" + Fore.RESET)
             prompt = get_full_prompt(scene)
             negative_prompt = props.negative_prompt_text.strip()
     else:
+        print(Fore.LIGHTGREEN_EX + "USING PROMPTS" + Fore.RESET)
         prompt = prompts["prompt"]
         negative_prompt = prompts["negative_prompt"]
 
     # validate the parameters we will send
     if not validate_params(scene, prompt):
+        print(Fore.RED + "COULD NOT VALIDATE PARAMS" + Fore.RESET)
         return False
 
     # generate a new seed, if we want a random one
     generate_new_random_seed(scene)
 
     # prepare the output filenames
-    before_output_filename_prefix = utils.get_image_filename(scene, prompt, negative_prompt, "-1-before")
-    after_output_filename_prefix = utils.get_image_filename(scene, prompt, negative_prompt, "-2-after")
+    before_output_filename_prefix = utils.get_image_filename(
+        scene, prompt, negative_prompt, "-1-before")
+
+    after_output_filename_prefix = utils.get_image_filename(
+        scene, prompt, negative_prompt, "-2-after")
+
     animation_output_filename_prefix = "ai-render-"
 
     # if we want to use the last SD image, try loading it now
@@ -368,8 +415,11 @@ def sd_generate(scene, prompts=None, use_last_sd_image=False):
 
         # save the rendered image and then read it back in
         temp_input_file = save_render_to_file(scene, before_output_filename_prefix)
+
         if not temp_input_file:
+            print(Fore.RED + "Couldn't save the rendered image to a temp file" + Fore.RESET)
             return False
+
         img_file = open(temp_input_file, 'rb')
 
         # autosave the before image, if we want that, and we're not rendering an animation
@@ -379,27 +429,43 @@ def sd_generate(scene, prompts=None, use_last_sd_image=False):
             and not props.is_rendering_animation
             and not props.is_rendering_animation_manually
         ):
+            print(Fore.YELLOW + "Autosaving before image")
             save_before_image(scene, before_output_filename_prefix)
 
     # prepare data for the API request
     params = {
         "prompt": prompt,
         "negative_prompt": negative_prompt,
+        "seed": props.seed,
+        "sampler": props.sampler,
+        "steps": props.steps,
+        "cfg_scale": props.cfg_scale,
         "width": utils.get_output_width(scene),
         "height": utils.get_output_height(scene),
         "image_similarity": props.image_similarity,
-        "seed": props.seed,
-        "cfg_scale": props.cfg_scale,
-        "steps": props.steps,
-        "sampler": props.sampler,
     }
 
     # get the backend we're using
     sd_backend = utils.get_active_backend()
+    sd_backend_name = utils.sd_backend()
 
     # send to whichever API we're using
     start_time = time.time()
-    generated_image_file = sd_backend.generate(params, img_file, after_output_filename_prefix, props)
+
+    if sd_backend_name == "comfyui":
+        print(Fore.YELLOW + "Using ComfyUI API" + Fore.RESET)
+        generated_image_file = comfyui_api.generate(
+            params,
+            img_file,
+            after_output_filename_prefix,
+            props,
+            comfyui_props)
+    else:
+        generated_image_file = sd_backend.generate(
+            params,
+            img_file,
+            after_output_filename_prefix,
+            props)
 
     # if we didn't get a successful image, stop here (an error will have been handled by the api function)
     if not generated_image_file:
@@ -407,7 +473,10 @@ def sd_generate(scene, prompts=None, use_last_sd_image=False):
 
     # autosave the after image, if we should
     if utils.should_autosave_after_image(props):
-        generated_image_file = save_after_image(scene, after_output_filename_prefix, generated_image_file)
+
+        print(Fore.YELLOW + "Autosaving after image")
+        generated_image_file = save_after_image(
+            scene, after_output_filename_prefix, generated_image_file)
 
         if not generated_image_file:
             return False
@@ -420,7 +489,8 @@ def sd_generate(scene, prompts=None, use_last_sd_image=False):
         after_output_filename_prefix = after_output_filename_prefix + "-upscaled"
 
         opened_image_file = open(generated_image_file, 'rb')
-        generated_image_file = sd_backend.upscale(opened_image_file, after_output_filename_prefix, props)
+        generated_image_file = sd_backend.upscale(
+            opened_image_file, after_output_filename_prefix, props)
 
         # if the upscale failed, stop here (an error will have been handled by the api function)
         if not generated_image_file:
@@ -428,14 +498,18 @@ def sd_generate(scene, prompts=None, use_last_sd_image=False):
 
         # autosave the upscaled after image, if we should
         if utils.should_autosave_after_image(props):
-            generated_image_file = save_after_image(scene, after_output_filename_prefix, generated_image_file)
+            generated_image_file = save_after_image(
+                scene, after_output_filename_prefix, generated_image_file)
 
             if not generated_image_file:
                 return False
 
     # if we're rendering an animation manually, save the image to the animation output path
     if props.is_rendering_animation_manually:
-        generated_image_file = save_animation_image(scene, animation_output_filename_prefix, generated_image_file)
+
+        print(Fore.YELLOW + "Rendering animation manually")
+        generated_image_file = save_animation_image(
+            scene, animation_output_filename_prefix, generated_image_file)
 
         if not generated_image_file:
             return False
@@ -472,7 +546,8 @@ def sd_generate(scene, prompts=None, use_last_sd_image=False):
         additional_params["controlnet_enabled"] = "no"
         additional_params["controlnet_model"] = "none"
         additional_params["controlnet_module"] = "none"
-    event_params = analytics.prepare_event('generate_image', generation_params=params, additional_params=additional_params)
+    event_params = analytics.prepare_event(
+        'generate_image', generation_params=params, additional_params=additional_params)
     analytics.track_event('generate_image', event_params=event_params)
 
     # return success
@@ -493,14 +568,16 @@ def sd_upscale(scene):
 
     # create a filename for the after image, based on the before image
     # get the filename from the full path and filename
-    after_output_filename_prefix = utils.get_filename_from_path(props.last_generated_image_filename, False) + "-upscaled"
+    after_output_filename_prefix = utils.get_filename_from_path(
+        props.last_generated_image_filename, False) + "-upscaled"
 
     # get the backend we're using
     sd_backend = utils.get_active_backend()
 
     # send to whichever API we're using
     start_time = time.time()
-    generated_image_file = sd_backend.upscale(img_file, after_output_filename_prefix, props)
+    generated_image_file = sd_backend.upscale(
+        img_file, after_output_filename_prefix, props)
 
     # if we didn't get a successful image, stop here (an error will have been handled by the api function)
     if not generated_image_file:
@@ -508,7 +585,8 @@ def sd_upscale(scene):
 
     # autosave the image, if we should
     if utils.should_autosave_after_image(props):
-        generated_image_file = save_after_image(scene, after_output_filename_prefix, generated_image_file)
+        generated_image_file = save_after_image(
+            scene, after_output_filename_prefix, generated_image_file)
 
         if not generated_image_file:
             return False
@@ -532,7 +610,8 @@ def sd_upscale(scene):
         "upscaler_model": props.upscaler_model,
         "duration": round(time.time() - start_time),
     }
-    event_params = analytics.prepare_event('upscale_image', additional_params=additional_params)
+    event_params = analytics.prepare_event(
+        'upscale_image', additional_params=additional_params)
     analytics.track_event('upscale_image', event_params=event_params)
 
     # return success
@@ -546,13 +625,13 @@ def sd_inpaint(scene):
 
     # get the prompt if we haven't been given one
     if props.use_animated_prompts:
-        prompt, negative_prompt = validate_and_process_animated_prompt_text_for_single_frame(scene, scene.frame_current)
+        prompt, negative_prompt = validate_and_process_animated_prompt_text_for_single_frame(
+            scene, scene.frame_current)
         if not prompt:
             return False
     else:
         prompt = get_full_prompt(scene)
         negative_prompt = props.negative_prompt_text.strip()
-
 
     # validate the parameters we will send
     if not validate_params(scene, prompt):
@@ -562,8 +641,10 @@ def sd_inpaint(scene):
     generate_new_random_seed(scene)
 
     # prepare the output filenames
-    before_output_filename_prefix = utils.get_image_filename(scene, prompt, negative_prompt, "-1-before")
-    after_output_filename_prefix = utils.get_image_filename(scene, prompt, negative_prompt, "-2-inpainted")
+    before_output_filename_prefix = utils.get_image_filename(
+        scene, prompt, negative_prompt, "-1-before")
+    after_output_filename_prefix = utils.get_image_filename(
+        scene, prompt, negative_prompt, "-2-inpainted")
     animation_output_filename_prefix = "ai-render-"
 
     # if we want to use the last SD image, try loading it now
@@ -591,8 +672,8 @@ def sd_inpaint(scene):
         "seed": props.seed,
         "cfg_scale": props.cfg_scale,
         "steps": props.steps,
-        "is_full_res" : props.inpaint_full_res,
-        "full_res_padding" : props.inpaint_padding,
+        "is_full_res": props.inpaint_full_res,
+        "full_res_padding": props.inpaint_padding,
     }
 
     # get the backend we're using
@@ -600,7 +681,8 @@ def sd_inpaint(scene):
 
     # send to whichever API we're using
     start_time = time.time()
-    generated_image_file = sd_backend.inpaint(params, img_file, mask_file, after_output_filename_prefix, props)
+    generated_image_file = sd_backend.inpaint(
+        params, img_file, mask_file, after_output_filename_prefix, props)
 
     # if we didn't get a successful image, stop here (an error will have been handled by the api function)
     if not generated_image_file:
@@ -608,7 +690,8 @@ def sd_inpaint(scene):
 
     # autosave the after image, if we should
     if utils.should_autosave_after_image(props):
-        generated_image_file = save_after_image(scene, after_output_filename_prefix, generated_image_file)
+        generated_image_file = save_after_image(
+            scene, after_output_filename_prefix, generated_image_file)
 
         if not generated_image_file:
             return False
@@ -618,7 +701,8 @@ def sd_inpaint(scene):
 
     # if we're rendering an animation manually, save the image to the animation output path
     if props.is_rendering_animation_manually:
-        generated_image_file = save_animation_image(scene, animation_output_filename_prefix, generated_image_file)
+        generated_image_file = save_animation_image(
+            scene, animation_output_filename_prefix, generated_image_file)
 
         if not generated_image_file:
             return False
@@ -646,13 +730,13 @@ def sd_outpaint(scene):
 
     # get the prompt if we haven't been given one
     if props.use_animated_prompts:
-        prompt, negative_prompt = validate_and_process_animated_prompt_text_for_single_frame(scene, scene.frame_current)
+        prompt, negative_prompt = validate_and_process_animated_prompt_text_for_single_frame(
+            scene, scene.frame_current)
         if not prompt:
             return False
     else:
         prompt = get_full_prompt(scene)
         negative_prompt = props.negative_prompt_text.strip()
-
 
     # validate the parameters we will send
     if not validate_params(scene, prompt):
@@ -662,8 +746,10 @@ def sd_outpaint(scene):
     generate_new_random_seed(scene)
 
     # prepare the output filenames
-    before_output_filename_prefix = utils.get_image_filename(scene, prompt, negative_prompt, "-1-before")
-    after_output_filename_prefix = utils.get_image_filename(scene, prompt, negative_prompt, "-2-outpainted")
+    before_output_filename_prefix = utils.get_image_filename(
+        scene, prompt, negative_prompt, "-1-before")
+    after_output_filename_prefix = utils.get_image_filename(
+        scene, prompt, negative_prompt, "-2-outpainted")
     animation_output_filename_prefix = "ai-render-"
 
     # if we want to use the last SD image, try loading it now
@@ -673,7 +759,6 @@ def sd_outpaint(scene):
         img_file = open(props.last_generated_image_filename, 'rb')
     except:
         return handle_error("Couldn't load the last Stable Diffusion image. It's probably been deleted or moved. You'll need to restore it or render a new image.", "load_last_generated_image")
-
 
     # prepare data for the API request
     params = {
@@ -696,7 +781,8 @@ def sd_outpaint(scene):
 
     # send to whichever API we're using
     start_time = time.time()
-    generated_image_file = sd_backend.outpaint(params, img_file, after_output_filename_prefix, props)
+    generated_image_file = sd_backend.outpaint(
+        params, img_file, after_output_filename_prefix, props)
 
     # if we didn't get a successful image, stop here (an error will have been handled by the api function)
     if not generated_image_file:
@@ -704,7 +790,8 @@ def sd_outpaint(scene):
 
     # autosave the after image, if we should
     if utils.should_autosave_after_image(props):
-        generated_image_file = save_after_image(scene, after_output_filename_prefix, generated_image_file)
+        generated_image_file = save_after_image(
+            scene, after_output_filename_prefix, generated_image_file)
 
         if not generated_image_file:
             return False
@@ -714,7 +801,8 @@ def sd_outpaint(scene):
 
     # if we're rendering an animation manually, save the image to the animation output path
     if props.is_rendering_animation_manually:
-        generated_image_file = save_animation_image(scene, animation_output_filename_prefix, generated_image_file)
+        generated_image_file = save_animation_image(
+            scene, animation_output_filename_prefix, generated_image_file)
 
         if not generated_image_file:
             return False
@@ -792,7 +880,8 @@ class AIR_OT_show_other_dimension_options(bpy.types.Operator):
 
     def draw(self, context):
         layout = self.layout
-        utils.label_multiline(layout, text=f"Choose dimensions that Stable Diffusion can work with. (If you're unsure, try 1024x1024). Dimensions can be any multiple of {utils.valid_dimension_step_size} in the range {utils.min_dimension_size}-{utils.max_dimension_size}.", width=self.panel_width)
+        utils.label_multiline(
+            layout, text=f"Choose dimensions that Stable Diffusion can work with. (If you're unsure, try 1024x1024). Dimensions can be any multiple of {utils.valid_dimension_step_size} in the range {utils.min_dimension_size}-{utils.max_dimension_size}.", width=self.panel_width)
 
         layout.separator()
 
@@ -838,7 +927,8 @@ class AIR_OT_show_dimension_options_for_sdxl_1024(bpy.types.Operator):
 
     def draw(self, context):
         layout = self.layout
-        utils.label_multiline(layout, text=f"Choose dimensions that Stable Diffusion can work with. SDXL images must be one of the these image sizes:", width=self.panel_width)
+        utils.label_multiline(
+            layout, text=f"Choose dimensions that Stable Diffusion can work with. SDXL images must be one of the these image sizes:", width=self.panel_width)
 
         layout.separator()
 
@@ -854,7 +944,8 @@ class AIR_OT_show_dimension_options_for_sdxl_1024(bpy.types.Operator):
         return context.window_manager.invoke_props_dialog(self, width=self.panel_width)
 
     def execute(self, context):
-        set_image_dimensions(context, int(self.dimensions.split('x')[0]), int(self.dimensions.split('x')[1]))
+        set_image_dimensions(context, int(self.dimensions.split('x')[
+                             0]), int(self.dimensions.split('x')[1]))
         return {'FINISHED'}
 
 
@@ -876,7 +967,8 @@ class AIR_OT_edit_animated_prompts(bpy.types.Operator):
 
     def execute(self, context):
         ensure_animated_prompts_text()
-        task_queue.add(functools.partial(ensure_animated_prompts_text_editor, context))
+        task_queue.add(functools.partial(
+            ensure_animated_prompts_text_editor, context))
 
         return {'FINISHED'}
 
@@ -906,7 +998,8 @@ class AIR_OT_generate_new_image_from_last_sd_image(bpy.types.Operator):
         do_pre_api_setup(context.scene)
 
         # post to the api (on a different thread, outside the operator)
-        task_queue.add(functools.partial(sd_generate, context.scene, None, True))
+        task_queue.add(functools.partial(
+            sd_generate, context.scene, None, True))
 
         return {'FINISHED'}
 
@@ -956,7 +1049,8 @@ class AIR_OT_render_animation(bpy.types.Operator):
 
         # validate and process the animated prompts, if we are using them
         if context.scene.air_props.use_animated_prompts:
-            self._animated_prompts, self._animated_negative_prompts = validate_and_process_animated_prompt_text(context.scene)
+            self._animated_prompts, self._animated_negative_prompts = validate_and_process_animated_prompt_text(
+                context.scene)
             if not self._animated_prompts:
                 return False
         else:
@@ -981,7 +1075,8 @@ class AIR_OT_render_animation(bpy.types.Operator):
         context.scene.air_progress = 0
 
         self._ticks_since_last_render = 0
-        self._timer = context.window_manager.event_timer_add(0.1, window=context.window)
+        self._timer = context.window_manager.event_timer_add(
+            0.1, window=context.window)
         context.window_manager.modal_handler_add(self)
 
     def _end_render(self, context, status_message):
@@ -1034,13 +1129,16 @@ class AIR_OT_render_animation(bpy.types.Operator):
 
             # render the current frame
             if context.scene.air_props.use_animated_prompts:
-                prompt = get_prompt_at_frame(self._animated_prompts, self._current_frame)
-                negative_prompt = get_prompt_at_frame(self._animated_negative_prompts, self._current_frame)
+                prompt = get_prompt_at_frame(
+                    self._animated_prompts, self._current_frame)
+                negative_prompt = get_prompt_at_frame(
+                    self._animated_negative_prompts, self._current_frame)
             else:
                 prompt = self._static_prompt
                 negative_prompt = self._negative_static_prompt
 
-            was_successful = render_frame(context, self._current_frame, {"prompt": prompt, "negative_prompt": negative_prompt})
+            was_successful = render_frame(context, self._current_frame, {
+                                          "prompt": prompt, "negative_prompt": negative_prompt})
 
             # if the render was successful, advance to the next frame.
             # otherwise, quit here with an error.
@@ -1091,15 +1189,18 @@ class AIR_OT_setup_instructions_popup(bpy.types.Operator):
     )
 
     def draw(self, context):
-        utils.label_multiline(self.layout, text=self.message, icon="HELP", width=self.width-3, alignment="CENTER", max_lines=15)
+        utils.label_multiline(self.layout, text=self.message, icon="HELP",
+                              width=self.width-3, alignment="CENTER", max_lines=15)
         row = self.layout.row()
-        row.operator("wm.url_open", text="Sign Up For DreamStudio (free)", icon="URL").url = config.DREAM_STUDIO_URL
+        row.operator("wm.url_open", text="Sign Up For DreamStudio (free)",
+                     icon="URL").url = config.DREAM_STUDIO_URL
         row = self.layout.row()
-        row.operator("wm.url_open", text="Get a Stable Horde API key (free / not required)", icon="URL").url = config.STABLE_HORDE_URL
+        row.operator("wm.url_open", text="Get a Stable Horde API key (free / not required)",
+                     icon="URL").url = config.STABLE_HORDE_URL
 
     def invoke(self, context, event):
         self.message = ("This add-on uses a service called DreamStudio. You will need to create a DreamStudio account, and get your own API KEY from them. You will get free credits, which will be used when you render. After using your free credits, you will need to sign up for a membership. DreamStudio is unaffiliated with this Blender add-on. It's just a great and easy to use option!\n" +
-            "Alternatively, use the 'Stable Horde' crowdsourced distributed GPU cluster. It's free with unlimited generations and doesn't require registration, but it can be very slow when demand is high. Create an API KEY for faster rendering, and consider running a worker for even more speed and to help others with their renders!")
+                        "Alternatively, use the 'Stable Horde' crowdsourced distributed GPU cluster. It's free with unlimited generations and doesn't require registration, but it can be very slow when demand is high. Create an API KEY for faster rendering, and consider running a worker for even more speed and to help others with their renders!")
         return context.window_manager.invoke_props_dialog(self, width=self.width)
 
     def execute(self, context):
@@ -1125,7 +1226,8 @@ class AIR_OT_show_error_popup(bpy.types.Operator):
     )
 
     def draw(self, context):
-        utils.label_multiline(self.layout, text=self.error_message, icon="ERROR", width=self.width)
+        utils.label_multiline(
+            self.layout, text=self.error_message, icon="ERROR", width=self.width)
 
     def invoke(self, context, event):
         # store the error key and message in the main AIR props
@@ -1182,7 +1284,8 @@ class AIR_OT_automatic1111_load_controlnet_models_and_modules(bpy.types.Operator
 
     def execute(self, context):
         # load the models and modules from the Automatic1111 API
-        automatic1111_api.load_controlnet_models(context) and automatic1111_api.load_controlnet_modules(context)
+        automatic1111_api.load_controlnet_models(
+            context) and automatic1111_api.load_controlnet_modules(context)
 
         # set the default values for the ControlNet model and module
         automatic1111_api.choose_controlnet_defaults(context)
@@ -1219,6 +1322,45 @@ class AIR_OT_outpaint_from_last_sd_image(bpy.types.Operator):
         return {'FINISHED'}
 
 
+class AIR_OT_SetExportPathAsSceneName(bpy.types.Operator):
+    """ Set the output path to be the same as the blender project name"""
+
+    bl_idname = "ai_render.set_path_as_scene_name"
+    bl_label = "Set Path As Scene Name"
+
+    def execute(self, context):
+        relative_path = "//"
+        blender_file_name = bpy.path.basename(bpy.data.filepath)[0:-6]
+        full_path = relative_path + blender_file_name
+
+        context.scene.air_props.animation_output_path = full_path
+
+        abs_path = bpy.path.abspath(full_path)
+        print(abs_path)
+
+        # Create the folder if it doesn't exist
+        if not os.path.exists(abs_path):
+            print(f"Creating folder {abs_path}")
+            os.makedirs(abs_path)
+
+        return {'FINISHED'}
+
+class AIR_OT_OpenRenderFolder(bpy.types.Operator):
+    """ Open the animation_output_path folder in the file browser"""
+
+    bl_idname = "ai_render.open_render_folder"
+    bl_label = "Open Render Folder"
+
+    def execute(self, context):
+        abs_path = bpy.path.abspath(context.scene.air_props.animation_output_path)
+        print(abs_path)
+
+        # Open the folder in the file browser
+        if os.path.exists(abs_path):
+            bpy.ops.wm.path_open(filepath=abs_path)
+
+        return {'FINISHED'}
+
 classes = [
     AIR_OT_enable,
     AIR_OT_disable,
@@ -1239,6 +1381,8 @@ classes = [
     AIR_OT_automatic1111_load_controlnet_models_and_modules,
     AIR_OT_inpaint_from_last_sd_image,
     AIR_OT_outpaint_from_last_sd_image,
+    AIR_OT_SetExportPathAsSceneName,
+    AIR_OT_OpenRenderFolder
 ]
 
 
