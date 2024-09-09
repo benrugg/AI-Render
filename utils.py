@@ -520,6 +520,7 @@ def get_active_backend():
 
 
 def is_installation_valid():
+    print(f"Is {__package__} == {config.package_name} ?")
     return __package__ == config.package_name
 
 
