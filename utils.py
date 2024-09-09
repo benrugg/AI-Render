@@ -253,7 +253,6 @@ def get_stable_horde_api_key(context=None):
 
 def sd_backend(context=None):
     active_sd_backend = get_addon_preferences(context).sd_backend
-    print(Fore.GREEN + "SD BACKEND: " + Fore.RESET + active_sd_backend)
     return active_sd_backend
 
 

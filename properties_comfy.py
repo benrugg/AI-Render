@@ -8,7 +8,7 @@ from pprint import pprint
 from . import Fore
 
 
-LOG_PROP_CREATION = False
+LOG_PROP_CREATION = True
 
 
 def create_props_from_workflow(self, context):
