@@ -6,7 +6,7 @@ import json
 import pprint
 import platform
 from time import sleep
-from colorama import Fore
+from .. import Fore
 
 from .. import (
     config,

@@ -3,7 +3,9 @@ from . import utils
 from .sd_backends import comfyui_api
 
 from pprint import pprint
-from colorama import Fore
+
+# Colorama Placeholder
+from . import Fore
 
 
 LOG_PROP_CREATION = False

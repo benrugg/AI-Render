@@ -9,7 +9,8 @@ from .ui import ui_preset_styles
 from .sd_backends import automatic1111_api
 from .sd_backends.comfyui_api import ensure_compositor_nodes
 
-from colorama import Fore
+# Colorama Placeholder
+from . import Fore
 
 
 def ensure_upscaler_model(context):

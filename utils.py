@@ -34,7 +34,8 @@ from .sd_backends import (
     shark_api,
 )
 
-from colorama import Fore, Style
+# Colorama Placeholder
+from . import Fore
 
 min_dimension_size = 128
 max_dimension_size = 2048
@@ -252,7 +253,7 @@ def get_stable_horde_api_key(context=None):
 
 def sd_backend(context=None):
     active_sd_backend = get_addon_preferences(context).sd_backend
-    # print(Fore.GREEN + "SD BACKEND: " + Style.RESET_ALL + active_sd_backend)
+    print(Fore.GREEN + "SD BACKEND: " + Fore.RESET + active_sd_backend)
     return active_sd_backend
 
 
@@ -520,7 +521,7 @@ def get_active_backend():
 
 
 def is_installation_valid():
-    print(f"Is {__package__} == {config.package_name} ?")
+    # print(f"Is {__package__} == {config.package_name} ?")
     return __package__ == config.package_name
 
 
