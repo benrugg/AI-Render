@@ -15,8 +15,13 @@
 > ![ComfyUI](https://i.imgur.com/xCy2kYj_d.webp?maxwidth=1520&fidelity=grand)  
 >
 > to this:  
-> ![Blender](https://i.imgur.com/Aw1uff0_d.webp?maxwidth=1520&fidelity=grand)  
->   
+> ![Blender](https://i.imgur.com/Aw1uff0_d.webp?maxwidth=1520&fidelity=grand)
+>
+> 
+
+https://github.com/user-attachments/assets/69c2b9b0-73c5-43d2-b53c-a61218c4b731
+
+
 
 
 Render with Stable Diffusion in Blender. This add-on renders an AI generated image based on a text prompt and your scene.
