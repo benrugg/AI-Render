@@ -19,8 +19,8 @@ from . import (
 from .sd_backends import automatic1111_api
 from .sd_backends import comfyui_api
 
-from colorama import Fore
-
+# Colorama Placeholder
+from . import Fore
 
 example_dimensions_tuple_list = utils.generate_example_dimensions_tuple_list()
 sdxl_1024_dimensions_tuple_list = utils.generate_sdxl_1024_dimensions_tuple_list()

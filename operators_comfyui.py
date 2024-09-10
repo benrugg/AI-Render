@@ -2,7 +2,9 @@ import os
 import platform
 import bpy
 import pprint
-from colorama import Fore
+
+# Colorama Placeholder
+from . import Fore
 
 from . import utils
 from .properties_comfy import create_props_from_workflow
