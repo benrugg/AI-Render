@@ -34,217 +34,6 @@
       ]
     },
     {
-      "id": 29,
-      "type": "LoadImage",
-      "pos": [
-        -1098.638137756347,
-        -621.5761219055177
-      ],
-      "size": {
-        "0": 320,
-        "1": 314.0000305175781
-      },
-      "flags": {},
-      "order": 1,
-      "mode": 4,
-      "outputs": [
-        {
-          "name": "IMAGE",
-          "type": "IMAGE",
-          "links": [
-            53
-          ],
-          "shape": 3,
-          "slot_index": 0
-        },
-        {
-          "name": "MASK",
-          "type": "MASK",
-          "links": null,
-          "shape": 3
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "LoadImage"
-      },
-      "widgets_values": [
-        "image (6).png",
-        "image"
-      ]
-    },
-    {
-      "id": 32,
-      "type": "CLIPVisionLoader",
-      "pos": [
-        -1098.638137756347,
-        -741.5761219055177
-      ],
-      "size": {
-        "0": 438.8739013671875,
-        "1": 58
-      },
-      "flags": {},
-      "order": 2,
-      "mode": 4,
-      "outputs": [
-        {
-          "name": "CLIP_VISION",
-          "type": "CLIP_VISION",
-          "links": [
-            52
-          ],
-          "shape": 3
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "CLIPVisionLoader"
-      },
-      "widgets_values": [
-        "CLIP-ViT-H-14-laion2B-s32B-b79K.safetensors"
-      ]
-    },
-    {
-      "id": 33,
-      "type": "PrepImageForClipVision",
-      "pos": [
-        -758.6381377563476,
-        -621.5761219055177
-      ],
-      "size": {
-        "0": 315,
-        "1": 106
-      },
-      "flags": {},
-      "order": 13,
-      "mode": 4,
-      "inputs": [
-        {
-          "name": "image",
-          "type": "IMAGE",
-          "link": 53
-        }
-      ],
-      "outputs": [
-        {
-          "name": "IMAGE",
-          "type": "IMAGE",
-          "links": [
-            51
-          ],
-          "shape": 3,
-          "slot_index": 0
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "PrepImageForClipVision"
-      },
-      "widgets_values": [
-        "LANCZOS",
-        "top",
-        0.15
-      ]
-    },
-    {
-      "id": 30,
-      "type": "IPAdapterAdvanced",
-      "pos": [
-        -398.6381377563471,
-        -861.5761219055177
-      ],
-      "size": {
-        "0": 315,
-        "1": 278
-      },
-      "flags": {},
-      "order": 18,
-      "mode": 4,
-      "inputs": [
-        {
-          "name": "model",
-          "type": "MODEL",
-          "link": null
-        },
-        {
-          "name": "ipadapter",
-          "type": "IPADAPTER",
-          "link": 50,
-          "slot_index": 1
-        },
-        {
-          "name": "image",
-          "type": "IMAGE",
-          "link": 51
-        },
-        {
-          "name": "image_negative",
-          "type": "IMAGE",
-          "link": null
-        },
-        {
-          "name": "attn_mask",
-          "type": "MASK",
-          "link": null
-        },
-        {
-          "name": "clip_vision",
-          "type": "CLIP_VISION",
-          "link": 52,
-          "slot_index": 5
-        }
-      ],
-      "outputs": [
-        {
-          "name": "MODEL",
-          "type": "MODEL",
-          "links": [],
-          "shape": 3,
-          "slot_index": 0
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "IPAdapterAdvanced"
-      },
-      "widgets_values": [
-        0,
-        "linear",
-        "concat",
-        0,
-        1,
-        "V only"
-      ]
-    },
-    {
-      "id": 31,
-      "type": "IPAdapterModelLoader",
-      "pos": [
-        -1094.8195195922845,
-        -849.6668000061037
-      ],
-      "size": {
-        "0": 440,
-        "1": 60
-      },
-      "flags": {},
-      "order": 3,
-      "mode": 4,
-      "outputs": [
-        {
-          "name": "IPADAPTER",
-          "type": "IPADAPTER",
-          "links": [
-            50
-          ],
-          "shape": 3
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "IPAdapterModelLoader"
-      },
-      "widgets_values": [
-        "ip-adapter-plus_sd15.safetensors"
-      ]
-    },
-    {
       "id": 10,
       "type": "VAEEncode",
       "pos": [
@@ -256,7 +45,7 @@
         "1": 60
       },
       "flags": {},
-      "order": 15,
+      "order": 11,
       "mode": 0,
       "inputs": [
         {
@@ -296,7 +85,7 @@
         "1": 60
       },
       "flags": {},
-      "order": 4,
+      "order": 1,
       "mode": 0,
       "outputs": [
         {
@@ -327,7 +116,7 @@
         "1": 280
       },
       "flags": {},
-      "order": 20,
+      "order": 15,
       "mode": 0,
       "inputs": [
         {
@@ -352,7 +141,7 @@
         "1": 60
       },
       "flags": {},
-      "order": 5,
+      "order": 2,
       "mode": 0,
       "outputs": [
         {
@@ -384,7 +173,7 @@
         "1": 200
       },
       "flags": {},
-      "order": 25,
+      "order": 20,
       "mode": 0,
       "inputs": [
         {
@@ -426,7 +215,7 @@
         "1": 126
       },
       "flags": {},
-      "order": 22,
+      "order": 17,
       "mode": 0,
       "inputs": [
         {
@@ -482,7 +271,7 @@
         "1": 126
       },
       "flags": {},
-      "order": 19,
+      "order": 14,
       "mode": 0,
       "inputs": [
         {
@@ -537,7 +326,7 @@
         "1": 82
       },
       "flags": {},
-      "order": 16,
+      "order": 12,
       "mode": 0,
       "inputs": [
         {
@@ -578,7 +367,7 @@
         "1": 200
       },
       "flags": {},
-      "order": 24,
+      "order": 19,
       "mode": 0,
       "inputs": [
         {
@@ -620,7 +409,7 @@
         "1": 166
       },
       "flags": {},
-      "order": 26,
+      "order": 21,
       "mode": 0,
       "inputs": [
         {
@@ -687,7 +476,7 @@
         "1": 166
       },
       "flags": {},
-      "order": 27,
+      "order": 22,
       "mode": 0,
       "inputs": [
         {
@@ -754,7 +543,7 @@
         "1": 166
       },
       "flags": {},
-      "order": 28,
+      "order": 23,
       "mode": 0,
       "inputs": [
         {
@@ -821,7 +610,7 @@
         "1": 82
       },
       "flags": {},
-      "order": 23,
+      "order": 18,
       "mode": 0,
       "inputs": [
         {
@@ -861,7 +650,7 @@
         "1": 122.61135864257812
       },
       "flags": {},
-      "order": 6,
+      "order": 3,
       "mode": 0,
       "outputs": [
         {
@@ -908,7 +697,7 @@
         26
       ],
       "flags": {},
-      "order": 17,
+      "order": 13,
       "mode": 0,
       "inputs": [
         {
@@ -944,7 +733,7 @@
         "1": 60
       },
       "flags": {},
-      "order": 30,
+      "order": 25,
       "mode": 0,
       "inputs": [
         {
@@ -985,7 +774,7 @@
         "1": 262
       },
       "flags": {},
-      "order": 29,
+      "order": 24,
       "mode": 0,
       "inputs": [
         {
@@ -1047,7 +836,7 @@
         "1": 60
       },
       "flags": {},
-      "order": 7,
+      "order": 4,
       "mode": 0,
       "outputs": [
         {
@@ -1079,7 +868,7 @@
         "1": 60
       },
       "flags": {},
-      "order": 31,
+      "order": 26,
       "mode": 0,
       "inputs": [
         {
@@ -1121,7 +910,7 @@
         "1": 270
       },
       "flags": {},
-      "order": 36,
+      "order": 31,
       "mode": 0,
       "inputs": [
         {
@@ -1150,7 +939,7 @@
         "1": 58
       },
       "flags": {},
-      "order": 34,
+      "order": 29,
       "mode": 0,
       "inputs": [
         {
@@ -1190,7 +979,7 @@
         "1": 26
       },
       "flags": {},
-      "order": 21,
+      "order": 16,
       "mode": 0,
       "inputs": [
         {
@@ -1226,7 +1015,7 @@
         "1": 130
       },
       "flags": {},
-      "order": 33,
+      "order": 28,
       "mode": 0,
       "inputs": [
         {
@@ -1285,7 +1074,7 @@
         "1": 90
       },
       "flags": {},
-      "order": 32,
+      "order": 27,
       "mode": 0,
       "inputs": [
         {
@@ -1344,7 +1133,7 @@
         "1": 80
       },
       "flags": {},
-      "order": 35,
+      "order": 30,
       "mode": 0,
       "inputs": [
         {
@@ -1388,7 +1177,7 @@
         "1": 60
       },
       "flags": {},
-      "order": 8,
+      "order": 5,
       "mode": 0,
       "outputs": [
         {
@@ -1421,7 +1210,7 @@
         "1": 235.27618408203125
       },
       "flags": {},
-      "order": 9,
+      "order": 6,
       "mode": 0,
       "properties": {
         "text": ""
@@ -1444,7 +1233,7 @@
         "1": 314
       },
       "flags": {},
-      "order": 10,
+      "order": 7,
       "mode": 0,
       "outputs": [
         {
@@ -1490,7 +1279,7 @@
         "1": 314
       },
       "flags": {},
-      "order": 11,
+      "order": 8,
       "mode": 0,
       "outputs": [
         {
@@ -1531,7 +1320,7 @@
         "1": 314
       },
       "flags": {},
-      "order": 12,
+      "order": 9,
       "mode": 0,
       "outputs": [
         {
@@ -1573,7 +1362,7 @@
         "1": 58
       },
       "flags": {},
-      "order": 14,
+      "order": 10,
       "mode": 0,
       "inputs": [
         {
@@ -1737,38 +1526,6 @@
       26,
       1,
       "CLIP"
-    ],
-    [
-      50,
-      31,
-      0,
-      30,
-      1,
-      "IPADAPTER"
-    ],
-    [
-      51,
-      33,
-      0,
-      30,
-      2,
-      "IMAGE"
-    ],
-    [
-      52,
-      32,
-      0,
-      30,
-      5,
-      "CLIP_VISION"
-    ],
-    [
-      53,
-      29,
-      0,
-      33,
-      0,
-      "IMAGE"
     ],
     [
       56,
@@ -1971,21 +1728,16 @@
       "IMAGE"
     ]
   ],
-  "groups": [
-    {
-      "title": "Group",
-      "bounding": [
-        -1170,
-        -980,
-        1166,
-        750
-      ],
-      "color": "#3f789e",
-      "font_size": 24,
-      "locked": false
-    }
-  ],
+  "groups": [],
   "config": {},
-  "extra": {},
+  "extra": {
+    "ds": {
+      "scale": 0.7247295000000005,
+      "offset": {
+        "0": 233.0553865269726,
+        "1": 1161.9248692098226
+      }
+    }
+  },
   "version": 0.4
 }
