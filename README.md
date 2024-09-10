@@ -17,7 +17,7 @@ https://github.com/user-attachments/assets/69c2b9b0-73c5-43d2-b53c-a61218c4b731
 
 3. Open Blender 4.2.0 and go to Edit > Preferences > Add-ons > Add-ons settings dropdown > Install from Disk.
 
-
+https://github.com/user-attachments/assets/169055e8-06dc-4453-832c-39998ab02460
 
 ## ComfyUI Setup
 
