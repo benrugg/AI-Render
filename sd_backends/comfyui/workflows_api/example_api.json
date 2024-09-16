@@ -6,7 +6,7 @@
       "cfg": 7.5,
       "sampler_name": "euler_ancestral",
       "scheduler": "karras",
-      "denoise": 1,
+      "denoise": 0.9500000000000001,
       "model": [
         "37",
         0
@@ -40,7 +40,7 @@
   },
   "6": {
     "inputs": {
-      "text": "a beautiful (robotic:1) castle, vibrant, color, saturated, highly detailed, ultra HD, sharp photo, 8k, dark background, in focus",
+      "text": "a beautiful red cube",
       "clip": [
         "26",
         1
@@ -84,7 +84,7 @@
     "inputs": {
       "filename_prefix": "ComfyUI",
       "images": [
-        "55",
+        "75",
         0
       ]
     },
@@ -120,7 +120,7 @@
   },
   "12": {
     "inputs": {
-      "image": "Image0000.png",
+      "image": "Image0001.png",
       "upload": "image"
     },
     "class_type": "LoadImage",
@@ -130,7 +130,7 @@
   },
   "13": {
     "inputs": {
-      "strength": 0,
+      "strength": 0.8,
       "start_percent": 0,
       "end_percent": 0.7000000000000001,
       "positive": [
@@ -166,7 +166,7 @@
   },
   "15": {
     "inputs": {
-      "image": "Image0000 (1).png",
+      "image": "Image0001 (1).png",
       "upload": "image"
     },
     "class_type": "LoadImage",
@@ -176,7 +176,7 @@
   },
   "16": {
     "inputs": {
-      "strength": 0,
+      "strength": 0.8,
       "start_percent": 0,
       "end_percent": 0.7000000000000001,
       "positive": [
@@ -212,7 +212,7 @@
   },
   "18": {
     "inputs": {
-      "image": "Image0000 (2).png",
+      "image": "Image0001 (2).png",
       "upload": "image"
     },
     "class_type": "LoadImage",
@@ -325,7 +325,7 @@
   },
   "40": {
     "inputs": {
-      "strength": 0,
+      "strength": 0.8,
       "start_percent": 0,
       "end_percent": 0.7000000000000001,
       "positive": [
@@ -372,45 +372,6 @@
       "title": "CLIP Set Last Layer"
     }
   },
-  "55": {
-    "inputs": {
-      "method": "default",
-      "images": [
-        "35",
-        0
-      ],
-      "mask": [
-        "61",
-        0
-      ]
-    },
-    "class_type": "AlphaChanelAddByMask",
-    "_meta": {
-      "title": "AlphaChanelAddByMask"
-    }
-  },
-  "56": {
-    "inputs": {
-      "upscale_method": "lanczos",
-      "width": [
-        "57",
-        2
-      ],
-      "height": [
-        "57",
-        1
-      ],
-      "crop": "disabled",
-      "image": [
-        "59",
-        0
-      ]
-    },
-    "class_type": "ImageScale",
-    "_meta": {
-      "title": "Upscale Image"
-    }
-  },
   "57": {
     "inputs": {
       "value": [
@@ -423,29 +384,41 @@
       "title": "ImpactImageInfo"
     }
   },
-  "59": {
+  "69": {
     "inputs": {
+      "width": [
+        "57",
+        2
+      ],
+      "height": [
+        "57",
+        1
+      ],
+      "keep_proportions": false,
       "mask": [
         "12",
         1
       ]
     },
-    "class_type": "MaskToImage",
+    "class_type": "ResizeMask",
     "_meta": {
-      "title": "Convert Mask to Image"
+      "title": "Resize Mask"
     }
   },
-  "61": {
+  "75": {
     "inputs": {
-      "channel": "red",
       "image": [
-        "56",
+        "35",
+        0
+      ],
+      "alpha": [
+        "69",
         0
       ]
     },
-    "class_type": "ImageToMask",
+    "class_type": "JoinImageWithAlpha",
     "_meta": {
-      "title": "Convert Image to Mask"
+      "title": "Join Image with Alpha"
     }
   }
 }
