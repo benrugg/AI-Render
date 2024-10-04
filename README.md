@@ -1,120 +1,239 @@
-# ComfyUI Support
+# AI Render ComfyUI Support
 
-ComfyUI support is not included in the main branch of AI-Render, at this time.
+## Branch: comfyui-support
 
-ComfyUI support is 4.2.0 LTS only. Will not work with previous versions due to changes in Blender API regrading the Compositor Nodes.
+ComfyUI support for AI Render is not included in the main branch of the AI-Render repository, but there is a ComfyUI branch for it
 
-This is a work in progress, so expect bugs and missing features.
+> It works on **Blender 4.2.0 LTS** and above. This branch is a work in progress, so expect bugs and missing features. I used to create our latest Projection Mapping Show [Infinite Loop - AI Endless Exploration](https://www.blendingpixels.com/projects/medimex-2024), so the code has been written with the production time constraint and the need to operate as quickly as possible.
 
-## Installation
+## Installation of the Addon
+
+0. Install Blender 4.2.0 LTS (or later). Uninstall any previous version of AI Render Addon.
 
 1. Switch to the comfyui-support branch at:  
- [https://github.com/benrugg/AI-Render/tree/comfyui-support](https://github.com/benrugg/AI-Render/tree/comfyui-support)
+   [https://github.com/benrugg/AI-Render/tree/comfyui-support](https://github.com/benrugg/AI-Render/tree/comfyui-support)
 
-2. Download ZIP from github.
+2. Download ZIP from Github.  
+  [https://github.com/user-attachments/assets/69c2b9b0-73c5-43d2-b53c-a61218c4b731](https://github.com/user-attachments/assets/69c2b9b0-73c5-43d2-b53c-a61218c4b731)
 
-https://github.com/user-attachments/assets/69c2b9b0-73c5-43d2-b53c-a61218c4b731
+3. Open Blender 4.2.x and go to Edit > Preferences > Add-ons > Add-ons settings dropdown > Install from Disk.  
+  [https://github.com/user-attachments/assets/169055e8-06dc-4453-832c-39998ab02460](https://github.com/user-attachments/assets/169055e8-06dc-4453-832c-39998ab02460)
 
-3. Open Blender 4.2.0 and go to Edit > Preferences > Add-ons > Add-ons settings dropdown > Install from Disk.
+4. In the Addons preferences, unfold ```AI Render ComfyUI Support``` and check all the settings:
 
-https://github.com/user-attachments/assets/169055e8-06dc-4453-832c-39998ab02460
+![Addons Preferences](https://i.imgur.com/LSjbraU.png)
 
-## ComfyUI Setup
+You should already have ```ComfyUI Local``` selected as a backend. For typical ComfyUI installations, the default Server URL is the usual ```http://localhost:8188```.
 
-...coming soon...
+You only need to:
 
+- Set the ```ComfyUI Path``` to the path of your ComfyUI installation.
+- Check if the ```Workflow Path``` is correct (It should auto-fill with the Addon folder ```./sd_backends/comfyui/workflows_api/```)
 
-> **DISCLAIMER - WORK IN PROGRESS:**
-> 
-> In this fork, I'm attempting to add ComfyUI support to the [AI Render by Ben Rugg](https://github.com/benrugg/AI-Render) Blender Addon.  
-> Check Discord if interested in joining:
-> [Blending Pixels Discord](https://discord.gg/G3yfB87ScU)
-> 
-> Last Update on my [Patreon](https://www.patreon.com/RobeSantoro) (free)
->
-> This addon was used for the production of our latest Projection Mapping Show:  
-> [Infinite Loop - AI Endless Exploration](https://www.blendingpixels.com/projects/medimex-2024)
->
-> The core concept is simple: going from this:  
-> ![ComfyUI](https://i.imgur.com/xCy2kYj_d.webp?maxwidth=1520&fidelity=grand)  
->
-> to this:  
-> ![Blender](https://i.imgur.com/Aw1uff0_d.webp?maxwidth=1520&fidelity=grand)
->
-> 
+## Core concept
 
+The core concept is simple. The **"CG 2 AI"** idea is to bring all the 3d information, like the depth pass, the normal pass, the open-pose skeleton, etc., from Blender Compositor into ComfyUI and use the ControlNets to influence the AI generation, using the diffusion process like a render engine.
 
-# AI Render
+You need some ComfyUI and Blender skills to make the most of this implementation.
 
-Render with Stable Diffusion in Blender. This add-on renders an AI generated image based on a text prompt and your scene.
+## The ComfyUI Example Workflow
 
-Create incredible AI generated images with Stable Diffusion easily, without running any code on your own computer!
+If you are confident with ComfyUI, you can use the ```example.json``` file in the ```./sd_backends/comfyui/workflows_api/``` folder as a starting point to create your workflows.
 
+![ComfyUI](https://i.imgur.com/xCy2kYj_d.webp?maxwidth=1520&fidelity=grand)
 
-## Installation
+> Be sure to open the ```example.json``` file in the ```./sd_backends/comfyui/```.  
+> **DO NOT** open the ```example_api.json``` in the ```./sd_backends/comfyui/workflows_api/``` folder, which is used by the addon
 
-- Get AI Render on [Blender Market](https://blendermarket.com/products/ai-render) or [Gumroad](https://airender.gumroad.com/l/ai-render)
-- Open Blender, then go to Edit > Preferences > Add-ons > Install and then find the zip file
+To get the example work, you'll need the following custom nodes:
 
-(You can also download for free on the [releases page](https://github.com/benrugg/AI-Render/releases))
+- [ComfyUI-Impact-Pack](https://github.com/ltdrdata/ComfyUI-Impact-Pack.git)
+- [ComfyUI-KJNodes](https://github.com/kijai/ComfyUI-KJNodes.git)
+- [comfyui_controlnet_aux](https://github.com/Fannovel16/comfyui_controlnet_aux.git)
 
+Must have:
 
-## Demo
+- [ComfyUI-Manager](https://github.com/ltdrdata/ComfyUI-Manager.git)
+- [rgthree-comfy](https://github.com/rgthree/rgthree-comfy.git)
 
-[![Watch the demo video](https://user-images.githubusercontent.com/1221274/195998824-da0b052e-8606-4afb-a842-527539f672c0.jpg)](https://www.youtube.com/watch?v=PXBXix2WzX4)
+To make the example work, install all the models I'm using for the checkpoint and the controllers, or use your own and create your own workflow.
 
+After you create your workflow, you can save it in the ```./sd_backends/comfyui/workflows_api/``` folder with the DEV option enabled in ComfyUI.
 
-## Tutorial
+Then, you can use it in Blender. The Addon will look into the ```workflows_api/``` folder and list the items in the dropdown.
 
-[![Watch the tutorial video](https://user-images.githubusercontent.com/1221274/195998784-c4661eee-81d8-4a03-926e-340ef8da6d19.jpg)](https://www.youtube.com/watch?v=tmyln5bwnO8)
+## How to create a workflow that the Addon can use
 
+The node mapping works in 2 ways:
 
-## Platforms
+1. The ***PARAM_TO_WORKFLOW*** dictionary was the first approach I took. It maps the Blender parameter names to the ComfyUI nodes and tries to reuse the same Blender UI panel of the original AI Render Addon, integrating as best as it can into the original code structure.
 
-AI Render works on Windows, Mac and Linux. Blender 3.0.0+ is supported.
+1. The ***SUPPORTED NODES***  list accommodates the needs of ComfyUI and its complexity. It's an automatic mapping for a predefined set of ComfyUI nodes
 
+  > During the production, I needed to bring some other nodes from ComfyUI to Blender, so I created a new panel in the AI Render Addon to handle them.
 
-## Prompt Help / FAQ
+### 1. PARAM_TO_WORKFLOW
 
-See the wiki for [help with prompt engineering and ideas](https://github.com/benrugg/AI-Render/wiki/Prompt-Engineering), and for [Frequently Asked Questions](https://github.com/benrugg/AI-Render/wiki/FAQ).
+Some nodes must have the title (meta_title) of the node with the exact name so the Addon can identify them. They are mapped in the ```PARAM_TO_WORKFLOW``` dictionary.
 
+```json
+{
+    "prompt": {
+        "class_type": "CLIPTextEncode",
+        "input_key": "text",
+        "meta_title": "positive"
+    },
+    "negative_prompt": {
+        "class_type": "CLIPTextEncode",
+        "input_key": "text",
+        "meta_title": "negative"
+    },
+    "color_image": {
+        "class_type": "LoadImage",
+        "input_key": "image",
+        "meta_title": "color"
+    },
+    "depth_image": {
+        "class_type": "LoadImage",
+        "input_key": "image",
+        "meta_title": "depth"
+    },
+    "normal_image": {
+        "class_type": "LoadImage",
+        "input_key": "image",
+        "meta_title": "normal"
+    }
+}
+```
 
-## Local Installation of Stable Diffusion
+So, the ```positive``` and the ```negative``` prompts are CLIPTextEncode nodes, and are mapped to the corresponding parameter of the AI Render UI panel.
 
-AI Render supports running Stable Diffusion locally with the `Automatic1111 Stable Diffusion Web UI`. See the [local installation instructions](https://github.com/benrugg/AI-Render/wiki/Local-Installation).
+The ```color_image```, ```depth_image```, and ```normal_image``` are LoadImage nodes connected to the corresponding controlnet nodes.
 
+> The provided ```example.json``` serves as a template, allowing you to customize and adapt it to your specific needs. After creating your personal workflow, you can open it in the Blender interface and animate, tweak, and experiment with all the parameters of the supported nodes.
 
-## Animation
+![Blender](https://i.imgur.com/Aw1uff0_d.webp?maxwidth=1520&fidelity=grand)
 
-You can render animations with AI Render, with all of Blender's animation tools, as well the ability to animate Stable Diffusion settings and even prompt text!
+### 2. The ***SUPPORTED NODES***
 
-You can also use animation for **batch processing** - for example, to try many different settings or prompts.
+There is also a set of nodes that are automatically supported. By adding them to your ComfyUI workflow, the Addon will recognize them and make them available in the ```ComfyUI``` Blender UI panel.
 
-See the [Animation Instructions and Tips](https://github.com/benrugg/AI-Render/wiki/Animation).
+At the moment, the supported nodes are:
 
+- CheckpointLoaderSimple
+- KSampler*
+- LoraLoader
+- ControlNetApplyAdvanced
+- ACN_AdvancedControlNetApply
+- SelfAttentionGuidance
+- UpscaleModelLoader
+- CLIPSetLastLayer
 
-## Bug Reporting and Feature Requests
+Feel free to ask for specific nodes to be added. It's very quick to add them.
 
-Help make the add-on better by reporting any bugs (big or small) or requesting new features:
+> *The Ksampler with the title `main_sampler` will also be mapped to the original Sampler panel of the AI Render Addon. I suggest having a unique `main_sampler` at the end of the chain and all the other samplers before so they can be tweaked from the new ComfyUI panel.
 
-- [Report a Bug](https://github.com/benrugg/AI-Render/issues/new?assignees=&labels=&template=bug-report.yaml)
-- [Request a Feature](https://github.com/benrugg/AI-Render/issues/new?assignees=&labels=&template=feature-request.yaml)
+## Installation of ComfyUI
 
+### 1. Install [Python](https://www.python.org/ftp/python/3.11.9/)
 
-## Share images and feedback!
+### 2. Install [Miniconda](https://docs.anaconda.com/miniconda/#quick-command-line-install)
 
-Please share images you make! Tweet them at [@ai_render](https://twitter.com/AI_render) or tag [@airenderblender](https://www.instagram.com/airenderblender/) on Instagram. On both platforms, use hashtags #airender #aiart #stableDiffusion.
+### 3. Create a Conda 3.11 Environment
 
-If you have ideas for prompts that could become preset styles, or if you have any other feedback, email airenderblender@gmail.com. Thank you for being part of the community!
+Open the Terminal and run
 
+```shell
+conda create --name comfy python=3.11.9 --yes
+```
 
-## Future Enhancements
+### [4. Install and Test ComfyUI](https://github.com/comfyanonymous/ComfyUI)
 
-Feel free to [request new features or enhancements](https://github.com/benrugg/AI-Render/issues/new?assignees=&labels=&template=feature-request.yaml).
+ Navigate to the location where you want ComfyUI and clone the repo
 
+ ```shell
+git clone https://github.com/comfyanonymous/ComfyUI.git
+```
 
-## Contributing
+Enter the directory
 
-Please collaborate and contribute! See the [Contributing doc](CONTRIBUTING.md) to get started.
+```shell
+ cd ComfyUI
+ ```
 
-Or [suggest new preset styles](https://github.com/benrugg/AI-Render/issues/new?assignees=&labels=&template=preset-style-suggestion.yaml) for everyone to use.
+Run the `conda install` command specified in the [ComfyUI documentation](https://docs.comfy.org/get_started/manual_install#nvidia:install-nightly)
+
+```shell
+conda install pytorch torchvision torchaudio pytorch-cuda=12.1 -c pytorch -c nvidia
+```
+
+Install the dependencies
+
+ ```shell
+pip install -r requirements.txt
+```
+
+Test the ComfyUI installation
+
+```shell
+python main.py
+```
+
+ If everything is set up correctly, you should see the ComfyUI server running.
+ Open your browser at `http://127.0.0.1:8188` and check the Comfy UI.
+
+If you don't have any checkpoint SD model, download.
+
+### 5. Install the checkpoint models
+
+ You can download the desired checkpoint models from the [official repositories](https://huggingface.co/stable-diffusion-v1-5/stable-diffusion-v1-5) or [community sources](https://civitai.com/models), then place them in the designated `models/checkpoints` folder within the ComfyUI directory.
+
+To start simple you can download 1.5 SD models only.
+![Civit AI Screenshot](media/Pasted%20image%2020241004124041.png)
+
+Alternatively you can set an `extra_model_paths.yaml` and place into the root of the ComfyUI repository. Here's mine, I have a MODELS folder outside my main COMFY folder, in which I have all my different ComfyUI installations.
+
+```yaml
+comfyui:
+    base_path: ../../MODELS/
+    checkpoints: checkpoints/
+    clip: clip/
+    clip_vision: clip_vision/
+    configs: configs/
+    controlnet: controlnet/
+    embeddings: embeddings/
+    animatediff_models: |
+        animatediff/
+        animatediff_models/
+    animatediff_motion_lora: animatediff_motion_lora/
+    loras: |
+        Lora/
+        loras/
+    upscale_models: |
+        ESRGAN/
+        RealESRGAN/
+        SwinIR/
+        upscale_models/
+    vae: |
+        VAE/
+        vae/
+    ipadapter: ipadapter/
+    unet: unet/
+```
+
+### 6. Install the required custom nodes
+
+To get the example work, you'll need the following custom nodes:
+
+- [ComfyUI-Impact-Pack](https://github.com/ltdrdata/ComfyUI-Impact-Pack.git)
+- [ComfyUI-KJNodes](https://github.com/kijai/ComfyUI-KJNodes.git)
+- [comfyui_controlnet_aux](https://github.com/Fannovel16/comfyui_controlnet_aux.git)
+
+Must have:
+
+- [ComfyUI-Manager](https://github.com/ltdrdata/ComfyUI-Manager.git)
+- [rgthree-comfy](https://github.com/rgthree/rgthree-comfy.git)
+
+### 7. Open the example and download the missing models
+
+After completing the installations, you can now open the provided example workflow in ComfyUI and download any missing models as prompted.
