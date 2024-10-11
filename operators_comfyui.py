@@ -29,9 +29,9 @@ class AIR_OT_open_comfyui_input_folder(bpy.types.Operator):
         print(f"Opening folder: {input_folder}")
 
         if platform.system() == "Windows":
-            os.system(f"start {input_folder}")
+            os.system(f"explorer '{input_folder}'")
         elif platform.system() == "Darwin":
-            os.system(f"open {input_folder}")
+            os.system(f"open '{input_folder}'")
 
         return {'FINISHED'}
 
@@ -46,9 +46,9 @@ class AIR_OT_open_comfyui_output_folder(bpy.types.Operator):
         print(f"Opening folder: {output_folder}")
 
         if platform.system() == "Windows":
-            os.system(f"start {output_folder}")
+            os.system(f"explorer '{output_folder}'")
         elif platform.system() == "Darwin":
-            os.system(f"open {output_folder}")
+            os.system(f"open '{output_folder}'")
 
         return {'FINISHED'}
 
@@ -63,9 +63,9 @@ class AIR_OT_open_comfyui_workflows_folder(bpy.types.Operator):
         print(f"Opening folder: {workflow_folder}")
 
         if platform.system() == "Windows":
-            os.system(f'explorer "{workflow_folder}"')
+            os.system(f"explorer '{workflow_folder}'")
         elif platform.system() == "Darwin":
-            os.system(f"open {workflow_folder}")
+            os.system(f"open '{workflow_folder}'")
 
         return {'FINISHED'}
 
