@@ -803,21 +803,7 @@ def do_post(url, data):
         return operators.handle_error("The local Stable Diffusion server timed out. Set a longer timeout in AI Render preferences, or use a smaller image size.", "timeout")
 
 
-def debug_log(response):
-    print("request body:")
-    print(response.request.body)
-    print("\n")
-
-    print("response body:")
-    # print(response.content)
-
-    try:
-        print(response.json())
-    except:
-        print("body not json")
-
-
-# PUBLIC SUPPORT FUNCTIONS:
+# SUPPORT FUNCTIONS:
 def get_workflows_path(context):
     return utils.get_addon_preferences().comfyui_workflows_path
 
@@ -1418,6 +1404,11 @@ def ensure_compositor_nodes(context):
 
 
 # PATH FUNCTIONS:
+def get_default_comfy_workflows_path():
+    workflows_path = os.path.join(os.path.dirname(__file__), "comfyui", "workflows_api")
+    return workflows_path
+
+
 def get_comfyui_input_path(context):
     comfyui_path = utils.get_addon_preferences(context).comfyui_path
     return comfyui_path + "input/"

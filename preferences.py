@@ -1,5 +1,4 @@
 import bpy
-import os
 from . import (
     addon_updater_ops,
     config,
@@ -8,11 +7,7 @@ from . import (
     utils,
 )
 
-
-def get_default_comfy_workflows_path():
-    workflows_path = os.path.join(os.path.dirname(__file__), "sd_backends", "comfyui", "workflows_api")
-    return workflows_path
-
+from .sd_backends.comfyui_api import get_default_comfy_workflows_path
 
 class AIRPreferences(bpy.types.AddonPreferences):
     bl_idname = __package__
@@ -43,13 +38,13 @@ class AIRPreferences(bpy.types.AddonPreferences):
 
     sd_backend: bpy.props.EnumProperty(
         name="Stable Diffusion Backend",
-        default="comfyui",
+        default="automatic1111",
         items=[
-            ('comfyui', 'ComfUI (local)', ''),
-            ('automatic1111', 'Automatic1111 (local)', ''),
             ('dreamstudio', 'DreamStudio (cloud)', ''),
             ('stablehorde', 'Stable Horde (cloud)', ''),
+            ('automatic1111', 'Automatic1111 (local)', ''),
             ('shark', 'SHARK by nod.ai (local)', ''),
+            ('comfyui', 'ComfUI (local)', ''),
         ],
         update=properties.ensure_properties,
         description="Choose a Stable Diffusion backend to use. DreamStudio is the default, and is the quickest to run. Stable Horde is a community-run backend that is completely free. Automatic1111 is a local installation of Stable Diffusion.",
@@ -199,8 +194,7 @@ class AIRPreferences(bpy.types.AddonPreferences):
                 col.prop(self, "local_sd_timeout", text="")
 
                 box.separator()
-                utils.label_multiline(box, text=f"AI Render will use your local Stable Diffusion installation. Please make sure the WebUI or ComfyUI are launched and running in a terminal.",
-                                      icon="KEYTYPE_BREAKDOWN_VEC", width=width_guess)
+                utils.label_multiline(box, text=f"AI Render will use your local Stable Diffusion installation. Please make sure the Web UI is launched and running in a terminal.", icon="KEYTYPE_BREAKDOWN_VEC", width=width_guess)
 
                 box.separator()
                 row = box.row()
@@ -230,8 +224,7 @@ class AIRPreferences(bpy.types.AddonPreferences):
                 col.prop(self, "local_sd_timeout", text="")
 
                 box.separator()
-                utils.label_multiline(box, text=f"AI Render will use your local Stable Diffusion installation. Please make sure the Web UI is launched and running in a terminal.",
-                                      icon="KEYTYPE_BREAKDOWN_VEC", width=width_guess)
+                utils.label_multiline(box, text=f"AI Render will use your local Stable Diffusion installation. Please make sure the Web UI is launched and running in a terminal.", icon="KEYTYPE_BREAKDOWN_VEC", width=width_guess)
 
                 box.separator()
                 row = box.row()
@@ -284,7 +277,7 @@ class AIRPreferences(bpy.types.AddonPreferences):
 def update_sd_backend_from_previous_installation(context):
     preferences = utils.get_addon_preferences(context)
     if preferences.is_local_sd_enabled:
-        preferences.sd_backend = "comfyui"
+        preferences.sd_backend = "automatic1111"
         preferences.is_local_sd_enabled = False
 
 
