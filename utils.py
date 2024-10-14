@@ -40,13 +40,10 @@ from . import Fore
 min_dimension_size = 128
 max_dimension_size = 2048
 valid_dimension_step_size = 64
-sdxl_1024_valid_dimensions = ['1024x1024', '1152x896', '896x1152',
-                              '1216x832', '832x1216', '1344x768', '768x1344', '1536x640', '640x1536']
+sdxl_1024_valid_dimensions = ['1024x1024', '1152x896', '896x1152', '1216x832', '832x1216', '1344x768', '768x1344', '1536x640', '640x1536']
 
-example_dimensions = [512, 640, 768, 896,
-                      960, 1024, 1280, 1344, 1600, 1920, 2048]
-file_formats = {"JPEG": "jpg", "BMP": "bmp", "IRIS": "rgb", "PNG": "png", "JPEG2000": "jp2", "TARGA": "tga", "TARGA_RAW": "tga",
-                "CINEON": "cin", "DPX": "dpx", "OPEN_EXR_MULTILAYER": "exr", "OPEN_EXR": "exr", "HDR": "hdr", "TIFF": "tif", "WEBP": "webp"}
+example_dimensions = [512, 640, 768, 896, 960, 1024, 1280, 1344, 1600, 1920, 2048]
+file_formats = {"JPEG": "jpg", "BMP": "bmp", "IRIS": "rgb", "PNG": "png", "JPEG2000": "jp2", "TARGA": "tga", "TARGA_RAW": "tga", "CINEON": "cin", "DPX": "dpx", "OPEN_EXR_MULTILAYER": "exr", "OPEN_EXR": "exr", "HDR": "hdr", "TIFF": "tif", "WEBP": "webp"}
 
 max_filename_length = 128 if platform.system() == "Windows" else 230
 
@@ -101,7 +98,7 @@ def get_image_filename(scene, prompt, negative_prompt, suffix=""):
     return sanitized_filename + suffix
 
 
-def get_image_format(to_lower=True):
+def get_image_format(to_lower = True):
     image_format = get_active_backend().get_image_format()
     return image_format.lower() if to_lower else image_format
 
@@ -228,8 +225,7 @@ def view_sd_in_render_view(img, scene=None, context=None):
     # if it's not open, try to switch to the render workspace and then get the area
     if not image_editor_area:
         activate_workspace(workspace_id='Rendering')
-        image_editor_area = find_area_showing_render_result(
-            scene, context, 'Rendering')
+        image_editor_area = find_area_showing_render_result(scene, context, 'Rendering')
 
     # if we have an area, set the image
     if image_editor_area:
@@ -336,14 +332,12 @@ def are_dimensions_valid(scene):
         return (
             get_output_width(scene) in range(
                 min_dimension_size,
-                # range is exclusive of the last value
-                max_dimension_size + valid_dimension_step_size,
+                max_dimension_size + valid_dimension_step_size, # range is exclusive of the last value
                 valid_dimension_step_size
             ) and
             get_output_height(scene) in range(
                 min_dimension_size,
-                # range is exclusive of the last value
-                max_dimension_size + valid_dimension_step_size,
+                max_dimension_size + valid_dimension_step_size, # range is exclusive of the last value
                 valid_dimension_step_size
             )
         )
@@ -367,13 +361,12 @@ def are_upscaled_dimensions_too_large(scene):
 
 
 def generate_example_dimensions_tuple_list():
-    def return_tuple(num): return (str(num), str(num) + " px", str(num))
+    return_tuple = lambda num: (str(num), str(num) + " px", str(num))
     return list(map(return_tuple, example_dimensions))
 
 
 def generate_sdxl_1024_dimensions_tuple_list():
-    def return_tuple(dimension): return (
-        dimension, ' x '.join(dimension.split('x')), dimension)
+    return_tuple = lambda dimension: (dimension, ' x '.join(dimension.split('x')), dimension)
     return list(map(return_tuple, sdxl_1024_valid_dimensions))
 
 
@@ -383,7 +376,7 @@ def is_using_sdxl_1024_model(scene):
 
 def has_url(text, strict_match_protocol=False):
     # remove markdown *
-    text = text.replace('*', '')
+    text = text.replace('*','')
 
     # Anything that isn't a square closing bracket
     name_regex = "[^]]+"
@@ -459,16 +452,15 @@ def label_multiline(layout, text='', icon='NONE', width=-1, max_lines=12, use_ur
 
         line_index += 1
         while len(line) > char_threshold:
-            # find line split close to the end of line
+            #find line split close to the end of line
             i = line.rfind(" ", 0, char_threshold)
-            # split long words
+            #split long words
             if i < 1:
                 i = char_threshold
             l1 = line[:i]
 
             row = layout.row()
-            if alert:
-                row.alert = True
+            if alert: row.alert = True
             row.alignment = alignment
             row.label(text=l1, icon=icon)
             rows.append(row)
@@ -485,8 +477,7 @@ def label_multiline(layout, text='', icon='NONE', width=-1, max_lines=12, use_ur
             break
 
         row = layout.row()
-        if alert:
-            row.alert = True
+        if alert: row.alert = True
         row.alignment = alignment
         row.label(text=line, icon=icon)
         rows.append(row)
@@ -520,7 +511,6 @@ def get_active_backend():
 
 
 def is_installation_valid():
-    # print(f"Is {__package__} == {config.package_name} ?")
     return __package__ == config.package_name
 
 
@@ -528,5 +518,4 @@ def show_invalid_installation_message(layout, width):
     box = layout.box()
     box.label(text="Installation Error:")
 
-    label_multiline(
-        box, text=f"It looks like this add-on wasn't installed correctly. Please remove it and get a new copy. [Get AI Render]({config.ADDON_DOWNLOAD_URL})", icon="ERROR", alert=True, width=width)
+    label_multiline(box, text=f"It looks like this add-on wasn't installed correctly. Please remove it and get a new copy. [Get AI Render]({config.ADDON_DOWNLOAD_URL})", icon="ERROR", alert=True, width=width)
