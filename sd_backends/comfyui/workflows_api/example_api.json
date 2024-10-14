@@ -40,7 +40,7 @@
   },
   "6": {
     "inputs": {
-      "text": "a beautiful red cube",
+      "text": "A metal SIgn on the grass",
       "clip": [
         "26",
         1
@@ -152,7 +152,7 @@
     },
     "class_type": "ControlNetApplyAdvanced",
     "_meta": {
-      "title": "Apply ControlNet (Advanced)"
+      "title": "Apply ControlNet"
     }
   },
   "14": {
@@ -198,7 +198,7 @@
     },
     "class_type": "ControlNetApplyAdvanced",
     "_meta": {
-      "title": "Apply ControlNet (Advanced)"
+      "title": "Apply ControlNet"
     }
   },
   "17": {
@@ -347,7 +347,7 @@
     },
     "class_type": "ControlNetApplyAdvanced",
     "_meta": {
-      "title": "Apply ControlNet (Advanced)"
+      "title": "Apply ControlNet"
     }
   },
   "41": {
@@ -372,27 +372,15 @@
       "title": "CLIP Set Last Layer"
     }
   },
-  "57": {
-    "inputs": {
-      "value": [
-        "35",
-        0
-      ]
-    },
-    "class_type": "ImpactImageInfo",
-    "_meta": {
-      "title": "ImpactImageInfo"
-    }
-  },
   "69": {
     "inputs": {
       "width": [
-        "57",
-        2
+        "77",
+        1
       ],
       "height": [
-        "57",
-        1
+        "77",
+        2
       ],
       "keep_proportions": false,
       "mask": [
@@ -408,7 +396,7 @@
   "75": {
     "inputs": {
       "image": [
-        "35",
+        "77",
         0
       ],
       "alpha": [
@@ -419,6 +407,18 @@
     "class_type": "JoinImageWithAlpha",
     "_meta": {
       "title": "Join Image with Alpha"
+    }
+  },
+  "77": {
+    "inputs": {
+      "image": [
+        "35",
+        0
+      ]
+    },
+    "class_type": "GetImageSizeAndCount",
+    "_meta": {
+      "title": "Get Image Size & Count"
     }
   }
 }
