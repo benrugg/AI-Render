@@ -7,6 +7,7 @@ import pprint
 from . import Fore
 
 from . import utils
+from .operators import *
 from .properties_comfy import create_props_from_workflow
 from .sd_backends import comfyui_api
 
@@ -17,6 +18,162 @@ from .sd_backends.comfyui_api import (
     COMFY_CONTROL_NETS,
     COMFY_UPSCALE_MODELS,
 )
+
+def comfy_generate(scene, prompts=None, use_last_sd_image=False):
+    """Post to the API to generate a Stable Diffusion image and then process it"""
+
+    props = scene.air_props
+    comfyui_props = scene.comfyui_props
+
+    # get the prompt if we haven't been given one
+    if not prompts:
+        if props.use_animated_prompts:
+            print(Fore.LIGHTGREEN_EX + "USING ANIMATED PROMPTS" + Fore.RESET)
+            prompt, negative_prompt = validate_and_process_animated_prompt_text_for_single_frame(
+                scene, scene.frame_current)
+            if not prompt:
+                return False
+        else:
+            print(Fore.LIGHTGREEN_EX + "USING SINGLE PROMPT" + Fore.RESET)
+            prompt = get_full_prompt(scene)
+            negative_prompt = props.negative_prompt_text.strip()
+    else:
+        print(Fore.LIGHTGREEN_EX + "USING PROMPTS" + Fore.RESET)
+        prompt = prompts["prompt"]
+        negative_prompt = prompts["negative_prompt"]
+
+    # validate the parameters we will send
+    if not validate_params(scene, prompt):
+        print(Fore.RED + "COULD NOT VALIDATE PARAMS" + Fore.RESET)
+        return False
+
+    # generate a new seed, if we want a random one
+    generate_new_random_seed(scene)
+
+    # prepare the output filenames
+    before_output_filename_prefix = utils.get_image_filename(
+        scene, prompt, negative_prompt, "-1-before")
+
+    after_output_filename_prefix = utils.get_image_filename(
+        scene, prompt, negative_prompt, "-2-after")
+
+    animation_output_filename_prefix = "ai-render-"
+
+    # if we want to use the last SD image, try loading it now
+    if use_last_sd_image:
+        if not props.last_generated_image_filename:
+            return handle_error("Couldn't find the last Stable Diffusion image", "last_generated_image_filename")
+        try:
+            img_file = open(props.last_generated_image_filename, 'rb')
+        except:
+            return handle_error("Couldn't load the last Stable Diffusion image. It's probably been deleted or moved. You'll need to restore it or render a new image.", "load_last_generated_image")
+    else:
+        # else, use the rendered image...
+
+        # save the rendered image and then read it back in
+        temp_input_file = save_render_to_file(scene, before_output_filename_prefix)
+
+        if not temp_input_file:
+            print(Fore.RED + "Couldn't save the rendered image to a temp file" + Fore.RESET)
+            return False
+
+        img_file = open(temp_input_file, 'rb')
+
+        # autosave the before image, if we want that, and we're not rendering an animation
+        if (
+            props.do_autosave_before_images
+            and props.autosave_image_path
+            and not props.is_rendering_animation
+            and not props.is_rendering_animation_manually
+        ):
+            print(Fore.YELLOW + "Autosaving before image")
+            save_before_image(scene, before_output_filename_prefix)
+
+    # prepare data for the API request
+    params = {
+        "prompt": prompt,
+        "negative_prompt": negative_prompt,
+        "seed": props.seed,
+        "sampler": props.sampler,
+        "steps": props.steps,
+        "cfg_scale": props.cfg_scale,
+        "width": utils.get_output_width(scene),
+        "height": utils.get_output_height(scene),
+        "image_similarity": props.image_similarity,
+    }
+
+    # send to whichever API we're using
+    start_time = time.time()
+
+    print(Fore.YELLOW + "Using ComfyUI API" + Fore.RESET)
+    generated_image_file = comfyui_api.generate(
+        params,
+        img_file,
+        after_output_filename_prefix,
+        props,
+        comfyui_props)
+
+    # if we didn't get a successful image, stop here (an error will have been handled by the api function)
+    if not generated_image_file:
+        return False
+
+    # autosave the after image, if we should
+    if utils.should_autosave_after_image(props):
+
+        print(Fore.YELLOW + "Autosaving after image")
+        generated_image_file = save_after_image(
+            scene, after_output_filename_prefix, generated_image_file)
+
+        if not generated_image_file:
+            return False
+
+    # store this image filename as the last generated image
+    props.last_generated_image_filename = generated_image_file
+
+    # if we want to automatically upscale (and the backend supports it), do it now
+    if props.do_upscale_automatically and sd_backend.supports_upscaling() and sd_backend.is_upscaler_model_list_loaded():
+        after_output_filename_prefix = after_output_filename_prefix + "-upscaled"
+
+        opened_image_file = open(generated_image_file, 'rb')
+        generated_image_file = sd_backend.upscale(
+            opened_image_file, after_output_filename_prefix, props)
+
+        # if the upscale failed, stop here (an error will have been handled by the api function)
+        if not generated_image_file:
+            return False
+
+        # autosave the upscaled after image, if we should
+        if utils.should_autosave_after_image(props):
+            generated_image_file = save_after_image(
+                scene, after_output_filename_prefix, generated_image_file)
+
+            if not generated_image_file:
+                return False
+
+    # if we're rendering an animation manually, save the image to the animation output path
+    if props.is_rendering_animation_manually:
+
+        print(Fore.YELLOW + "Rendering animation manually")
+        generated_image_file = save_animation_image(
+            scene, animation_output_filename_prefix, generated_image_file)
+
+        if not generated_image_file:
+            return False
+
+    # load the image into our scene
+    try:
+        img = load_image(generated_image_file, after_output_filename_prefix)
+    except:
+        return handle_error("Couldn't load the image from Stable Diffusion", "load_sd_image")
+
+    try:
+        # View the image in the Render Result view
+        utils.view_sd_in_render_view(img, scene)
+    except:
+        return handle_error("Couldn't switch the view to the image from Stable Diffusion", "view_sd_image")
+
+    # return success
+    return True
 
 
 class AIR_OT_open_comfyui_input_folder(bpy.types.Operator):
@@ -84,13 +241,6 @@ class AIR_OT_convert_path_in_workflow(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class AIR_OT_ReloadWorkflow(bpy.types.Operator):
-    bl_idname = "ai_render.reload_workflow"
-    bl_label = "Update Workflow Enum"
-    bl_description = "Save the selected workflow to the scene properties"
-
-    def execute(self, context):
-        print(Fore.GREEN + "UPDATING WORKFLOW ENUM..." + Fore.RESET)
 class AIR_OT_ReloadWorkflow(bpy.types.Operator):
     bl_idname = "ai_render.reload_workflow"
     bl_label = "Update Workflow Enum"

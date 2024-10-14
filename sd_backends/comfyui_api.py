@@ -5,6 +5,7 @@ import requests
 import json
 import pprint
 import platform
+import numpy as np
 from time import sleep
 from .. import Fore
 
@@ -436,7 +437,7 @@ def load_workflow(context, workflow_file) -> dict:
         return operators.handle_error(f"Couldn't load the workflow file: {workflow_file}.", "workflow_file_not_found")
 
 
-def upload_image(img_file: bpy.types.Image, subfolder: str):
+def upload_image(img_file, subfolder: str):
     """Upload the image to the input folder of ComfyUI"""
 
     # Get the image path from the name of _io.BufferedReader
@@ -581,15 +582,36 @@ def generate(params, img_file, filename_prefix, props, comfyui_props):
     # format the frame number to 4 digits
     frame_number = str(frame_number).zfill(4)
 
+    # Create the paths
     color_image_path = f"{get_color_file_input_path(bpy.context)}Image{frame_number}.png"
     depth_image_path = f"{get_depth_file_input_path(bpy.context)}Image{frame_number}.png"
     normal_image_path = f"{get_normal_file_input_path(bpy.context)}Image{frame_number}.png"
     openpose_body_image_path = f"{get_openpose_body_file_input_path(bpy.context)}Image{frame_number}.png"
 
+    # Add the paths to the params
     params['color_image'] = color_image_path
     params['depth_image'] = depth_image_path
     params['normal_image'] = normal_image_path
     params['openpose_body_image'] = openpose_body_image_path
+
+    # Create Color Image from pixels data
+    if (bpy.data.images['Viewer Node'].pixels):
+
+        pixels = bpy.data.images['Viewer Node'].pixels
+        print(len(pixels)) # size is always width * height * 4 (rgba)
+
+        # copy buffer to numpy array for faster manipulation
+        arr = np.array(pixels[:])
+        print('pixels max: %f; pixels min: %f' % (arr.max(), arr.min()))
+
+        # Save a temp image from the pixels
+        # temp_image = bpy.data.images.new(name="temp_image", width=512, height=512, alpha=True, float_buffer=False)
+        # temp_image.pixels = pixels
+        # temp_image.file_format = "PNG"
+        # temp_image.save_render(filepath=f"{get_color_file_input_path(bpy.context)}temp_image.png")
+
+        # # Upload the image to the input folder of ComfyUI
+        # upload_image(temp_image, "color")
 
     # map the params to the ComfyUI nodes
     mapped_workflow = map_params(params, selected_workflow)

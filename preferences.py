@@ -59,7 +59,7 @@ class AIRPreferences(bpy.types.AddonPreferences):
         name="URL of the Stable Diffusion Web Server",
         description="The location of the web server that is currently running on your local machine",
         # WEBUI http://127.0.0.1:7860",  COMFYUI http://127.0.0.1:8188/ COMFYUI ON MY LAN http://172.16.10.5:8188/
-        default="http://172.16.10.5:8188/",
+        default="http://127.0.0.1:8188/",
     )
 
     local_sd_timeout: bpy.props.IntProperty(

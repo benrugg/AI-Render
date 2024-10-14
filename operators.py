@@ -15,6 +15,8 @@ from . import (
 
 from .sd_backends import automatic1111_api
 
+# Colorama Placeholder
+from . import Fore
 
 example_dimensions_tuple_list = utils.generate_example_dimensions_tuple_list()
 sdxl_1024_dimensions_tuple_list = utils.generate_sdxl_1024_dimensions_tuple_list()
@@ -247,6 +249,7 @@ def validate_params(scene, prompt=None):
         return handle_error("Image dimensions are too small. Please increase width and/or height", "dimensions_too_small")
     if utils.are_dimensions_too_large(scene):
         return handle_error("Image dimensions are too large. Please decrease width and/or height", "dimensions_too_large")
+    # Allow for empty prompts
     # if prompt == "":
     #     return handle_error("Please enter a prompt for Stable Diffusion", "prompt")
     return True
