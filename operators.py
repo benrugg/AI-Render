@@ -54,7 +54,7 @@ def set_image_dimensions(context, width, height):
 
 def handle_error(msg, error_key=''):
     """Show an error popup, and set the error message to be displayed in the ui"""
-    print("AI Render Error:", msg)
+
     task_queue.add(functools.partial(bpy.ops.ai_render.show_error_popup,
                    'INVOKE_DEFAULT', error_message=msg, error_key=error_key))
     analytics.track_event('ai_render_error', value=error_key)
@@ -139,7 +139,7 @@ def render_frame(context, current_frame, prompts):
 
 def save_render_to_file(scene, filename_prefix):
     try:
-        print(Fore.MAGENTA + "Creating temp file for image")
+        print(Fore.MAGENTA + "save_render_to_file: CREATING TEMP FILE")
         temp_file = utils.create_temp_file(
             filename_prefix + "-",
             suffix=f".{utils.get_image_format()}"
@@ -156,7 +156,7 @@ def save_render_to_file(scene, filename_prefix):
         scene.render.image_settings.color_mode = 'RGBA'
         scene.render.image_settings.color_depth = '8'
 
-        print(Fore.MAGENTA + "Saving rendered image to temp file")
+        print(Fore.MAGENTA + "save_render_to_file: SAVING TEMP FILE")
         bpy.data.images['Render Result'].save_render(temp_file)
 
         scene.render.image_settings.file_format = orig_render_file_format
@@ -228,7 +228,7 @@ def do_pre_render_setup(scene):
     # Lock the user interface when rendering, so that we can change
     # compositor nodes in the render_init handler without causing a crash!
     # See: https://docs.blender.org/api/current/bpy.app.handlers.html#note-on-altering-data
-    scene.render.use_lock_interface = True
+    scene.render.use_lock_interface = False
 
     # clear any previous errors
     clear_error(scene)
@@ -371,13 +371,13 @@ def sd_generate(scene, prompts=None, use_last_sd_image=False):
     # get the prompt if we haven't been given one
     if not prompts:
         if props.use_animated_prompts:
-            print(Fore.LIGHTGREEN_EX + "USING ANIMATED PROMPTS" + Fore.RESET)
+            print(Fore.LIGHTGREEN_EX + "sd_generate: USING ANIMATED PROMPTS" + Fore.RESET)
             prompt, negative_prompt = validate_and_process_animated_prompt_text_for_single_frame(
                 scene, scene.frame_current)
             if not prompt:
                 return False
         else:
-            print(Fore.LIGHTGREEN_EX + "USING SINGLE PROMPT" + Fore.RESET)
+            print(Fore.LIGHTGREEN_EX + "sd_generate: USING SINGLE PROMPT" + Fore.RESET)
             prompt = get_full_prompt(scene)
             negative_prompt = props.negative_prompt_text.strip()
     else:

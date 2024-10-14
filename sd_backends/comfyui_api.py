@@ -14,19 +14,19 @@ from .. import (
     utils,
 )
 
-LOG_PROPS = True
-LOG_WORKFLOW = True
-LOG_PARAMS = True
-LOG_MAPPED_WORKFLOW = True
+LOG_PROPS = False
+LOG_WORKFLOW = False
+LOG_PARAMS = False
+LOG_MAPPED_WORKFLOW = False
 
-LOG_REQUEST = True
-LOG_RESPONSE = True
-LOG_LONG_RESPONSE = True
+LOG_REQUEST = False
+LOG_RESPONSE = False
+LOG_LONG_RESPONSE = False
 
 LOG_UPLOAD_IMAGE = True
 LOG_DOWNLOAD_IMAGE = True
 
-LOG_MODEL_RESPONSE = True
+LOG_MODEL_RESPONSE = False
 
 ORIGINAL_DATA = {
     "3": {
@@ -436,13 +436,8 @@ def load_workflow(context, workflow_file) -> dict:
         return operators.handle_error(f"Couldn't load the workflow file: {workflow_file}.", "workflow_file_not_found")
 
 
-def upload_image(img_file, subfolder):
+def upload_image(img_file: bpy.types.Image, subfolder: str):
     """Upload the image to the input folder of ComfyUI"""
-    # This function is here for future use if we decide to use a remote ComfyUI server.
-
-    # At the moment we're not using it:
-    # ComfyUI is running locally and we can render the image directly
-    # from Blender to the ComfyUI input path without the need to upload it through the API.
 
     # Get the image path from the name of _io.BufferedReader
     image_path = img_file.name
@@ -530,7 +525,9 @@ def map_comfy_props(comfyui_props, workflow):
 
     updated_workflow = workflow
 
-    print(Fore.WHITE + "\nLOG COMFYUI PROPS:" + Fore.RESET)
+    if (LOG_PROPS):
+        print(Fore.WHITE + "\nLOG COMFYUI PROPS:" + Fore.RESET)
+
     for prop in comfyui_props.bl_rna.properties.items():
         if prop[1].type == 'COLLECTION':
             for item in getattr(comfyui_props, prop[0]):
@@ -538,8 +535,11 @@ def map_comfy_props(comfyui_props, workflow):
                 for sub_prop in item.bl_rna.properties.items():
                     # Access the updated workflow at node_key and change in the inputs only if key exists
                     if sub_prop[0] in updated_workflow[node_key]["inputs"]:
-                        updated_workflow[node_key]["inputs"][sub_prop[0]] = getattr(item, sub_prop[0])
-                        print(f"Updated workflow at node_key: {node_key} with {sub_prop[0]}: {getattr(item, sub_prop[0])}")
+                        updated_workflow[node_key]["inputs"][sub_prop[0]] = getattr(
+                            item, sub_prop[0])
+                        if (LOG_PROPS):
+                            print(
+                            f"Updated workflow at node_key: {node_key} with {sub_prop[0]}: {getattr(item, sub_prop[0])}")
                 print()
 
     if LOG_MAPPED_WORKFLOW:
@@ -580,11 +580,6 @@ def generate(params, img_file, filename_prefix, props, comfyui_props):
 
     # format the frame number to 4 digits
     frame_number = str(frame_number).zfill(4)
-
-    # color_image_path = comfyui_input_path + "color/Image" + frame_number + ".png"
-    # depth_image_path = comfyui_input_path + "depth/Image" + frame_number + ".png"
-    # normal_image_path = comfyui_input_path + "normal/Image" + frame_number + ".png"
-    # openpose_body_image_path = comfyui_input_path + "openpose_body/Image" + frame_number + ".png"
 
     color_image_path = f"{get_color_file_input_path(bpy.context)}Image{frame_number}.png"
     depth_image_path = f"{get_depth_file_input_path(bpy.context)}Image{frame_number}.png"
