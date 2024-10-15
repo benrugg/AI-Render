@@ -208,6 +208,7 @@ def create_props_from_workflow(self, context):
                 comfyui_ksampler.steps = node["inputs"]["steps"]
                 comfyui_ksampler.cfg = node["inputs"]["cfg"]
                 comfyui_ksampler.sampler_name = node["inputs"]["sampler_name"]
+                comfyui_ksampler.sampler_enum = node["inputs"]["sampler_name"]
                 comfyui_ksampler.scheduler = node["inputs"]["scheduler"]
                 comfyui_ksampler.denoise = node["inputs"]["denoise"]
 
@@ -488,11 +489,17 @@ class ComfyUIMainKSampler(bpy.types.PropertyGroup):
         max=35,
         description="Cfg",
     )
-    sampler_name: bpy.props.EnumProperty(
-        name="Sampler",
+    sampler_name: bpy.props.StringProperty(
+        name="current_sampler_name",
+         default="",
+         description="Name of the sampler"
+    )
+    sampler_enum: bpy.props.EnumProperty(
+        name="sampler_enum",
         default=130,
         items=comfyui_api.create_comfy_sampler_enum,
-        description="Sampler",
+        description="A list of the available samplers",
+        update=set_comfy_sampler_name
     )
     scheduler: bpy.props.EnumProperty(
         name="Scheduler",
