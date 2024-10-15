@@ -7,8 +7,11 @@ from . import (
     properties,
     task_queue,
     utils,
+    operators_comfyui,
 )
 
+# Colorama Placeholder
+from . import Fore
 
 @persistent
 def load_post_handler(loaded_filename):
@@ -24,7 +27,6 @@ def load_post_handler(loaded_filename):
     # (the available options change when the user changes the SD backend, which could
     # have happened since this file was last saved)
     properties.ensure_properties(None, context)
-    # TODO: Add comfyui related code here
 
     # update the sd backend to migrate a possible old value from a previous installation
     preferences.update_sd_backend_from_previous_installation(context)
@@ -100,8 +102,16 @@ def render_complete_handler(scene):
         # do pre-api setup
         operators.do_pre_api_setup(scene)
 
-        # post to the api (on a different thread, outside the handler)
-        task_queue.add(functools.partial(operators.sd_generate, scene))
+        # get the backend we're using
+        sd_backend = utils.get_active_backend()
+        sd_backend_name = utils.sd_backend()
+
+        if sd_backend_name == "comfyui":
+            print(Fore.YELLOW + "Using ComfyUI API" + Fore.RESET)
+            task_queue.add(functools.partial(operators_comfyui.comfy_generate, scene))
+        else:
+            # post to the api (on a different thread, outside the handler)
+            task_queue.add(functools.partial(operators.sd_generate, scene))
     else:
         operators.handle_error("Rendered image is not ready. Try generating a new image manually under AI Render > Operation", "image_not_ready")
 

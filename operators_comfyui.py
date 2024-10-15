@@ -7,6 +7,7 @@ import pprint
 from . import Fore
 
 from . import utils
+from .operators import *
 from .properties_comfy import create_props_from_workflow
 from .sd_backends import comfyui_api
 
@@ -14,9 +15,147 @@ from .sd_backends.comfyui_api import (
     COMFY_WORKFLOWS,
     COMFY_CKPT_MODELS,
     COMFY_LORA_MODELS,
+    COMFY_SAMPLERS,
+    COMFY_SCHEDULERS,
     COMFY_CONTROL_NETS,
     COMFY_UPSCALE_MODELS,
 )
+
+def comfy_generate(scene, prompts=None, use_last_sd_image=False):
+    """Post to the API to generate a Stable Diffusion image and then process it"""
+
+    props = scene.air_props
+    comfyui_props = scene.comfyui_props
+
+    # get the prompt if we haven't been given one
+    if not prompts:
+        if props.use_animated_prompts:
+            print(Fore.LIGHTGREEN_EX + "USING ANIMATED PROMPTS" + Fore.RESET)
+            prompt, negative_prompt = validate_and_process_animated_prompt_text_for_single_frame(
+                scene, scene.frame_current)
+            if not prompt:
+                return False
+        else:
+            print(Fore.LIGHTGREEN_EX + "USING SINGLE PROMPT" + Fore.RESET)
+            prompt = get_full_prompt(scene)
+            negative_prompt = props.negative_prompt_text.strip()
+    else:
+        print(Fore.LIGHTGREEN_EX + "USING PROMPTS" + Fore.RESET)
+        prompt = prompts["prompt"]
+        negative_prompt = prompts["negative_prompt"]
+
+    # validate the parameters we will send
+    if not validate_params(scene, prompt):
+        print(Fore.RED + "COULD NOT VALIDATE PARAMS" + Fore.RESET)
+        return False
+
+    # generate a new seed, if we want a random one
+    generate_new_random_seed(scene)
+
+    # prepare the output filenames
+    before_output_filename_prefix = utils.get_image_filename(
+        scene, prompt, negative_prompt, "-1-before")
+
+    after_output_filename_prefix = utils.get_image_filename(
+        scene, prompt, negative_prompt, "-2-after")
+
+    animation_output_filename_prefix = "ai-render-"
+
+    # if we want to use the last SD image, try loading it now
+    if use_last_sd_image:
+        if not props.last_generated_image_filename:
+            return handle_error("Couldn't find the last Stable Diffusion image", "last_generated_image_filename")
+        try:
+            img_file = open(props.last_generated_image_filename, 'rb')
+        except:
+            return handle_error("Couldn't load the last Stable Diffusion image. It's probably been deleted or moved. You'll need to restore it or render a new image.", "load_last_generated_image")
+    else:
+        # else, use the rendered image...
+
+        # save the rendered image and then read it back in
+        temp_input_file = save_render_to_file(scene, before_output_filename_prefix)
+
+        if not temp_input_file:
+            print(Fore.RED + "Couldn't save the rendered image to a temp file" + Fore.RESET)
+            return False
+
+        img_file = open(temp_input_file, 'rb')
+
+        # autosave the before image, if we want that, and we're not rendering an animation
+        if (
+            props.do_autosave_before_images
+            and props.autosave_image_path
+            and not props.is_rendering_animation
+            and not props.is_rendering_animation_manually
+        ):
+            print(Fore.YELLOW + "Autosaving before image")
+            save_before_image(scene, before_output_filename_prefix)
+
+    # prepare data for the API request
+    params = {
+        "prompt": prompt,
+        "negative_prompt": negative_prompt,
+        "seed": props.seed,
+        "sampler": props.sampler,
+        "steps": props.steps,
+        "cfg_scale": props.cfg_scale,
+        "width": utils.get_output_width(scene),
+        "height": utils.get_output_height(scene),
+        "image_similarity": props.image_similarity,
+    }
+
+    # send to whichever API we're using
+    start_time = time.time()
+
+    print(Fore.YELLOW + "Using ComfyUI API" + Fore.RESET)
+    generated_image_file = comfyui_api.generate(
+        params,
+        img_file,
+        after_output_filename_prefix,
+        props,
+        comfyui_props)
+
+    # if we didn't get a successful image, stop here (an error will have been handled by the api function)
+    if not generated_image_file:
+        return False
+
+    # autosave the after image, if we should
+    if utils.should_autosave_after_image(props):
+
+        print(Fore.YELLOW + "Autosaving after image")
+        generated_image_file = save_after_image(
+            scene, after_output_filename_prefix, generated_image_file)
+
+        if not generated_image_file:
+            return False
+
+    # store this image filename as the last generated image
+    props.last_generated_image_filename = generated_image_file
+
+    # if we're rendering an animation manually, save the image to the animation output path
+    if props.is_rendering_animation_manually:
+
+        print(Fore.YELLOW + "Rendering animation manually")
+        generated_image_file = save_animation_image(
+            scene, animation_output_filename_prefix, generated_image_file)
+
+        if not generated_image_file:
+            return False
+
+    # load the image into our scene
+    try:
+        img = load_image(generated_image_file, after_output_filename_prefix)
+    except:
+        return handle_error("Couldn't load the image from Stable Diffusion", "load_sd_image")
+
+    try:
+        # View the image in the Render Result view
+        utils.view_sd_in_render_view(img, scene)
+    except:
+        return handle_error("Couldn't switch the view to the image from Stable Diffusion", "view_sd_image")
+
+    # return success
+    return True
 
 
 class AIR_OT_open_comfyui_input_folder(bpy.types.Operator):
@@ -29,9 +168,9 @@ class AIR_OT_open_comfyui_input_folder(bpy.types.Operator):
         print(f"Opening folder: {input_folder}")
 
         if platform.system() == "Windows":
-            os.system(f"start {input_folder}")
+            os.system(f"explorer '{input_folder}'")
         elif platform.system() == "Darwin":
-            os.system(f"open {input_folder}")
+            os.system(f"open '{input_folder}'")
 
         return {'FINISHED'}
 
@@ -46,9 +185,9 @@ class AIR_OT_open_comfyui_output_folder(bpy.types.Operator):
         print(f"Opening folder: {output_folder}")
 
         if platform.system() == "Windows":
-            os.system(f"start {output_folder}")
+            os.system(f"explorer '{output_folder}'")
         elif platform.system() == "Darwin":
-            os.system(f"open {output_folder}")
+            os.system(f"open '{output_folder}'")
 
         return {'FINISHED'}
 
@@ -63,9 +202,9 @@ class AIR_OT_open_comfyui_workflows_folder(bpy.types.Operator):
         print(f"Opening folder: {workflow_folder}")
 
         if platform.system() == "Windows":
-            os.system(f'explorer "{workflow_folder}"')
+            os.system(f"explorer '{workflow_folder}'")
         elif platform.system() == "Darwin":
-            os.system(f"open {workflow_folder}")
+            os.system(f"open '{workflow_folder}'")
 
         return {'FINISHED'}
 
@@ -91,13 +230,6 @@ class AIR_OT_ReloadWorkflow(bpy.types.Operator):
 
     def execute(self, context):
         print(Fore.GREEN + "UPDATING WORKFLOW ENUM..." + Fore.RESET)
-class AIR_OT_ReloadWorkflow(bpy.types.Operator):
-    bl_idname = "ai_render.reload_workflow"
-    bl_label = "Update Workflow Enum"
-    bl_description = "Save the selected workflow to the scene properties"
-
-    def execute(self, context):
-        print(Fore.GREEN + "UPDATING WORKFLOW ENUM..." + Fore.RESET)
 
         # Ensure the compositor nodes are available (DISABLED FOR NOW)
         comfyui_api.ensure_compositor_nodes(context)
@@ -110,7 +242,10 @@ class AIR_OT_ReloadWorkflow(bpy.types.Operator):
 
         # Trigger the update of the update of the enums before setting the new values
         bpy.ops.ai_render.update_ckpt_enum()
+        bpy.ops.ai_render.update_sampler_enum()
+        bpy.ops.ai_render.update_scheduler_enum()
         bpy.ops.ai_render.update_lora_enum()
+        bpy.ops.ai_render.update_upscale_model_enum()
         bpy.ops.ai_render.update_control_net_enum()
         bpy.ops.ai_render.update_upscale_model_enum()
 
@@ -152,6 +287,38 @@ class AIR_OT_UpdateLoraModelEnum(bpy.types.Operator):
         return {'FINISHED'}
 
 
+class AIR_OT_UpdateSamplerEnum(bpy.types.Operator):
+    bl_idname = "ai_render.update_sampler_enum"
+    bl_label = "Update Sampler Enum"
+    bl_description = "Update the sampler enum with the available samplers"
+
+    def execute(self, context):
+        print(Fore.GREEN + "\nUPDATING SAMPLER ENUM..." + Fore.RESET)
+        global COMFY_SAMPLERS
+        COMFY_SAMPLERS.clear()
+        samplers_list = comfyui_api.get_comfy_samplers(context)
+        for sampler in samplers_list:
+            COMFY_SAMPLERS.append(sampler)
+
+        return {'FINISHED'}
+
+
+class AIR_OT_UpdateSchedulerEnum(bpy.types.Operator):
+    bl_idname = "ai_render.update_scheduler_enum"
+    bl_label = "Update Scheduler Enum"
+    bl_description = "Update the scheduler enum with the available schedulers"
+
+    def execute(self, context):
+        print(Fore.GREEN + "\nUPDATING SCHEDULER ENUM..." + Fore.RESET)
+        global COMFY_SCHEDULERS
+        COMFY_SCHEDULERS.clear()
+        schedulers_list = comfyui_api.get_comfy_schedulers(context)
+        for scheduler in schedulers_list:
+            COMFY_SCHEDULERS.append(scheduler)
+
+        return {'FINISHED'}
+
+
 class AIR_OT_UpdateControlNetEnum(bpy.types.Operator):
     bl_idname = "ai_render.update_control_net_enum"
     bl_label = "Update Control Net Enum"
@@ -184,9 +351,25 @@ class AIR_OT_UpdateUpscaleModelEnum(bpy.types.Operator):
         return {'FINISHED'}
 
 
+class AIR_OT_SetComfyAsBackend(bpy.types.Operator):
+    bl_idname = "ai_render.set_comfy_as_backend"
+    bl_label = "Set ComfyUI as Backend"
+
+    def execute(self, context):
+        # Set the Adddon Preference AIR_Preferences.sd_backend
+        utils.get_addon_preferences(context).sd_backend = "comfyui"
+        utils.get_addon_preferences(context).local_sd_url = "http://127.0.0.1:8188"
+        utils.get_addon_preferences(context).is_local_sd_enabled = True
+        utils.get_addon_preferences(context).comfyui_path = "E:\\COMFY\\ComfyUI-robe\\"
+
+        return {'FINISHED'}
+
+
 classes = [
     AIR_OT_UpdateSDModelEnum,
     AIR_OT_UpdateLoraModelEnum,
+    AIR_OT_UpdateSamplerEnum,
+    AIR_OT_UpdateSchedulerEnum,
     AIR_OT_UpdateControlNetEnum,
     AIR_OT_UpdateUpscaleModelEnum,
     AIR_OT_open_comfyui_input_folder,
@@ -194,6 +377,7 @@ classes = [
     AIR_OT_open_comfyui_workflows_folder,
     AIR_OT_convert_path_in_workflow,
     AIR_OT_ReloadWorkflow,
+    AIR_OT_SetComfyAsBackend
 ]
 
 

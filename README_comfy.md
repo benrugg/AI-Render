@@ -47,7 +47,6 @@ If you are confident with ComfyUI, you can use the ```example.json``` file in th
 
 To get the example work, you'll need the following custom nodes:
 
-- [ComfyUI-Impact-Pack](https://github.com/ltdrdata/ComfyUI-Impact-Pack.git)
 - [ComfyUI-KJNodes](https://github.com/kijai/ComfyUI-KJNodes.git)
 - [comfyui_controlnet_aux](https://github.com/Fannovel16/comfyui_controlnet_aux.git)
 
@@ -235,7 +234,6 @@ comfyui:
 
 To get the example work, you'll need the following custom nodes:
 
-- [ComfyUI-Impact-Pack](https://github.com/ltdrdata/ComfyUI-Impact-Pack.git)
 - [ComfyUI-KJNodes](https://github.com/kijai/ComfyUI-KJNodes.git)
 - [comfyui_controlnet_aux](https://github.com/Fannovel16/comfyui_controlnet_aux.git)
 

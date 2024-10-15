@@ -5,6 +5,7 @@ import requests
 import json
 import pprint
 import platform
+import numpy as np
 from time import sleep
 from .. import Fore
 
@@ -14,382 +15,20 @@ from .. import (
     utils,
 )
 
-LOG_PROPS = True
-LOG_WORKFLOW = True
-LOG_PARAMS = True
-LOG_MAPPED_WORKFLOW = True
+LOG_PROPS = False
+LOG_WORKFLOW = False
+LOG_PARAMS = False
+LOG_MAPPED_WORKFLOW = False
 
-LOG_REQUEST = True
-LOG_RESPONSE = True
-LOG_LONG_RESPONSE = True
+LOG_REQUEST = False
+LOG_RESPONSE = False
+LOG_LONG_RESPONSE = False
 
 LOG_UPLOAD_IMAGE = True
 LOG_DOWNLOAD_IMAGE = True
 
-LOG_MODEL_RESPONSE = True
+LOG_MODEL_RESPONSE = False
 
-ORIGINAL_DATA = {
-    "3": {
-        "inputs": {
-            "seed": 967975925929612,
-            "steps": 10,
-            "cfg": 7.5,
-            "sampler_name": "dpmpp_2m_sde_gpu",
-            "scheduler": "karras",
-            "denoise": 1,
-            "model": [
-                "37",
-                0
-            ],
-            "positive": [
-                "16",
-                0
-            ],
-            "negative": [
-                "16",
-                1
-            ],
-            "latent_image": [
-                "10",
-                0
-            ]
-        },
-        "class_type": "KSampler",
-        "_meta": {
-            "title": "main_sampler"
-        }
-    },
-    "4": {
-        "inputs": {
-            "ckpt_name": "SD15\\3D\\3dAnimationDiffusion_lcm.safetensors"
-        },
-        "class_type": "CheckpointLoaderSimple",
-        "_meta": {
-            "title": "Load Checkpoint"
-        }
-    },
-    "6": {
-        "inputs": {
-            "text": "a beautiful (robotic:0.3) castle, vibrant, color, saturated, highly detailed, ultra HD, sharp photo, 8k, dark background, in focus",
-            "clip": [
-                "26",
-                1
-            ]
-        },
-        "class_type": "CLIPTextEncode",
-        "_meta": {
-            "title": "positive"
-        }
-    },
-    "7": {
-        "inputs": {
-            "text": "<embedding:EasyNegative>",
-            "clip": [
-                "26",
-                1
-            ]
-        },
-        "class_type": "CLIPTextEncode",
-        "_meta": {
-            "title": "negative"
-        }
-    },
-    "8": {
-        "inputs": {
-            "samples": [
-                "3",
-                0
-            ],
-            "vae": [
-                "11",
-                0
-            ]
-        },
-        "class_type": "VAEDecode",
-        "_meta": {
-            "title": "VAE Decode"
-        }
-    },
-    "9": {
-        "inputs": {
-            "filename_prefix": "ComfyUI",
-            "images": [
-                "35",
-                0
-            ]
-        },
-        "class_type": "SaveImage",
-        "_meta": {
-            "title": "output_image"
-        }
-    },
-    "10": {
-        "inputs": {
-            "pixels": [
-                "12",
-                0
-            ],
-            "vae": [
-                "11",
-                0
-            ]
-        },
-        "class_type": "VAEEncode",
-        "_meta": {
-            "title": "VAE Encode"
-        }
-    },
-    "11": {
-        "inputs": {
-            "vae_name": "vae-ft-mse-840000-ema-pruned.safetensors"
-        },
-        "class_type": "VAELoader",
-        "_meta": {
-            "title": "Load VAE"
-        }
-    },
-    "12": {
-        "inputs": {
-            "image": "castel-3dscan-color.png",
-            "upload": "image"
-        },
-        "class_type": "LoadImage",
-        "_meta": {
-            "title": "color"
-        }
-    },
-    "13": {
-        "inputs": {
-            "strength": 0.7000000000000001,
-            "start_percent": 0,
-            "end_percent": 0.7000000000000001,
-            "positive": [
-                "40",
-                0
-            ],
-            "negative": [
-                "40",
-                1
-            ],
-            "control_net": [
-                "14",
-                0
-            ],
-            "image": [
-                "15",
-                0
-            ]
-        },
-        "class_type": "ControlNetApplyAdvanced",
-        "_meta": {
-            "title": "Apply ControlNet (Advanced)"
-        }
-    },
-    "14": {
-        "inputs": {
-            "control_net_name": "SD15\\control_v11\\control_v11f1p_sd15_depth.pth"
-        },
-        "class_type": "ControlNetLoader",
-        "_meta": {
-            "title": "Load ControlNet Model"
-        }
-    },
-    "15": {
-        "inputs": {
-            "image": "castle-3dmodel-depth.png",
-            "upload": "image"
-        },
-        "class_type": "LoadImage",
-        "_meta": {
-            "title": "depth"
-        }
-    },
-    "16": {
-        "inputs": {
-            "strength": 0.7000000000000001,
-            "start_percent": 0,
-            "end_percent": 0.7000000000000001,
-            "positive": [
-                "13",
-                0
-            ],
-            "negative": [
-                "13",
-                1
-            ],
-            "control_net": [
-                "17",
-                0
-            ],
-            "image": [
-                "18",
-                0
-            ]
-        },
-        "class_type": "ControlNetApplyAdvanced",
-        "_meta": {
-            "title": "Apply ControlNet (Advanced)"
-        }
-    },
-    "17": {
-        "inputs": {
-            "control_net_name": "SD15\\control_v11\\control_v11p_sd15_normalbae.pth"
-        },
-        "class_type": "ControlNetLoader",
-        "_meta": {
-            "title": "Load ControlNet Model"
-        }
-    },
-    "18": {
-        "inputs": {
-            "image": "castle-3dmodel-normal.png",
-            "upload": "image"
-        },
-        "class_type": "LoadImage",
-        "_meta": {
-            "title": "normal"
-        }
-    },
-    "26": {
-        "inputs": {
-            "lora_name": "SD15\\Robotic_Jackal-ish.safetensors",
-            "strength_model": 1,
-            "strength_clip": 1,
-            "model": [
-                "28",
-                0
-            ],
-            "clip": [
-                "28",
-                1
-            ]
-        },
-        "class_type": "LoraLoader",
-        "_meta": {
-            "title": "Load LoRA"
-        }
-    },
-    "28": {
-        "inputs": {
-            "lora_name": "SD15\\Mermaids.safetensors",
-            "strength_model": 1,
-            "strength_clip": 1,
-            "model": [
-                "4",
-                0
-            ],
-            "clip": [
-                "4",
-                1
-            ]
-        },
-        "class_type": "LoraLoader",
-        "_meta": {
-            "title": "Load LoRA"
-        }
-    },
-    "34": {
-        "inputs": {
-            "model_name": "4x-UltraSharp.pth"
-        },
-        "class_type": "UpscaleModelLoader",
-        "_meta": {
-            "title": "Load Upscale Model"
-        }
-    },
-    "35": {
-        "inputs": {
-            "upscale_model": [
-                "34",
-                0
-            ],
-            "image": [
-                "8",
-                0
-            ]
-        },
-        "class_type": "ImageUpscaleWithModel",
-        "_meta": {
-            "title": "Upscale Image (using Model)"
-        }
-    },
-    "37": {
-        "inputs": {
-            "scale": 0.5,
-            "blur_sigma": 2,
-            "model": [
-                "26",
-                0
-            ]
-        },
-        "class_type": "SelfAttentionGuidance",
-        "_meta": {
-            "title": "Self-Attention Guidance"
-        }
-    },
-    "38": {
-        "inputs": {
-            "coarse": "disable",
-            "resolution": 512,
-            "image": [
-                "12",
-                0
-            ]
-        },
-        "class_type": "LineArtPreprocessor",
-        "_meta": {
-            "title": "Realistic Lineart"
-        }
-    },
-    "39": {
-        "inputs": {
-            "images": [
-                "38",
-                0
-            ]
-        },
-        "class_type": "PreviewImage",
-        "_meta": {
-            "title": "Preview Image"
-        }
-    },
-    "40": {
-        "inputs": {
-            "strength": 1,
-            "start_percent": 0,
-            "end_percent": 1,
-            "positive": [
-                "6",
-                0
-            ],
-            "negative": [
-                "7",
-                0
-            ],
-            "control_net": [
-                "41",
-                0
-            ],
-            "image": [
-                "38",
-                0
-            ]
-        },
-        "class_type": "ControlNetApplyAdvanced",
-        "_meta": {
-            "title": "Apply ControlNet (Advanced)"
-        }
-    },
-    "41": {
-        "inputs": {
-            "control_net_name": "SD15\\control_v11\\control_v11p_sd15_lineart.pth"
-        },
-        "class_type": "ControlNetLoader",
-        "_meta": {
-            "title": "Load ControlNet Model"
-        }
-    }
-}
 PARAM_TO_WORKFLOW = {
     "prompt": {
         "class_type": "CLIPTextEncode",
@@ -436,13 +75,8 @@ def load_workflow(context, workflow_file) -> dict:
         return operators.handle_error(f"Couldn't load the workflow file: {workflow_file}.", "workflow_file_not_found")
 
 
-def upload_image(img_file, subfolder):
+def upload_image(img_file, subfolder: str):
     """Upload the image to the input folder of ComfyUI"""
-    # This function is here for future use if we decide to use a remote ComfyUI server.
-
-    # At the moment we're not using it:
-    # ComfyUI is running locally and we can render the image directly
-    # from Blender to the ComfyUI input path without the need to upload it through the API.
 
     # Get the image path from the name of _io.BufferedReader
     image_path = img_file.name
@@ -530,7 +164,9 @@ def map_comfy_props(comfyui_props, workflow):
 
     updated_workflow = workflow
 
-    print(Fore.WHITE + "\nLOG COMFYUI PROPS:" + Fore.RESET)
+    if (LOG_PROPS):
+        print(Fore.WHITE + "\nLOG COMFYUI PROPS:" + Fore.RESET)
+
     for prop in comfyui_props.bl_rna.properties.items():
         if prop[1].type == 'COLLECTION':
             for item in getattr(comfyui_props, prop[0]):
@@ -538,8 +174,11 @@ def map_comfy_props(comfyui_props, workflow):
                 for sub_prop in item.bl_rna.properties.items():
                     # Access the updated workflow at node_key and change in the inputs only if key exists
                     if sub_prop[0] in updated_workflow[node_key]["inputs"]:
-                        updated_workflow[node_key]["inputs"][sub_prop[0]] = getattr(item, sub_prop[0])
-                        print(f"Updated workflow at node_key: {node_key} with {sub_prop[0]}: {getattr(item, sub_prop[0])}")
+                        updated_workflow[node_key]["inputs"][sub_prop[0]] = getattr(
+                            item, sub_prop[0])
+                        if (LOG_PROPS):
+                            print(
+                            f"Updated workflow at node_key: {node_key} with {sub_prop[0]}: {getattr(item, sub_prop[0])}")
                 print()
 
     if LOG_MAPPED_WORKFLOW:
@@ -581,20 +220,36 @@ def generate(params, img_file, filename_prefix, props, comfyui_props):
     # format the frame number to 4 digits
     frame_number = str(frame_number).zfill(4)
 
-    # color_image_path = comfyui_input_path + "color/Image" + frame_number + ".png"
-    # depth_image_path = comfyui_input_path + "depth/Image" + frame_number + ".png"
-    # normal_image_path = comfyui_input_path + "normal/Image" + frame_number + ".png"
-    # openpose_body_image_path = comfyui_input_path + "openpose_body/Image" + frame_number + ".png"
-
+    # Create the paths
     color_image_path = f"{get_color_file_input_path(bpy.context)}Image{frame_number}.png"
     depth_image_path = f"{get_depth_file_input_path(bpy.context)}Image{frame_number}.png"
     normal_image_path = f"{get_normal_file_input_path(bpy.context)}Image{frame_number}.png"
     openpose_body_image_path = f"{get_openpose_body_file_input_path(bpy.context)}Image{frame_number}.png"
 
+    # Add the paths to the params
     params['color_image'] = color_image_path
     params['depth_image'] = depth_image_path
     params['normal_image'] = normal_image_path
     params['openpose_body_image'] = openpose_body_image_path
+
+    # Create Color Image from pixels data
+    if (bpy.data.images['Viewer Node'].pixels):
+
+        pixels = bpy.data.images['Viewer Node'].pixels
+        print(len(pixels)) # size is always width * height * 4 (rgba)
+
+        # copy buffer to numpy array for faster manipulation
+        arr = np.array(pixels[:])
+        print('pixels max: %f; pixels min: %f' % (arr.max(), arr.min()))
+
+        # Save a temp image from the pixels
+        # temp_image = bpy.data.images.new(name="temp_image", width=512, height=512, alpha=True, float_buffer=False)
+        # temp_image.pixels = pixels
+        # temp_image.file_format = "PNG"
+        # temp_image.save_render(filepath=f"{get_color_file_input_path(bpy.context)}temp_image.png")
+
+        # # Upload the image to the input folder of ComfyUI
+        # upload_image(temp_image, "color")
 
     # map the params to the ComfyUI nodes
     mapped_workflow = map_params(params, selected_workflow)
@@ -786,21 +441,7 @@ def do_post(url, data):
         return operators.handle_error("The local Stable Diffusion server timed out. Set a longer timeout in AI Render preferences, or use a smaller image size.", "timeout")
 
 
-def debug_log(response):
-    print("request body:")
-    print(response.request.body)
-    print("\n")
-
-    print("response body:")
-    # print(response.content)
-
-    try:
-        print(response.json())
-    except:
-        print("body not json")
-
-
-# PUBLIC SUPPORT FUNCTIONS:
+# SUPPORT FUNCTIONS:
 def get_workflows_path(context):
     return utils.get_addon_preferences().comfyui_workflows_path
 
@@ -961,57 +602,106 @@ def get_lora_models(context):
     return models_list
 
 
-# TODO: Implement the enum trick for s
-# COMFY_SAMPLERS = []
-def get_samplers(self, context):
-    # NOTE: Keep the number values (fourth item in the tuples) in sync with DreamStudio's
-    # values (in stability_api.py). These act like an internal unique ID for Blender
-    # to use when switching between the lists.
+COMFY_SAMPLERS = []
+
+
+def create_comfy_sampler_enum(self, context):
+    enum_items = []
+    for i, sampler in enumerate(COMFY_SAMPLERS):
+        enum_items.append((sampler, sampler, "", i))
+    return enum_items
+
+
+def get_comfy_samplers(context):
+    """ GET /object_info/KSampler endpoint to get the available models"""
+
+    # prepare the server url
+    try:
+        server_url = get_server_url("/object_info/KSampler")
+    except:
+        return handle_error("It seems that you local ComfyUI server is not running", "local_server_url_missing")
+
+    # send the API request
+    response = do_get(server_url)
+
+    if response == False:
+        return None
+
+    samplers_list = []
+
+    # handle the response
+    if response.status_code == 200:
+
+        samplers_list = response.json()["KSampler"]["input"]["required"]["sampler_name"][0]
+
+        if LOG_MODEL_RESPONSE:
+            print(Fore.MAGENTA + "\nSAMPLERS RESPONSE: " + Fore.RESET)
+            if LOG_LONG_RESPONSE:
+                print(response.json())
+            else:
+                print("LONG RESPONSE LOGGING IS DISABLED")
+
+    else:
+        return handle_error(response)
+
+    return samplers_list
+
+
+def get_samplers():
+    # Not using this in Comfy, it's here only for compatibility with others backends
     return [
-        ('euler', 'euler', '', 10),
-        ('euler_ancestral', 'euler_ancestral', '', 20),
-        ('heun', 'heun', '', 30),
-        ('heunpp2', 'heunpp2', '', 40),
-        ('dpm_2', 'dpm_2', '', 50),
-        ('dpm_2_ancestral', 'dpm_2_ancestral', '', 60),
-        ('lms', 'lms', '', 70),
-        ('dpm_fast', 'dpm_fast', '', 80),
-        ('dpm_adaptive', 'dpm_adaptive', '', 90),
-        ('dpmpp_2s_ancestral', 'dpmpp_2s_ancestral', '', 100),
-        ('dpmpp_sde', 'dpmpp_sde', '', 110),
-        ('dpmpp_sde_gpu', 'dpmpp_sde_gpu', '', 120),
-        ('dpmpp_2m', 'dpmpp_2m', '', 130),
-        ('dpmpp_2m_sde', 'dpmpp_2m_sde', '', 140),
-        ('dpmpp_2m_sde_gpu', 'dpmpp_2m_sde_gpu', '', 150),
-        ('dpmpp_3m_sde', 'dpmpp_3m_sde', '', 160),
-        ('ddpm', 'ddpm', '', 170),
-        ('lcm', 'lcm', '', 180),
-        ('ddim', 'ddim', '', 190),
-        ('uni_pc', 'uni_pc', '', 200),
-        ('uni_pc_bh2', 'uni_pc_bh2', '', 210)
+        ('default', 'default', '', 20),
     ]
 
 
 def default_sampler():
-    return 'dpmpp_2m'
-
-# TODO: Implement the enum trick for schedulers?
-# COMFY_SCHEDULERS = []
+    # Not using this in Comfy, it's here only for compatibility with others backends
+    return 'default'
 
 
-def get_schedulers(self, context):
-    return [
-        ('normal', 'normal', '', 10),
-        ('karras', 'karras', '', 20),
-        ('exponential', 'exponential', '', 30),
-        ('sgm_uniform', 'sgm_uniform', '', 40),
-        ('simple', 'simple', '', 50),
-        ('ddim_uniform', 'ddim_uniform', '', 60),
-    ]
+COMFY_SCHEDULERS = []
 
 
-def default_scheduler():
-    return 'karras'
+def create_comfy_scheduler_enum(self, context):
+    enum_items = []
+    for i, scheduler in enumerate(COMFY_SCHEDULERS):
+        enum_items.append((scheduler, scheduler, "", i))
+    return enum_items
+
+
+def get_comfy_schedulers(context):
+    """ GET /object_info/KSampler endpoint to get the available models"""
+
+    # prepare the server url
+    try:
+        server_url = get_server_url("/object_info/KSampler")
+    except:
+        return handle_error("It seems that you local ComfyUI server is not running", "local_server_url_missing")
+
+    # send the API request
+    response = do_get(server_url)
+
+    if response == False:
+        return None
+
+    scheduler_list = []
+
+    # handle the response
+    if response.status_code == 200:
+
+        scheduler_list = response.json()["KSampler"]["input"]["required"]["scheduler"][0]
+
+        if LOG_MODEL_RESPONSE:
+            print(Fore.MAGENTA + "\nSCHEDULERS RESPONSE: " + Fore.RESET)
+            if LOG_LONG_RESPONSE:
+                print(response.json())
+            else:
+                print("LONG RESPONSE LOGGING IS DISABLED")
+
+    else:
+        return handle_error(response)
+
+    return scheduler_list
 
 
 COMFY_CONTROL_NETS = []
@@ -1401,6 +1091,11 @@ def ensure_compositor_nodes(context):
 
 
 # PATH FUNCTIONS:
+def get_default_comfy_workflows_path():
+    workflows_path = os.path.join(os.path.dirname(__file__), "comfyui", "workflows_api")
+    return workflows_path
+
+
 def get_comfyui_input_path(context):
     comfyui_path = utils.get_addon_preferences(context).comfyui_path
     return comfyui_path + "input/"
@@ -1441,13 +1136,11 @@ def get_upscaler_models(context):
 
 
 def is_upscaler_model_list_loaded(context=None):
-    if context is None:
-        context = bpy.context
-    return context.scene.air_props.automatic1111_available_upscaler_models != ""
+    return False  # In ComfyUI, the upscaler is managed by the nodes, so we don't need to load the list
 
 
 def default_upscaler_model():
-    return 'ESRGAN_4x'
+    return ''
 
 
 def get_image_format():
@@ -1459,15 +1152,15 @@ def supports_negative_prompts():
 
 
 def supports_choosing_model():
-    return False  # Setting to False, because every CheckpointLoaderSimple can have different models
+    return False  # Setting to False, because we can select the model from the CheckpointLoaderSimple node
 
 
 def supports_upscaling():
-    return False
+    return False  # In ComfyUI, the upscaler is managed by the nodes, so we don't need to load the list here
 
 
 def supports_reloading_upscaler_models():
-    return True
+    return False
 
 
 def supports_inpainting():
