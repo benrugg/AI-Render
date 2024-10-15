@@ -10,7 +10,7 @@ from . import (
     config,
     progress_bar,
     task_queue,
-    utils
+    utils,
 )
 
 from .sd_backends import automatic1111_api

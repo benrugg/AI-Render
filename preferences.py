@@ -32,13 +32,13 @@ class AIRPreferences(bpy.types.AddonPreferences):
     is_local_sd_enabled: bpy.props.BoolProperty(
         name="Enable Rendering with Local Stable Diffusion",
         description="NOTE: This is now legacy, but is used to set sd_backend for anyone who was previously using Automatic1111",
-        default=True,
+        default=False,
         update=properties.ensure_properties,
     )
 
     sd_backend: bpy.props.EnumProperty(
         name="Stable Diffusion Backend",
-        default="automatic1111",
+        default="dreamstudio",
         items=[
             ('dreamstudio', 'DreamStudio (cloud)', ''),
             ('stablehorde', 'Stable Horde (cloud)', ''),
@@ -53,8 +53,7 @@ class AIRPreferences(bpy.types.AddonPreferences):
     local_sd_url: bpy.props.StringProperty(
         name="URL of the Stable Diffusion Web Server",
         description="The location of the web server that is currently running on your local machine",
-        # WEBUI http://127.0.0.1:7860",  COMFYUI http://127.0.0.1:8188/ COMFYUI ON MY LAN http://172.16.10.5:8188/
-        default="http://127.0.0.1:8188/",
+        default="http://127.0.0.1:7860",
     )
 
     local_sd_timeout: bpy.props.IntProperty(
@@ -68,19 +67,19 @@ class AIRPreferences(bpy.types.AddonPreferences):
     is_opted_out_of_analytics: bpy.props.BoolProperty(
         name="Opt out of analytics",
         description="If this is checked, the add-on will not send or store any analytics data",
-        default=True,
+        default=False,
     )
 
     # Add-on Updater Preferences
     updater_expanded_in_preferences_panel: bpy.props.BoolProperty(
         name="Show the updater preferences",
         description="Updater preferences twirled down when True, twirled up when False",
-        default=True)
+        default=False)
 
     auto_check_update: bpy.props.BoolProperty(
         name="Auto-check for Update",
         description="If enabled, auto-check for updates using an interval",
-        default=False)
+        default=True)
 
     updater_interval_months: bpy.props.IntProperty(
         name='Months',
@@ -112,7 +111,7 @@ class AIRPreferences(bpy.types.AddonPreferences):
     # ComfyUI
     comfyui_path: bpy.props.StringProperty(
         name="ComfyUI Path",
-        default="E:/COMFY/ComfyUI-robe/",  # TODO: Autoset this
+        default="Set the location of ComfyUI",
         description="The path to the ComfyUI Installation",
         subtype="DIR_PATH",
     )
@@ -171,7 +170,7 @@ class AIRPreferences(bpy.types.AddonPreferences):
                 row = box.row()
                 row.prop(self, "stable_horde_api_key")
 
-            # Local Installation with Automatic1111 or ComfyUI
+            # Local Installation with Automatic1111
             if self.sd_backend == "automatic1111":
                 box = layout.box()
                 row = box.row()
@@ -231,6 +230,7 @@ class AIRPreferences(bpy.types.AddonPreferences):
                 row.operator("wm.url_open", text="Help with local installation", icon="URL").url \
                     = config.HELP_WITH_SHARK_INSTALLATION_URL
 
+            # ComfyUI Backend
             if self.sd_backend == "comfyui":
                 box = layout.box()
                 row = box.row()

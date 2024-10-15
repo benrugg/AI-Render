@@ -8,8 +8,6 @@ from . import (
 from .ui import ui_preset_styles
 from .sd_backends import automatic1111_api
 
-# Colorama Placeholder
-from . import Fore
 
 def get_available_samplers(self, context):
     return utils.get_active_backend().get_samplers()
