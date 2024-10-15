@@ -340,7 +340,7 @@ class AIR_OT_SetComfyAsBackend(bpy.types.Operator):
     def execute(self, context):
         # Set the Adddon Preference AIR_Preferences.sd_backend
         utils.get_addon_preferences(context).sd_backend = "comfyui"
-        utils.get_addon_preferences(context).local_sd_url = "127.0.0.1:8188"
+        utils.get_addon_preferences(context).local_sd_url = "http://127.0.0.1:8188"
         utils.get_addon_preferences(context).is_local_sd_enabled = True
         utils.get_addon_preferences(context).comfyui_path = "E:\\COMFY\\ComfyUI-robe"
 
