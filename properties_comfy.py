@@ -1,6 +1,15 @@
 import bpy
 from . import utils
-from .sd_backends import comfyui_api
+from .sd_backends.comfyui_api import (
+    load_workflow,
+    create_models_enum,
+    create_lora_enum,
+    create_control_net_enum,
+    create_upscale_model_enum,
+    create_comfy_sampler_enum,
+    create_comfy_scheduler_enum,
+    create_workflow_enum_realtime
+)
 
 from pprint import pprint
 
@@ -15,7 +24,7 @@ def create_props_from_workflow(self, context):
     """ Creates the properties and add the to the comfyui_nodes collection"""
 
     selected_workflow_file = self.comfyui_workflow
-    selected_workflow = comfyui_api.load_workflow(context, selected_workflow_file)
+    selected_workflow = load_workflow(context, selected_workflow_file)
     print(Fore.WHITE + "CREATING PROPERTIES FROM WORKFLOW: " + Fore.RESET + selected_workflow_file)
 
     set_current_workflow(self, context)
@@ -47,6 +56,7 @@ def create_props_from_workflow(self, context):
     bpy.ops.ai_render.update_ckpt_enum()
     bpy.ops.ai_render.update_lora_enum()
     bpy.ops.ai_render.update_sampler_enum()
+    bpy.ops.ai_render.update_scheduler_enum()
     bpy.ops.ai_render.update_control_net_enum()
     bpy.ops.ai_render.update_upscale_model_enum()
 
@@ -209,7 +219,9 @@ def create_props_from_workflow(self, context):
                 comfyui_ksampler.cfg = node["inputs"]["cfg"]
                 comfyui_ksampler.sampler_name = node["inputs"]["sampler_name"]
                 comfyui_ksampler.sampler_enum = node["inputs"]["sampler_name"]
-                comfyui_ksampler.scheduler = node["inputs"]["scheduler"]
+                comfyui_ksampler.scheduler_name = node["inputs"]["scheduler"]
+                comfyui_ksampler.scheduler_enum = node["inputs"]["scheduler"]
+
                 comfyui_ksampler.denoise = node["inputs"]["denoise"]
 
                 if LOG_PROP_CREATION:
@@ -229,6 +241,9 @@ def create_props_from_workflow(self, context):
                 comfyui_upscale_model_loader.name = node_id
                 comfyui_upscale_model_loader.upscale_model_name = node["inputs"]["model_name"]
                 comfyui_upscale_model_loader.upscale_model_enum = node["inputs"]["model_name"]
+
+                if LOG_PROP_CREATION:
+                    print(Fore.WHITE + "PROPERTIES CREATED FOR NODE: " + comfyui_upscale_model_loader.name + Fore.RESET)
 
             elif node["class_type"] == "CLIPSetLastLayer":
                 if LOG_PROP_CREATION:
@@ -267,6 +282,10 @@ def set_comfy_sampler_name(self, context):
     self.sampler_name = self.sampler_enum
 
 
+def set_comfy_scheduler_name(self, context):
+    self.scheduler_name = self.scheduler_enum
+
+
 class ComfyUICheckpointLoaderSimple(bpy.types.PropertyGroup):
     expanded: bpy.props.BoolProperty(
         name="expanded",
@@ -281,7 +300,7 @@ class ComfyUICheckpointLoaderSimple(bpy.types.PropertyGroup):
     ckpt_enum: bpy.props.EnumProperty(
         name="ckpt_enum",
         default=0,
-        items=comfyui_api.create_models_enum,
+        items=create_models_enum,
         description="A list of the available checkpoints",
         update=set_ckpt_name
     )
@@ -301,7 +320,7 @@ class ComfyUILoraNode(bpy.types.PropertyGroup):
     lora_enum: bpy.props.EnumProperty(
         name="lora_enum",
         default=0,
-        items=comfyui_api.create_lora_enum,
+        items=create_lora_enum,
         description="A list of the available LoRA models",
         update=set_lora_name
     )
@@ -339,7 +358,7 @@ class ComfyUIControlNetNode(bpy.types.PropertyGroup):
     control_net_enum: bpy.props.EnumProperty(
         name="control_net_enum",
         default=0,
-        items=comfyui_api.create_control_net_enum,
+        items=create_control_net_enum,
         description="A list of the available ControlNet models"
     )
     strength: bpy.props.FloatProperty(
@@ -381,7 +400,7 @@ class ComfyUIACNAdvancedControlNetApply(bpy.types.PropertyGroup):
     control_net_enum: bpy.props.EnumProperty(
         name="control_net_enum",
         default=0,
-        items=comfyui_api.create_control_net_enum,
+        items=create_control_net_enum,
         description="A list of the available ControlNet models"
     )
     strength: bpy.props.FloatProperty(
@@ -423,7 +442,7 @@ class ComfyUIUpscaleModelLoader(bpy.types.PropertyGroup):
     upscale_model_enum: bpy.props.EnumProperty(
         name="upscale_model_enum",
         default=0,
-        items=comfyui_api.create_upscale_model_enum,
+        items=create_upscale_model_enum,
         description="A list of the available upscale models",
         update=set_upscale_model_name
     )
@@ -497,15 +516,21 @@ class ComfyUIMainKSampler(bpy.types.PropertyGroup):
     sampler_enum: bpy.props.EnumProperty(
         name="sampler_enum",
         default=130,
-        items=comfyui_api.create_comfy_sampler_enum,
+        items=create_comfy_sampler_enum,
         description="A list of the available samplers",
         update=set_comfy_sampler_name
     )
-    scheduler: bpy.props.EnumProperty(
-        name="Scheduler",
+    scheduler_name: bpy.props.StringProperty(
+        name="current_scheduler_name",
+         default="",
+         description="Name of the scheduler"
+    )
+    scheduler_enum: bpy.props.EnumProperty(
+        name="scheduler_enum",
         default=20,
-        items=comfyui_api.get_schedulers,
-        description="Scheduler",
+        items=create_comfy_scheduler_enum,
+        description="A list of the available schedulers",
+        update=set_comfy_scheduler_name
     )
     denoise: bpy.props.FloatProperty(
         name="Denoise",
@@ -540,7 +565,7 @@ class ComfyUIProps(bpy.types.PropertyGroup):
     comfyui_workflow: bpy.props.EnumProperty(
         name="comfyui_workflow",
         default=0,
-        items=comfyui_api.create_workflow_enum_realtime,
+        items=create_workflow_enum_realtime,
         description="A list of the available workflows in the path specified in the addon preferences",
         update=create_props_from_workflow
     )

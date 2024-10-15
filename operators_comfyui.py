@@ -16,6 +16,7 @@ from .sd_backends.comfyui_api import (
     COMFY_CKPT_MODELS,
     COMFY_LORA_MODELS,
     COMFY_SAMPLERS,
+    COMFY_SCHEDULERS,
     COMFY_CONTROL_NETS,
     COMFY_UPSCALE_MODELS,
 )
@@ -242,6 +243,7 @@ class AIR_OT_ReloadWorkflow(bpy.types.Operator):
         # Trigger the update of the update of the enums before setting the new values
         bpy.ops.ai_render.update_ckpt_enum()
         bpy.ops.ai_render.update_sampler_enum()
+        bpy.ops.ai_render.update_scheduler_enum()
         bpy.ops.ai_render.update_lora_enum()
         bpy.ops.ai_render.update_upscale_model_enum()
         bpy.ops.ai_render.update_control_net_enum()
@@ -301,6 +303,22 @@ class AIR_OT_UpdateSamplerEnum(bpy.types.Operator):
         return {'FINISHED'}
 
 
+class AIR_OT_UpdateSchedulerEnum(bpy.types.Operator):
+    bl_idname = "ai_render.update_scheduler_enum"
+    bl_label = "Update Scheduler Enum"
+    bl_description = "Update the scheduler enum with the available schedulers"
+
+    def execute(self, context):
+        print(Fore.GREEN + "\nUPDATING SCHEDULER ENUM..." + Fore.RESET)
+        global COMFY_SCHEDULERS
+        COMFY_SCHEDULERS.clear()
+        schedulers_list = comfyui_api.get_comfy_schedulers(context)
+        for scheduler in schedulers_list:
+            COMFY_SCHEDULERS.append(scheduler)
+
+        return {'FINISHED'}
+
+
 class AIR_OT_UpdateControlNetEnum(bpy.types.Operator):
     bl_idname = "ai_render.update_control_net_enum"
     bl_label = "Update Control Net Enum"
@@ -351,6 +369,7 @@ classes = [
     AIR_OT_UpdateSDModelEnum,
     AIR_OT_UpdateLoraModelEnum,
     AIR_OT_UpdateSamplerEnum,
+    AIR_OT_UpdateSchedulerEnum,
     AIR_OT_UpdateControlNetEnum,
     AIR_OT_UpdateUpscaleModelEnum,
     AIR_OT_open_comfyui_input_folder,

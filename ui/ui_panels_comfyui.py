@@ -78,8 +78,10 @@ class AIR_PT_comfyui(bpy.types.Panel):
                     box = main_box.box()
                     box.scale_y = 1
                     row = box.row()
+
                     # Display the node number
                     # row.label(text=item.name, icon='NODE')
+
                     for sub_prop in item.bl_rna.properties.items():
 
                         if sub_prop[1].type == 'ENUM':
@@ -97,6 +99,8 @@ class AIR_PT_comfyui(bpy.types.Panel):
                                 col2.operator('ai_render.update_lora_enum', text='', icon='FILE_REFRESH')
                             elif sub_prop[0] == 'sampler_enum':
                                 col2.operator('ai_render.update_sampler_enum', text='', icon='FILE_REFRESH')
+                            elif sub_prop[0] == 'scheduler_enum':
+                                col2.operator('ai_render.update_scheduler_enum', text='', icon='FILE_REFRESH')
                             elif sub_prop[0] == 'control_net_enum':
                                 col2.operator('ai_render.update_control_net_enum', text='', icon='FILE_REFRESH')
                             elif sub_prop[0] == 'upscale_model_enum':

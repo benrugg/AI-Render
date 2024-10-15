@@ -604,6 +604,7 @@ def get_lora_models(context):
 
 COMFY_SAMPLERS = []
 
+
 def create_comfy_sampler_enum(self, context):
     enum_items = []
     for i, sampler in enumerate(COMFY_SAMPLERS):
@@ -612,8 +613,7 @@ def create_comfy_sampler_enum(self, context):
 
 
 def get_comfy_samplers(context):
-    """ GET /object_info/CheckpointLoaderSimple endpoint
-    to get the available models"""
+    """ GET /object_info/KSampler endpoint to get the available models"""
 
     # prepare the server url
     try:
@@ -658,23 +658,50 @@ def default_sampler():
     # Not using this in Comfy, it's here only for compatibility with others backends
     return 'default'
 
-# TODO: Implement the enum trick for schedulers?
-# COMFY_SCHEDULERS = []
+
+COMFY_SCHEDULERS = []
 
 
-def get_schedulers(self, context):
-    return [
-        ('normal', 'normal', '', 10),
-        ('karras', 'karras', '', 20),
-        ('exponential', 'exponential', '', 30),
-        ('sgm_uniform', 'sgm_uniform', '', 40),
-        ('simple', 'simple', '', 50),
-        ('ddim_uniform', 'ddim_uniform', '', 60),
-    ]
+def create_comfy_scheduler_enum(self, context):
+    enum_items = []
+    for i, scheduler in enumerate(COMFY_SCHEDULERS):
+        enum_items.append((scheduler, scheduler, "", i))
+    return enum_items
 
 
-def default_scheduler():
-    return 'karras'
+def get_comfy_schedulers(context):
+    """ GET /object_info/KSampler endpoint to get the available models"""
+
+    # prepare the server url
+    try:
+        server_url = get_server_url("/object_info/KSampler")
+    except:
+        return handle_error("It seems that you local ComfyUI server is not running", "local_server_url_missing")
+
+    # send the API request
+    response = do_get(server_url)
+
+    if response == False:
+        return None
+
+    scheduler_list = []
+
+    # handle the response
+    if response.status_code == 200:
+
+        scheduler_list = response.json()["KSampler"]["input"]["required"]["scheduler"][0]
+
+        if LOG_MODEL_RESPONSE:
+            print(Fore.MAGENTA + "\nSCHEDULERS RESPONSE: " + Fore.RESET)
+            if LOG_LONG_RESPONSE:
+                print(response.json())
+            else:
+                print("LONG RESPONSE LOGGING IS DISABLED")
+
+    else:
+        return handle_error(response)
+
+    return scheduler_list
 
 
 COMFY_CONTROL_NETS = []
