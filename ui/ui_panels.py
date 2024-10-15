@@ -115,6 +115,11 @@ class AIR_PT_setup(bpy.types.Panel):
             row = layout.row()
             row.prop(utils.get_addon_preferences(context), "dream_studio_api_key")
 
+            # Quick Switch to ComfyUI
+            row = layout.row()
+            row.scale_y = 1.5
+            row.operator("ai_render.set_comfy_as_backend", text="Switch to ComfyUI", icon="BRUSH_CURVES_DENSITY")
+
         # show the image dimension help if the dimensions are invalid or too large
         elif AIR_PT_setup.has_dimensions_issue(context):
             if not AIR_PT_setup.are_dimensions_valid(context):
@@ -157,7 +162,7 @@ class AIR_PT_setup(bpy.types.Panel):
             row.separator()
             row.operator(operators.AIR_OT_disable.bl_idname, text="Disable AI Render")
 
-            # Display Preferences for quick access
+            # Display Preferences for quick access to Local Backends
             box = layout.box()
             box.label(text="Addon Preferences")
 

@@ -333,6 +333,20 @@ class AIR_OT_UpdateUpscaleModelEnum(bpy.types.Operator):
         return {'FINISHED'}
 
 
+class AIR_OT_SetComfyAsBackend(bpy.types.Operator):
+    bl_idname = "ai_render.set_comfy_as_backend"
+    bl_label = "Set ComfyUI as Backend"
+
+    def execute(self, context):
+        # Set the Adddon Preference AIR_Preferences.sd_backend
+        utils.get_addon_preferences(context).sd_backend = "comfyui"
+        utils.get_addon_preferences(context).local_sd_url = "127.0.0.1:8188"
+        utils.get_addon_preferences(context).is_local_sd_enabled = True
+        utils.get_addon_preferences(context).comfyui_path = "E:\\COMFY\\ComfyUI-robe"
+
+        return {'FINISHED'}
+
+
 classes = [
     AIR_OT_UpdateSDModelEnum,
     AIR_OT_UpdateLoraModelEnum,
@@ -344,6 +358,7 @@ classes = [
     AIR_OT_open_comfyui_workflows_folder,
     AIR_OT_convert_path_in_workflow,
     AIR_OT_ReloadWorkflow,
+    AIR_OT_SetComfyAsBackend
 ]
 
 
