@@ -1,5 +1,4 @@
 import bpy
-import os
 from . import (
     addon_updater_ops,
     config,
@@ -8,11 +7,7 @@ from . import (
     utils,
 )
 
-
-def get_default_comfy_workflows_path():
-    workflows_path = os.path.join(os.path.dirname(__file__), "sd_backends", "comfyui", "workflows_api")
-    return workflows_path
-
+from .sd_backends.comfyui_api import get_default_comfy_workflows_path
 
 class AIRPreferences(bpy.types.AddonPreferences):
     bl_idname = __package__
@@ -37,19 +32,19 @@ class AIRPreferences(bpy.types.AddonPreferences):
     is_local_sd_enabled: bpy.props.BoolProperty(
         name="Enable Rendering with Local Stable Diffusion",
         description="NOTE: This is now legacy, but is used to set sd_backend for anyone who was previously using Automatic1111",
-        default=True,
+        default=False,
         update=properties.ensure_properties,
     )
 
     sd_backend: bpy.props.EnumProperty(
         name="Stable Diffusion Backend",
-        default="comfyui",
+        default="dreamstudio",
         items=[
-            ('comfyui', 'ComfUI (local)', ''),
-            ('automatic1111', 'Automatic1111 (local)', ''),
             ('dreamstudio', 'DreamStudio (cloud)', ''),
             ('stablehorde', 'Stable Horde (cloud)', ''),
+            ('automatic1111', 'Automatic1111 (local)', ''),
             ('shark', 'SHARK by nod.ai (local)', ''),
+            ('comfyui', 'ComfUI (local)', ''),
         ],
         update=properties.ensure_properties,
         description="Choose a Stable Diffusion backend to use. DreamStudio is the default, and is the quickest to run. Stable Horde is a community-run backend that is completely free. Automatic1111 is a local installation of Stable Diffusion.",
@@ -58,8 +53,7 @@ class AIRPreferences(bpy.types.AddonPreferences):
     local_sd_url: bpy.props.StringProperty(
         name="URL of the Stable Diffusion Web Server",
         description="The location of the web server that is currently running on your local machine",
-        # WEBUI http://127.0.0.1:7860",  COMFYUI http://127.0.0.1:8188/
-        default="http://127.0.0.1:8188/",
+        default="http://127.0.0.1:7860",
     )
 
     local_sd_timeout: bpy.props.IntProperty(
@@ -73,19 +67,19 @@ class AIRPreferences(bpy.types.AddonPreferences):
     is_opted_out_of_analytics: bpy.props.BoolProperty(
         name="Opt out of analytics",
         description="If this is checked, the add-on will not send or store any analytics data",
-        default=True,
+        default=False,
     )
 
     # Add-on Updater Preferences
     updater_expanded_in_preferences_panel: bpy.props.BoolProperty(
         name="Show the updater preferences",
         description="Updater preferences twirled down when True, twirled up when False",
-        default=True)
+        default=False)
 
     auto_check_update: bpy.props.BoolProperty(
         name="Auto-check for Update",
         description="If enabled, auto-check for updates using an interval",
-        default=False)
+        default=True)
 
     updater_interval_months: bpy.props.IntProperty(
         name='Months',
@@ -117,7 +111,7 @@ class AIRPreferences(bpy.types.AddonPreferences):
     # ComfyUI
     comfyui_path: bpy.props.StringProperty(
         name="ComfyUI Path",
-        default="E:/COMFY/ComfyUI-robe/",  # TODO: Autoset this
+        default="Set the location of ComfyUI",
         description="The path to the ComfyUI Installation",
         subtype="DIR_PATH",
     )
@@ -176,7 +170,7 @@ class AIRPreferences(bpy.types.AddonPreferences):
                 row = box.row()
                 row.prop(self, "stable_horde_api_key")
 
-            # Local Installation with Automatic1111 or ComfyUI
+            # Local Installation with Automatic1111
             if self.sd_backend == "automatic1111":
                 box = layout.box()
                 row = box.row()
@@ -199,8 +193,7 @@ class AIRPreferences(bpy.types.AddonPreferences):
                 col.prop(self, "local_sd_timeout", text="")
 
                 box.separator()
-                utils.label_multiline(box, text=f"AI Render will use your local Stable Diffusion installation. Please make sure the WebUI or ComfyUI are launched and running in a terminal.",
-                                      icon="KEYTYPE_BREAKDOWN_VEC", width=width_guess)
+                utils.label_multiline(box, text=f"AI Render will use your local Stable Diffusion installation. Please make sure the Web UI is launched and running in a terminal.", icon="KEYTYPE_BREAKDOWN_VEC", width=width_guess)
 
                 box.separator()
                 row = box.row()
@@ -230,14 +223,14 @@ class AIRPreferences(bpy.types.AddonPreferences):
                 col.prop(self, "local_sd_timeout", text="")
 
                 box.separator()
-                utils.label_multiline(box, text=f"AI Render will use your local Stable Diffusion installation. Please make sure the Web UI is launched and running in a terminal.",
-                                      icon="KEYTYPE_BREAKDOWN_VEC", width=width_guess)
+                utils.label_multiline(box, text=f"AI Render will use your local Stable Diffusion installation. Please make sure the Web UI is launched and running in a terminal.", icon="KEYTYPE_BREAKDOWN_VEC", width=width_guess)
 
                 box.separator()
                 row = box.row()
                 row.operator("wm.url_open", text="Help with local installation", icon="URL").url \
                     = config.HELP_WITH_SHARK_INSTALLATION_URL
 
+            # ComfyUI Backend
             if self.sd_backend == "comfyui":
                 box = layout.box()
                 row = box.row()
@@ -284,7 +277,7 @@ class AIRPreferences(bpy.types.AddonPreferences):
 def update_sd_backend_from_previous_installation(context):
     preferences = utils.get_addon_preferences(context)
     if preferences.is_local_sd_enabled:
-        preferences.sd_backend = "comfyui"
+        preferences.sd_backend = "automatic1111"
         preferences.is_local_sd_enabled = False
 
 

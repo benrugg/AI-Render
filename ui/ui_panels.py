@@ -62,7 +62,6 @@ class AIR_PT_setup(bpy.types.Panel):
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
     bl_context = "render"
-    bl_options = {'DEFAULT_CLOSED'}
 
     @classmethod
     def is_api_key_valid(cls, context):
@@ -116,16 +115,19 @@ class AIR_PT_setup(bpy.types.Panel):
             row = layout.row()
             row.prop(utils.get_addon_preferences(context), "dream_studio_api_key")
 
+            # Quick Switch to ComfyUI
+            row = layout.row()
+            row.scale_y = 1.5
+            row.operator("ai_render.set_comfy_as_backend", text="Switch to ComfyUI", icon="BRUSH_CURVES_DENSITY")
+
         # show the image dimension help if the dimensions are invalid or too large
         elif AIR_PT_setup.has_dimensions_issue(context):
             if not AIR_PT_setup.are_dimensions_valid(context):
                 utils.label_multiline(layout, text="Adjust Image Size: \nStable Diffusion only works on certain image dimensions.", icon="INFO", width=width_guess)
             elif not AIR_PT_setup.are_dimensions_small_enough(context):
-                utils.label_multiline(
-                    layout, text=f"Adjust Image Size: \nImage dimensions are too large. Please decrease width and/or height. Total pixel area must be at most {round(utils.get_active_backend().max_image_size() / (1024*1024), 1)} megapixels.", icon="INFO", width=width_guess)
+                utils.label_multiline(layout, text=f"Adjust Image Size: \nImage dimensions are too large. Please decrease width and/or height. Total pixel area must be at most {round(utils.get_active_backend().max_image_size() / (1024*1024), 1)} megapixels.", icon="INFO", width=width_guess)
             else:
-                utils.label_multiline(
-                    layout, text=f"Adjust Image Size: \nImage dimensions are too small. Please increase width and/or height. Total pixel area must be at least {round(utils.get_active_backend().min_image_size() / (1024*1024), 1)} megapixels.", icon="INFO", width=width_guess)
+                utils.label_multiline(layout, text=f"Adjust Image Size: \nImage dimensions are too small. Please increase width and/or height. Total pixel area must be at least {round(utils.get_active_backend().min_image_size() / (1024*1024), 1)} megapixels.", icon="INFO", width=width_guess)
 
             layout.separator()
 
@@ -149,9 +151,8 @@ class AIR_PT_setup(bpy.types.Panel):
         # else, show the ready / getting started message and disable and change image size buttons
         else:
             utils.label_multiline(layout, text="You're ready to start rendering!", width=width_guess, alignment="CENTER")
-
-            # row = layout.row()
-            # row.operator("wm.url_open", text="Help Getting Started", icon="URL").url = config.VIDEO_TUTORIAL_URL
+            row = layout.row()
+            row.operator("wm.url_open", text="Help Getting Started", icon="URL").url = config.VIDEO_TUTORIAL_URL
 
             row = layout.row(align=True)
             if utils.is_using_sdxl_1024_model(scene):
@@ -161,6 +162,7 @@ class AIR_PT_setup(bpy.types.Panel):
             row.separator()
             row.operator(operators.AIR_OT_disable.bl_idname, text="Disable AI Render")
 
+            # Display Preferences for quick access to Local Backends
             box = layout.box()
             box.label(text="Addon Preferences")
 
@@ -190,7 +192,6 @@ class AIR_PT_prompt(bpy.types.Panel):
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
     bl_context = "render"
-    # bl_options = {'DEFAULT_CLOSED'}
 
     @classmethod
     def poll(cls, context):
@@ -286,13 +287,6 @@ class AIR_PT_advanced_options(bpy.types.Panel):
         sub.label(text="Image Similarity")
         sub = row.column()
         sub.prop(props, 'image_similarity', text="", slider=False)
-
-        # Denoising Strength
-        # row = layout.row()
-        # sub = row.column()
-        # sub.label(text="Denoising Strength")
-        # sub = row.column()
-        # sub.prop(props, 'denoising_strength', text="", slider=False)
 
         # Steps
         row = layout.row()
@@ -695,6 +689,20 @@ class AIR_PT_animation(bpy.types.Panel):
         row.operator(operators.AIR_OT_render_animation.bl_idname, icon="RENDER_ANIMATION", text=render_animation_text)
         row.enabled = is_animation_enabled_button_enabled
 
+        # Path
+        row = layout.row()
+        row.prop(props, "animation_output_path", text="Path")
+
+        # Animated Prompts
+        layout.separator()
+
+        row = layout.row()
+        row.prop(props, "use_animated_prompts", text="Use Animated Prompts")
+
+        if props.use_animated_prompts:
+            row = layout.row()
+            row.operator(operators.AIR_OT_edit_animated_prompts.bl_idname)
+
         # Tips
         if round(props.image_similarity, 2) < 0.7 and not props.close_animation_tips:
             layout.separator()
@@ -714,6 +722,7 @@ class AIR_PT_animation(bpy.types.Panel):
 classes = [
     AIR_PT_main,
     AIR_PT_setup,
+    AIR_PT_prompt,
     AIR_PT_advanced_options,
     AIR_PT_controlnet,
     AIR_PT_operation,
@@ -721,7 +730,6 @@ classes = [
     AIR_PT_inpaint,
     AIR_PT_outpaint,
     AIR_PT_animation,
-    AIR_PT_prompt,
 ]
 
 

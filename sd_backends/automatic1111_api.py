@@ -194,9 +194,9 @@ def do_post(url, data):
 
 
 def debug_log(response):
-    print("request body:")
-    print(response.request.body)
-    print("\n")
+    # print("request body:")
+    # print(response.request.body)
+    # print("\n")
 
     print("response body:")
     print(response.content)
@@ -209,7 +209,7 @@ def debug_log(response):
 
 # PUBLIC SUPPORT FUNCTIONS:
 
-def get_samplers(self, context):
+def get_samplers():
     # NOTE: Keep the number values (fourth item in the tuples) in sync with DreamStudio's
     # values (in stability_api.py). These act like an internal unique ID for Blender
     # to use when switching between the lists.
