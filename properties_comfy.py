@@ -46,6 +46,7 @@ def create_props_from_workflow(self, context):
     # Update the enums
     bpy.ops.ai_render.update_ckpt_enum()
     bpy.ops.ai_render.update_lora_enum()
+    bpy.ops.ai_render.update_sampler_enum()
     bpy.ops.ai_render.update_control_net_enum()
     bpy.ops.ai_render.update_upscale_model_enum()
 
@@ -74,7 +75,7 @@ def create_props_from_workflow(self, context):
                         utils.error_message, title="Error", icon='ERROR')
 
                 if LOG_PROP_CREATION:
-                    print(Fore.WHITE + "PROPERTY CREATED: " + comfyui_checkpoint_loader_simple.name + Fore.RESET)
+                    print(Fore.WHITE + "PROPERTIES CREATED FOR NODE: " + comfyui_checkpoint_loader_simple.name + Fore.RESET)
 
             elif node["class_type"] == "LoraLoader":
                 if LOG_PROP_CREATION:
@@ -97,7 +98,7 @@ def create_props_from_workflow(self, context):
                 comfyui_lora_node.lora_enum = node["inputs"]["lora_name"]
 
                 if LOG_PROP_CREATION:
-                    print(Fore.WHITE + "PROPERTY CREATED: " + Fore.RESET + comfyui_lora_node.name)
+                    print(Fore.WHITE + "PROPERTIES CREATED FOR NODE: " + Fore.RESET + comfyui_lora_node.name)
 
             elif node["class_type"] == "ControlNetApplyAdvanced":
                 if LOG_PROP_CREATION:
@@ -127,7 +128,7 @@ def create_props_from_workflow(self, context):
                 comfyui_control_net_node.control_net_enum = control_net_node_model_path
 
                 if LOG_PROP_CREATION:
-                    print(Fore.WHITE + "PROPERTY CREATED: " + comfyui_control_net_node.name + Fore.RESET)
+                    print(Fore.WHITE + "PROPERTIES CREATED FOR NODE: " + comfyui_control_net_node.name + Fore.RESET)
 
             elif node["class_type"] == "ACN_AdvancedControlNetApply":
                 if LOG_PROP_CREATION:
@@ -158,7 +159,7 @@ def create_props_from_workflow(self, context):
                 comfyui_acn_advanced_control_net_apply.control_net_enum = control_net_node_model_path
 
                 if LOG_PROP_CREATION:
-                    print(Fore.WHITE + "PROPERTY CREATED: " + comfyui_acn_advanced_control_net_apply.name + Fore.RESET)
+                    print(Fore.WHITE + "PROPERTIES CREATED FOR NODE: " + comfyui_acn_advanced_control_net_apply.name + Fore.RESET)
 
             elif node["class_type"] == "SelfAttentionGuidance":
                 if LOG_PROP_CREATION:
@@ -175,7 +176,7 @@ def create_props_from_workflow(self, context):
                 comfyui_self_attention_guidance.scale = node["inputs"]["scale"]
 
                 if LOG_PROP_CREATION:
-                    print(Fore.WHITE + "PROPERTY CREATED: " + comfyui_self_attention_guidance.name + Fore.RESET)
+                    print(Fore.WHITE + "PROPERTIES CREATED FOR NODE: " + comfyui_self_attention_guidance.name + Fore.RESET)
 
             elif node["class_type"] == "KSampler":
 
@@ -211,7 +212,7 @@ def create_props_from_workflow(self, context):
                 comfyui_ksampler.denoise = node["inputs"]["denoise"]
 
                 if LOG_PROP_CREATION:
-                    print(Fore.WHITE + "PROPERTY CREATED: " + comfyui_ksampler.name + Fore.RESET)
+                    print(Fore.WHITE + "PROPERTIES CREATED FOR NODE: " + comfyui_ksampler.name + Fore.RESET)
 
             elif node["class_type"] == "UpscaleModelLoader":
 
@@ -241,17 +242,8 @@ def create_props_from_workflow(self, context):
                 comfyui_clip_set_last_layer.expanded = False
                 comfyui_clip_set_last_layer.stop_at_clip_layer = node["inputs"]["stop_at_clip_layer"]
 
-
-def update_air_props(self, context):
-    """Update the AI Render properties in the scene"""
-
-    context.scene.air_props.seed = self.seed
-    context.scene.air_props.steps = self.steps
-    context.scene.air_props.cfg_scale = self.cfg
-    context.scene.air_props.sampler = self.sampler_name
-
-    context.scene.air_props.image_similarity = round(
-        1 - self.denoise, 4)
+                if LOG_PROP_CREATION:
+                    print(Fore.WHITE + "PROPERTIES CREATED FOR NODE: " + comfyui_clip_set_last_layer.name + Fore.RESET)
 
 
 def set_current_workflow(self, context):
@@ -268,6 +260,10 @@ def set_lora_name(self, context):
 
 def set_upscale_model_name(self, context):
     self.upscale_model_name = self.upscale_model_enum
+
+
+def set_comfy_sampler_name(self, context):
+    self.sampler_name = self.sampler_enum
 
 
 class ComfyUICheckpointLoaderSimple(bpy.types.PropertyGroup):
@@ -468,7 +464,6 @@ class ComfyUIMainKSampler(bpy.types.PropertyGroup):
         name="Seed",
         min=0,
         description="Seed",
-        update=update_air_props
     )
     is_main_sampler: bpy.props.BoolProperty(
         name="is_main_sampler",
@@ -483,7 +478,6 @@ class ComfyUIMainKSampler(bpy.types.PropertyGroup):
         min=1,
         max=150,
         description="Steps",
-        update=update_air_props
     )
     cfg: bpy.props.FloatProperty(
         name="Cfg",
@@ -493,21 +487,18 @@ class ComfyUIMainKSampler(bpy.types.PropertyGroup):
         min=0,
         max=35,
         description="Cfg",
-        update=update_air_props
     )
     sampler_name: bpy.props.EnumProperty(
         name="Sampler",
         default=130,
-        items=comfyui_api.get_samplers,
+        items=comfyui_api.create_comfy_sampler_enum,
         description="Sampler",
-        update=update_air_props
     )
     scheduler: bpy.props.EnumProperty(
         name="Scheduler",
         default=20,
         items=comfyui_api.get_schedulers,
         description="Scheduler",
-        update=update_air_props
     )
     denoise: bpy.props.FloatProperty(
         name="Denoise",
@@ -515,7 +506,6 @@ class ComfyUIMainKSampler(bpy.types.PropertyGroup):
         description="Denoise",
         min=0.001,
         max=1,
-        update=update_air_props
     )
 
 

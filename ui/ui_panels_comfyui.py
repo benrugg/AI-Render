@@ -95,6 +95,8 @@ class AIR_PT_comfyui(bpy.types.Panel):
                                 col2.operator('ai_render.update_ckpt_enum', text='', icon='FILE_REFRESH')
                             elif sub_prop[0] == 'lora_enum':
                                 col2.operator('ai_render.update_lora_enum', text='', icon='FILE_REFRESH')
+                            elif sub_prop[0] == 'sampler_enum':
+                                col2.operator('ai_render.update_sampler_enum', text='', icon='FILE_REFRESH')
                             elif sub_prop[0] == 'control_net_enum':
                                 col2.operator('ai_render.update_control_net_enum', text='', icon='FILE_REFRESH')
                             elif sub_prop[0] == 'upscale_model_enum':

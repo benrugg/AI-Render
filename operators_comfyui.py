@@ -15,6 +15,7 @@ from .sd_backends.comfyui_api import (
     COMFY_WORKFLOWS,
     COMFY_CKPT_MODELS,
     COMFY_LORA_MODELS,
+    COMFY_SAMPLERS,
     COMFY_CONTROL_NETS,
     COMFY_UPSCALE_MODELS,
 )
@@ -130,26 +131,6 @@ def comfy_generate(scene, prompts=None, use_last_sd_image=False):
     # store this image filename as the last generated image
     props.last_generated_image_filename = generated_image_file
 
-    # if we want to automatically upscale (and the backend supports it), do it now
-    if props.do_upscale_automatically and sd_backend.supports_upscaling() and sd_backend.is_upscaler_model_list_loaded():
-        after_output_filename_prefix = after_output_filename_prefix + "-upscaled"
-
-        opened_image_file = open(generated_image_file, 'rb')
-        generated_image_file = sd_backend.upscale(
-            opened_image_file, after_output_filename_prefix, props)
-
-        # if the upscale failed, stop here (an error will have been handled by the api function)
-        if not generated_image_file:
-            return False
-
-        # autosave the upscaled after image, if we should
-        if utils.should_autosave_after_image(props):
-            generated_image_file = save_after_image(
-                scene, after_output_filename_prefix, generated_image_file)
-
-            if not generated_image_file:
-                return False
-
     # if we're rendering an animation manually, save the image to the animation output path
     if props.is_rendering_animation_manually:
 
@@ -260,7 +241,9 @@ class AIR_OT_ReloadWorkflow(bpy.types.Operator):
 
         # Trigger the update of the update of the enums before setting the new values
         bpy.ops.ai_render.update_ckpt_enum()
+        bpy.ops.ai_render.update_sampler_enum()
         bpy.ops.ai_render.update_lora_enum()
+        bpy.ops.ai_render.update_upscale_model_enum()
         bpy.ops.ai_render.update_control_net_enum()
         bpy.ops.ai_render.update_upscale_model_enum()
 
@@ -302,6 +285,22 @@ class AIR_OT_UpdateLoraModelEnum(bpy.types.Operator):
         return {'FINISHED'}
 
 
+class AIR_OT_UpdateSamplerEnum(bpy.types.Operator):
+    bl_idname = "ai_render.update_sampler_enum"
+    bl_label = "Update Sampler Enum"
+    bl_description = "Update the sampler enum with the available samplers"
+
+    def execute(self, context):
+        print(Fore.GREEN + "\nUPDATING SAMPLER ENUM..." + Fore.RESET)
+        global COMFY_SAMPLERS
+        COMFY_SAMPLERS.clear()
+        samplers_list = comfyui_api.get_comfy_samplers(context)
+        for sampler in samplers_list:
+            COMFY_SAMPLERS.append(sampler)
+
+        return {'FINISHED'}
+
+
 class AIR_OT_UpdateControlNetEnum(bpy.types.Operator):
     bl_idname = "ai_render.update_control_net_enum"
     bl_label = "Update Control Net Enum"
@@ -337,6 +336,7 @@ class AIR_OT_UpdateUpscaleModelEnum(bpy.types.Operator):
 classes = [
     AIR_OT_UpdateSDModelEnum,
     AIR_OT_UpdateLoraModelEnum,
+    AIR_OT_UpdateSamplerEnum,
     AIR_OT_UpdateControlNetEnum,
     AIR_OT_UpdateUpscaleModelEnum,
     AIR_OT_open_comfyui_input_folder,

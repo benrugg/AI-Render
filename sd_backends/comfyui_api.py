@@ -964,39 +964,61 @@ def get_lora_models(context):
     return models_list
 
 
-# TODO: Implement the enum trick for s
-# COMFY_SAMPLERS = []
-def get_samplers(self, context):
-    # NOTE: Keep the number values (fourth item in the tuples) in sync with DreamStudio's
-    # values (in stability_api.py). These act like an internal unique ID for Blender
-    # to use when switching between the lists.
+COMFY_SAMPLERS = []
+
+def create_comfy_sampler_enum(self, context):
+    enum_items = []
+    for i, sampler in enumerate(COMFY_SAMPLERS):
+        enum_items.append((sampler, sampler, "", i))
+    return enum_items
+
+
+def get_comfy_samplers(context):
+    """ GET /object_info/CheckpointLoaderSimple endpoint
+    to get the available models"""
+
+    # prepare the server url
+    try:
+        server_url = get_server_url("/object_info/KSampler")
+    except:
+        return handle_error("It seems that you local ComfyUI server is not running", "local_server_url_missing")
+
+    # send the API request
+    response = do_get(server_url)
+
+    if response == False:
+        return None
+
+    samplers_list = []
+
+    # handle the response
+    if response.status_code == 200:
+
+        samplers_list = response.json()["KSampler"]["input"]["required"]["sampler_name"][0]
+
+        if LOG_MODEL_RESPONSE:
+            print(Fore.MAGENTA + "\nSAMPLERS RESPONSE: " + Fore.RESET)
+            if LOG_LONG_RESPONSE:
+                print(response.json())
+            else:
+                print("LONG RESPONSE LOGGING IS DISABLED")
+
+    else:
+        return handle_error(response)
+
+    return samplers_list
+
+
+def get_samplers():
+    # Not using this in Comfy, it's here only for compatibility with others backends
     return [
-        ('euler', 'euler', '', 10),
-        ('euler_ancestral', 'euler_ancestral', '', 20),
-        ('heun', 'heun', '', 30),
-        ('heunpp2', 'heunpp2', '', 40),
-        ('dpm_2', 'dpm_2', '', 50),
-        ('dpm_2_ancestral', 'dpm_2_ancestral', '', 60),
-        ('lms', 'lms', '', 70),
-        ('dpm_fast', 'dpm_fast', '', 80),
-        ('dpm_adaptive', 'dpm_adaptive', '', 90),
-        ('dpmpp_2s_ancestral', 'dpmpp_2s_ancestral', '', 100),
-        ('dpmpp_sde', 'dpmpp_sde', '', 110),
-        ('dpmpp_sde_gpu', 'dpmpp_sde_gpu', '', 120),
-        ('dpmpp_2m', 'dpmpp_2m', '', 130),
-        ('dpmpp_2m_sde', 'dpmpp_2m_sde', '', 140),
-        ('dpmpp_2m_sde_gpu', 'dpmpp_2m_sde_gpu', '', 150),
-        ('dpmpp_3m_sde', 'dpmpp_3m_sde', '', 160),
-        ('ddpm', 'ddpm', '', 170),
-        ('lcm', 'lcm', '', 180),
-        ('ddim', 'ddim', '', 190),
-        ('uni_pc', 'uni_pc', '', 200),
-        ('uni_pc_bh2', 'uni_pc_bh2', '', 210)
+        ('default', 'default', '', 10),
     ]
 
 
 def default_sampler():
-    return 'dpmpp_2m'
+    # Not using this in Comfy, it's here only for compatibility with others backends
+    return 'default'
 
 # TODO: Implement the enum trick for schedulers?
 # COMFY_SCHEDULERS = []
@@ -1449,13 +1471,11 @@ def get_upscaler_models(context):
 
 
 def is_upscaler_model_list_loaded(context=None):
-    if context is None:
-        context = bpy.context
-    return context.scene.air_props.automatic1111_available_upscaler_models != ""
+    return False  # In ComfyUI, the upscaler is managed by the nodes, so we don't need to load the list
 
 
 def default_upscaler_model():
-    return 'ESRGAN_4x'
+    return ''
 
 
 def get_image_format():
@@ -1467,15 +1487,15 @@ def supports_negative_prompts():
 
 
 def supports_choosing_model():
-    return False  # Setting to False, because every CheckpointLoaderSimple can have different models
+    return False  # Setting to False, because we can select the model from the CheckpointLoaderSimple node
 
 
 def supports_upscaling():
-    return False
+    return False  # In ComfyUI, the upscaler is managed by the nodes, so we don't need to load the list here
 
 
 def supports_reloading_upscaler_models():
-    return True
+    return False
 
 
 def supports_inpainting():
