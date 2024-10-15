@@ -650,7 +650,7 @@ def get_comfy_samplers(context):
 def get_samplers():
     # Not using this in Comfy, it's here only for compatibility with others backends
     return [
-        ('default', 'default', '', 10),
+        ('default', 'default', '', 20),
     ]
 
 
