@@ -10,13 +10,16 @@ from .. import (
 
 # CORE FUNCTIONS:
 
+
 def generate(params, img_file, filename_prefix, props):
 
     # map the generic params to the specific ones for the Automatic1111 API
     map_params(params)
 
     # add a base 64 encoded image to the params
-    params["init_images"] = ["data:image/png;base64," + base64.b64encode(img_file.read()).decode()]
+    params["init_images"] = [
+        "data:image/png;base64," + base64.b64encode(img_file.read()).decode()
+    ]
     img_file.close()
 
     # add args for ControlNet if it's enabled
@@ -26,15 +29,18 @@ def generate(params, img_file, filename_prefix, props):
         controlnet_weight = props.controlnet_weight
 
         if not controlnet_model:
-            return operators.handle_error(f"No ContolNet model selected. Either choose a new model or disable ControlNet. [Get help]({config.HELP_WITH_CONTROLNET_URL})", "controlnet_model_missing")
+            return operators.handle_error(
+                f"No ContolNet model selected. Either choose a new model or disable ControlNet. [Get help]({config.HELP_WITH_CONTROLNET_URL})",
+                "controlnet_model_missing",
+            )
 
         params["alwayson_scripts"] = {
             "controlnet": {
                 "args": [
                     {
-                    "weight": controlnet_weight,
-                    "module": controlnet_module,
-                    "model": controlnet_model
+                        "weight": controlnet_weight,
+                        "module": controlnet_module,
+                        "model": controlnet_model,
                     }
                 ]
             }
@@ -44,7 +50,10 @@ def generate(params, img_file, filename_prefix, props):
     try:
         server_url = get_server_url("/sdapi/v1/img2img")
     except:
-        return operators.handle_error(f"You need to specify a location for the local Stable Diffusion server in the add-on preferences. [Get help]({config.HELP_WITH_LOCAL_INSTALLATION_URL})", "local_server_url_missing")
+        return operators.handle_error(
+            f"You need to specify a location for the local Stable Diffusion server in the add-on preferences. [Get help]({config.HELP_WITH_LOCAL_INSTALLATION_URL})",
+            "local_server_url_missing",
+        )
 
     # send the API request
     response = do_post(server_url, params)
@@ -70,7 +79,9 @@ def upscale(img_file, filename_prefix, props):
         "codeformer_weight": 0,
         "upscaling_resize": props.upscale_factor,
         "upscaling_resize_w": utils.sanitized_upscaled_width(max_upscaled_image_size()),
-        "upscaling_resize_h": utils.sanitized_upscaled_height(max_upscaled_image_size()),
+        "upscaling_resize_h": utils.sanitized_upscaled_height(
+            max_upscaled_image_size()
+        ),
         "upscaling_crop": True,
         "upscaler_1": props.upscaler_model,
         "upscaler_2": "None",
@@ -79,14 +90,19 @@ def upscale(img_file, filename_prefix, props):
     }
 
     # add a base 64 encoded image to the params
-    data["image"] = "data:image/png;base64," + base64.b64encode(img_file.read()).decode()
+    data["image"] = (
+        "data:image/png;base64," + base64.b64encode(img_file.read()).decode()
+    )
     img_file.close()
 
     # prepare the server url
     try:
         server_url = get_server_url("/sdapi/v1/extra-single-image")
     except:
-        return operators.handle_error(f"You need to specify a location for the local Stable Diffusion server in the add-on preferences. [Get help]({config.HELP_WITH_LOCAL_INSTALLATION_URL})", "local_server_url_missing")
+        return operators.handle_error(
+            f"You need to specify a location for the local Stable Diffusion server in the add-on preferences. [Get help]({config.HELP_WITH_LOCAL_INSTALLATION_URL})",
+            "local_server_url_missing",
+        )
 
     # send the API request
     response = do_post(server_url, data)
@@ -113,27 +129,34 @@ def handle_success(response, filename_prefix):
     except:
         print("Automatic1111 response content: ")
         print(response.content)
-        return operators.handle_error("Received an unexpected response from the Automatic1111 Stable Diffusion server.", "unexpected_response")
+        return operators.handle_error(
+            "Received an unexpected response from the Automatic1111 Stable Diffusion server.",
+            "unexpected_response",
+        )
 
     # create a temp file
     try:
         output_file = utils.create_temp_file(filename_prefix + "-")
     except:
-        return operators.handle_error("Couldn't create a temp file to save image.", "temp_file")
+        return operators.handle_error(
+            "Couldn't create a temp file to save image.", "temp_file"
+        )
 
     # decode base64 image
     try:
         img_binary = base64.b64decode(base64_img.replace("data:image/png;base64,", ""))
     except:
-        return operators.handle_error("Couldn't decode base64 image from the Automatic1111 Stable Diffusion server.", "base64_decode")
+        return operators.handle_error(
+            "Couldn't decode base64 image from the Automatic1111 Stable Diffusion server.",
+            "base64_decode",
+        )
 
     # save the image to the temp file
     try:
-        with open(output_file, 'wb') as file:
+        with open(output_file, "wb") as file:
             file.write(img_binary)
     except:
         return operators.handle_error("Couldn't write to temp file.", "temp_file_write")
-
 
     # return the temp file
     return output_file
@@ -145,20 +168,39 @@ def handle_error(response):
 
         try:
             response_obj = response.json()
-            if response_obj.get('detail') and response_obj['detail'] == "Not Found":
-                return operators.handle_error(f"It looks like the Automatic1111 server is running, but it's not in API mode. [Get help]({config.HELP_WITH_AUTOMATIC1111_NOT_IN_API_MODE_URL})", "automatic1111_not_in_api_mode")
-            elif response_obj.get('detail') and response_obj['detail'] == "Sampler not found":
-                return operators.handle_error("The sampler you selected is not available on the Automatic1111 Stable Diffusion server. Please select a different sampler.", "invalid_sampler")
+            if response_obj.get("detail") and response_obj["detail"] == "Not Found":
+                return operators.handle_error(
+                    f"It looks like the Automatic1111 server is running, but it's not in API mode. [Get help]({config.HELP_WITH_AUTOMATIC1111_NOT_IN_API_MODE_URL})",
+                    "automatic1111_not_in_api_mode",
+                )
+            elif (
+                response_obj.get("detail")
+                and response_obj["detail"] == "Sampler not found"
+            ):
+                return operators.handle_error(
+                    "The sampler you selected is not available on the Automatic1111 Stable Diffusion server. Please select a different sampler.",
+                    "invalid_sampler",
+                )
             else:
-                return operators.handle_error(f"An error occurred in the Automatic1111 Stable Diffusion server. Full server response: {json.dumps(response_obj)}", "unknown_error")
+                return operators.handle_error(
+                    f"An error occurred in the Automatic1111 Stable Diffusion server. Full server response: {json.dumps(response_obj)}",
+                    "unknown_error",
+                )
         except:
-            return operators.handle_error(f"It looks like the Automatic1111 server is running, but it's not in API mode. [Get help]({config.HELP_WITH_AUTOMATIC1111_NOT_IN_API_MODE_URL})", "automatic1111_not_in_api_mode")
+            return operators.handle_error(
+                f"It looks like the Automatic1111 server is running, but it's not in API mode. [Get help]({config.HELP_WITH_AUTOMATIC1111_NOT_IN_API_MODE_URL})",
+                "automatic1111_not_in_api_mode",
+            )
 
     else:
-        return operators.handle_error("An error occurred in the Automatic1111 Stable Diffusion server. Check the server logs for more info.", "unknown_error_response")
+        return operators.handle_error(
+            "An error occurred in the Automatic1111 Stable Diffusion server. Check the server logs for more info.",
+            "unknown_error_response",
+        )
 
 
 # PRIVATE SUPPORT FUNCTIONS:
+
 
 def create_headers():
     return {
@@ -184,13 +226,24 @@ def map_params(params):
 def do_post(url, data):
     # send the API request
     try:
-        return requests.post(url, json=data, headers=create_headers(), timeout=utils.local_sd_timeout())
+        return requests.post(
+            url, json=data, headers=create_headers(), timeout=utils.local_sd_timeout()
+        )
     except requests.exceptions.ConnectionError:
-        return operators.handle_error(f"The local Stable Diffusion server couldn't be found. It's either not running, or it's running at a different location than what you specified in the add-on preferences. [Get help]({config.HELP_WITH_LOCAL_INSTALLATION_URL})", "local_server_not_found")
+        return operators.handle_error(
+            f"The local Stable Diffusion server couldn't be found. It's either not running, or it's running at a different location than what you specified in the add-on preferences. [Get help]({config.HELP_WITH_LOCAL_INSTALLATION_URL})",
+            "local_server_not_found",
+        )
     except requests.exceptions.MissingSchema:
-        return operators.handle_error(f"The url for your local Stable Diffusion server is invalid. Please set it correctly in the add-on preferences. [Get help]({config.HELP_WITH_LOCAL_INSTALLATION_URL})", "local_server_url_invalid")
+        return operators.handle_error(
+            f"The url for your local Stable Diffusion server is invalid. Please set it correctly in the add-on preferences. [Get help]({config.HELP_WITH_LOCAL_INSTALLATION_URL})",
+            "local_server_url_invalid",
+        )
     except requests.exceptions.ReadTimeout:
-        return operators.handle_error("The local Stable Diffusion server timed out. Set a longer timeout in AI Render preferences, or use a smaller image size.", "timeout")
+        return operators.handle_error(
+            "The local Stable Diffusion server timed out. Set a longer timeout in AI Render preferences, or use a smaller image size.",
+            "timeout",
+        )
 
 
 def debug_log(response):
@@ -209,52 +262,53 @@ def debug_log(response):
 
 # PUBLIC SUPPORT FUNCTIONS:
 
+
 def get_samplers():
     # NOTE: Keep the number values (fourth item in the tuples) in sync with DreamStudio's
     # values (in stability_api.py). These act like an internal unique ID for Blender
     # to use when switching between the lists.
     return [
-        ('Euler', 'Euler', '', 10),
-        ('Euler a', 'Euler a', '', 20),
-        ('Heun', 'Heun', '', 30),
-        ('DPM2', 'DPM2', '', 40),
-        ('DPM2 a', 'DPM2 a', '', 50),
-        ('DPM2 Karras', 'DPM2 Karras', '', 52),
-        ('DPM2 a Karras', 'DPM2 a Karras', '', 55),
-        ('LMS', 'LMS', '', 60),
-        ('LMS Karras', 'LMS Karras', '', 65),
-        ('DPM fast', 'DPM fast', '', 70),
-        ('DPM adaptive', 'DPM adaptive', '', 80),
-        ('DPM++ 2S a Karras', 'DPM++ 2S a Karras', '', 90),
-        ('DPM++ 2M Karras', 'DPM++ 2M Karras', '', 100),
-        ('DPM++ SDE Karras', 'DPM++ SDE Karras', '', 105),
-        ('DPM++ 2S a', 'DPM++ 2S a', '', 110),
-        ('DPM++ 2M', 'DPM++ 2M', '', 120),
-        ('DPM++ SDE', 'DPM++ SDE', '', 125),
-        ('DPM++ 2M SDE', 'DPM++ 2M SDE', '', 130),
-        ('DPM++ 2M SDE Karras', 'DPM++ 2M SDE Karras', '', 135),
-        ('DPM++ 2M SDE Exponential', 'DPM++ 2M SDE Exponential', '', 140),
-        ('DPM++ 2M SDE Heun', 'DPM++ 2M SDE Heun', '', 145),
-        ('DPM++ 2M SDE Heun Karras', 'DPM++ 2M SDE Heun Karras', '', 150),
-        ('DPM++ 2M SDE Heun Exponential', 'DPM++ 2M SDE Heun Exponential', '', 155),
-        ('DPM++ 3M SDE', 'DPM++ 3M SDE', '', 160),
-        ('DPM++ 3M SDE Karras', 'DPM++ 3M SDE Karras', '', 165),
-        ('DPM++ 3M SDE Exponential', 'DPM++ 3M SDE Exponential', '', 170),
-        ('Restart', 'Restart', '', 190),
-        ('PLMS', 'PLMS', '', 200),
-        ('DDIM', 'DDIM', '', 210),
-        ('UniPC', 'UniPC', '', 250),
+        ("Euler", "Euler", "", 10),
+        ("Euler a", "Euler a", "", 20),
+        ("Heun", "Heun", "", 30),
+        ("DPM2", "DPM2", "", 40),
+        ("DPM2 a", "DPM2 a", "", 50),
+        ("DPM2 Karras", "DPM2 Karras", "", 52),
+        ("DPM2 a Karras", "DPM2 a Karras", "", 55),
+        ("LMS", "LMS", "", 60),
+        ("LMS Karras", "LMS Karras", "", 65),
+        ("DPM fast", "DPM fast", "", 70),
+        ("DPM adaptive", "DPM adaptive", "", 80),
+        ("DPM++ 2S a Karras", "DPM++ 2S a Karras", "", 90),
+        ("DPM++ 2M Karras", "DPM++ 2M Karras", "", 100),
+        ("DPM++ SDE Karras", "DPM++ SDE Karras", "", 105),
+        ("DPM++ 2S a", "DPM++ 2S a", "", 110),
+        ("DPM++ 2M", "DPM++ 2M", "", 120),
+        ("DPM++ SDE", "DPM++ SDE", "", 125),
+        ("DPM++ 2M SDE", "DPM++ 2M SDE", "", 130),
+        ("DPM++ 2M SDE Karras", "DPM++ 2M SDE Karras", "", 135),
+        ("DPM++ 2M SDE Exponential", "DPM++ 2M SDE Exponential", "", 140),
+        ("DPM++ 2M SDE Heun", "DPM++ 2M SDE Heun", "", 145),
+        ("DPM++ 2M SDE Heun Karras", "DPM++ 2M SDE Heun Karras", "", 150),
+        ("DPM++ 2M SDE Heun Exponential", "DPM++ 2M SDE Heun Exponential", "", 155),
+        ("DPM++ 3M SDE", "DPM++ 3M SDE", "", 160),
+        ("DPM++ 3M SDE Karras", "DPM++ 3M SDE Karras", "", 165),
+        ("DPM++ 3M SDE Exponential", "DPM++ 3M SDE Exponential", "", 170),
+        ("Restart", "Restart", "", 190),
+        ("PLMS", "PLMS", "", 200),
+        ("DDIM", "DDIM", "", 210),
+        ("UniPC", "UniPC", "", 250),
     ]
 
 
 def default_sampler():
-    return 'LMS'
+    return "LMS"
 
 
 def get_upscaler_models(context):
     models = context.scene.air_props.automatic1111_available_upscaler_models
 
-    if (not models):
+    if not models:
         return []
     else:
         enum_list = []
@@ -270,11 +324,11 @@ def is_upscaler_model_list_loaded(context=None):
 
 
 def default_upscaler_model():
-    return 'ESRGAN_4x'
+    return "ESRGAN_4x"
 
 
 def get_image_format():
-    return 'PNG'
+    return "PNG"
 
 
 def supports_negative_prompts():
@@ -289,7 +343,15 @@ def supports_upscaling():
     return True
 
 
+def supports_choosing_upscaler_model():
+    return True
+
+
 def supports_reloading_upscaler_models():
+    return True
+
+
+def supports_choosing_upscale_factor():
     return True
 
 
@@ -323,7 +385,7 @@ def is_using_sdxl_1024_model(props):
 def get_available_controlnet_models(context):
     models = context.scene.air_props.controlnet_available_models
 
-    if (not models):
+    if not models:
         return []
     else:
         enum_list = []
@@ -335,7 +397,7 @@ def get_available_controlnet_models(context):
 def get_available_controlnet_modules(context):
     modules = context.scene.air_props.controlnet_available_modules
 
-    if (not modules):
+    if not modules:
         return []
     else:
         enum_list = []
@@ -352,7 +414,7 @@ def choose_controlnet_defaults(context):
         return
 
     # priority order for models and modules
-    priority_order = ['depth', 'openpose', 'normal', 'canny', 'scribble']
+    priority_order = ["depth", "openpose", "normal", "canny", "scribble"]
 
     # choose a matching model and module in the priority order:
     for item in priority_order:
@@ -382,7 +444,7 @@ def load_upscaler_models(context):
 
         # get the list of available upscaler models from the Automatic1111 api
         server_url = get_server_url("/sdapi/v1/upscalers")
-        headers = { "Accept": "application/json" }
+        headers = {"Accept": "application/json"}
         response = requests.get(server_url, headers=headers, timeout=5)
         response_obj = response.json()
         print("Upscaler models returned from Automatic1111 API:")
@@ -390,14 +452,18 @@ def load_upscaler_models(context):
 
         # store the list of models in the scene properties
         if not response_obj:
-            return operators.handle_error(f"No upscaler models are installed in Automatic1111. [Get help]({config.HELP_WITH_AUTOMATIC1111_UPSCALING_URL})")
+            return operators.handle_error(
+                f"No upscaler models are installed in Automatic1111. [Get help]({config.HELP_WITH_AUTOMATIC1111_UPSCALING_URL})"
+            )
         else:
             # map the response object to a list of model names
             upscaler_models = []
             for model in response_obj:
-                if (model["name"] != "None"):
+                if model["name"] != "None":
                     upscaler_models.append(model["name"])
-            context.scene.air_props.automatic1111_available_upscaler_models = "||||".join(upscaler_models)
+            context.scene.air_props.automatic1111_available_upscaler_models = (
+                "||||".join(upscaler_models)
+            )
 
             # if the list of models was not already loaded, set the default model
             if not was_already_loaded:
@@ -406,14 +472,16 @@ def load_upscaler_models(context):
             # return success
             return True
     except:
-        return operators.handle_error(f"Couldn't get the list of available upscaler models from the Automatic1111 server. [Get help]({config.HELP_WITH_AUTOMATIC1111_UPSCALING_URL})")
+        return operators.handle_error(
+            f"Couldn't get the list of available upscaler models from the Automatic1111 server. [Get help]({config.HELP_WITH_AUTOMATIC1111_UPSCALING_URL})"
+        )
 
 
 def load_controlnet_models(context):
     try:
         # get the list of available controlnet models from the Automatic1111 api
         server_url = get_server_url("/controlnet/model_list")
-        headers = { "Accept": "application/json" }
+        headers = {"Accept": "application/json"}
         response = requests.get(server_url, headers=headers, timeout=5)
         response_obj = response.json()
         print("ControlNet models returned from Automatic1111 API:")
@@ -422,19 +490,23 @@ def load_controlnet_models(context):
         # store the list of models in the scene properties
         models = response_obj["model_list"]
         if not models:
-            return operators.handle_error(f"You don't have any ControlNet models installed. You will need to download them from Hugging Face. [Get help]({config.HELP_WITH_CONTROLNET_URL})")
+            return operators.handle_error(
+                f"You don't have any ControlNet models installed. You will need to download them from Hugging Face. [Get help]({config.HELP_WITH_CONTROLNET_URL})"
+            )
         else:
             context.scene.air_props.controlnet_available_models = "||||".join(models)
             return True
     except:
-        return operators.handle_error(f"Couldn't get the list of available ControlNet models from the Automatic1111 server. Make sure ControlNet is installed and activated. [Get help]({config.HELP_WITH_CONTROLNET_URL})")
+        return operators.handle_error(
+            f"Couldn't get the list of available ControlNet models from the Automatic1111 server. Make sure ControlNet is installed and activated. [Get help]({config.HELP_WITH_CONTROLNET_URL})"
+        )
 
 
 def load_controlnet_modules(context):
     try:
         # get the list of available controlnet modules from the Automatic1111 api
         server_url = get_server_url("/controlnet/module_list")
-        headers = { "Accept": "application/json" }
+        headers = {"Accept": "application/json"}
         response = requests.get(server_url, headers=headers, timeout=5)
         response_obj = response.json()
         print("ControlNet modules returned from Automatic1111 API:")
@@ -447,4 +519,6 @@ def load_controlnet_modules(context):
         context.scene.air_props.controlnet_available_modules = "||||".join(modules)
         return True
     except:
-        return operators.handle_error(f"Couldn't get the list of available ControlNet modules from the Automatic1111 server. Make sure ControlNet is installed and activated. [Get help]({config.HELP_WITH_CONTROLNET_URL})")
+        return operators.handle_error(
+            f"Couldn't get the list of available ControlNet modules from the Automatic1111 server. Make sure ControlNet is installed and activated. [Get help]({config.HELP_WITH_CONTROLNET_URL})"
+        )

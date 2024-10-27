@@ -23,7 +23,7 @@ def generate(params, img_file, filename_prefix, props):
     headers = create_headers()
 
     # prepare the URL (specifically setting the engine id)
-    api_url = f"{config.STABILITY_API_URL}{props.sd_model}/image-to-image"
+    api_url = f"{config.STABILITY_API_V1_URL}{props.sd_model}/image-to-image"
 
     # prepare the file input
     files = {
@@ -62,7 +62,7 @@ def upscale(img_file, filename_prefix, props):
     headers = create_headers()
 
     # prepare the URL
-    api_url = f"{config.STABILITY_API_URL}{props.upscaler_model}/image-to-image/upscale"
+    api_url = f"{config.STABILITY_API_V2_URL}upscale/fast"
 
     # prepare the file input
     files = {
@@ -70,7 +70,7 @@ def upscale(img_file, filename_prefix, props):
     }
 
     # prepare the params
-    data = {"width": utils.sanitized_upscaled_width(max_upscaled_image_size())}
+    data = {"output_format": get_image_format().lower()}
 
     # send the API request
     try:
@@ -105,9 +105,17 @@ def handle_success(response, filename_prefix):
         )
 
     try:
-        for i, image in enumerate(data["artifacts"]):
+        if "image" in data:
             with open(output_file, "wb") as file:
-                file.write(base64.b64decode(image["base64"]))
+                file.write(base64.b64decode(data["image"]))
+        elif "artifacts" in data:
+            for i, image in enumerate(data["artifacts"]):
+                with open(output_file, "wb") as file:
+                    file.write(base64.b64decode(image["base64"]))
+        else:
+            return operators.handle_error(
+                f"DreamStudio returned an unexpected response", "unexpected_response"
+            )
 
         return output_file
     except:
@@ -284,7 +292,7 @@ def default_sampler():
 
 def get_upscaler_models(context):
     return [
-        ("esrgan-v1-x2plus", "ESRGAN X2+", ""),
+        ("fast", "fast", ""),
     ]
 
 
@@ -293,7 +301,7 @@ def is_upscaler_model_list_loaded(context=None):
 
 
 def default_upscaler_model():
-    return "esrgan-v1-x2plus"
+    return "fast"
 
 
 def request_timeout():
@@ -316,8 +324,20 @@ def supports_upscaling():
     return True
 
 
+def supports_choosing_upscaler_model():
+    return False
+
+
 def supports_reloading_upscaler_models():
     return False
+
+
+def supports_choosing_upscale_factor():
+    return False
+
+
+def fixed_upscale_factor():
+    return 4.0
 
 
 def supports_inpainting():
@@ -337,7 +357,7 @@ def max_image_size():
 
 
 def max_upscaled_image_size():
-    return 2048 * 2048
+    return 4096 * 4096
 
 
 def is_using_sdxl_1024_model(props):

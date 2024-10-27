@@ -65,10 +65,20 @@ def ensure_upscaler_model(context):
         scene.air_props.upscaler_model = get_default_upscaler_model()
 
 
+def ensure_upscaler_factor(context):
+    # """Ensure that the upscale factor is set to a valid value"""
+    scene = context.scene
+    if not utils.get_active_backend().supports_choosing_upscale_factor():
+        scene.air_props.upscale_factor = (
+            utils.get_active_backend().fixed_upscale_factor()
+        )
+
+
 def ensure_properties(self, context):
     # """Ensure that any properties which could change with a change in preferences are set to valid values"""
     ensure_sampler(context)
     ensure_upscaler_model(context)
+    ensure_upscaler_factor(context)
 
 
 class AIRProperties(bpy.types.PropertyGroup):
@@ -203,7 +213,7 @@ class AIRProperties(bpy.types.PropertyGroup):
     )
     do_upscale_automatically: bpy.props.BoolProperty(
         name="Upscale Automatically",
-        default=True,
+        default=False,
         description="When true, will automatically upscale the image after each render",
     )
     upscaler_model: bpy.props.EnumProperty(

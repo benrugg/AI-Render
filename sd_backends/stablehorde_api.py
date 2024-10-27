@@ -15,6 +15,7 @@ API_GET_URL = config.STABLE_HORDE_API_URL_BASE + "/generate/status"
 
 # CORE FUNCTIONS:
 
+
 def generate(params, img_file, filename_prefix, props):
 
     # map the generic params to the specific ones for the Stable Horde API
@@ -33,38 +34,56 @@ def generate(params, img_file, filename_prefix, props):
     start_time = time.monotonic()
     try:
         print(f"Sending request to Stable Horde API: {API_REQUEST_URL}")
-        response = requests.post(API_REQUEST_URL, json=stablehorde_params, headers=headers, timeout=20)
+        response = requests.post(
+            API_REQUEST_URL, json=stablehorde_params, headers=headers, timeout=20
+        )
         id = response.json()["id"]
         img_file.close()
     except requests.exceptions.ReadTimeout:
         img_file.close()
-        return operators.handle_error(f"There was an error sending this request to Stable Horde. Please try again in a moment.", "timeout")
+        return operators.handle_error(
+            f"There was an error sending this request to Stable Horde. Please try again in a moment.",
+            "timeout",
+        )
     except Exception as e:
         img_file.close()
-        return operators.handle_error(f"Error with Stable Horde. Full error message: {e}", "unknown_error")
+        return operators.handle_error(
+            f"Error with Stable Horde. Full error message: {e}", "unknown_error"
+        )
 
     # Check the status of the request (For at most request_timeout seconds)
     for i in range(request_timeout()):
         try:
             time.sleep(1)
-            URL=API_CHECK_URL + "/" + id
+            URL = API_CHECK_URL + "/" + id
             print(f"Checking status of request at Stable Horde API: {URL}")
             response = requests.get(URL, headers=headers, timeout=20)
-            print(f"Waiting for {str(time.monotonic() - start_time)}s. Response: {response.json()}")
+            print(
+                f"Waiting for {str(time.monotonic() - start_time)}s. Response: {response.json()}"
+            )
             if response.json()["done"] == True:
-                print("The horde took " + str(time.monotonic() - start_time) + "s to imagine this frame.")
+                print(
+                    "The horde took "
+                    + str(time.monotonic() - start_time)
+                    + "s to imagine this frame."
+                )
                 break
         except requests.exceptions.ReadTimeout:
             # Ignore timeouts
             print("WARN: Timeout while checking status")
-        except Exception as e: # Catch all other errors
-            return operators.handle_error(f"Error while checking status: {e}", "unknown_error")
-    if (i == request_timeout() - 1):
-        return operators.handle_error(f"Timeout generating image. Try again in a moment, or get help. [Get help with timeouts]({config.HELP_WITH_TIMEOUTS_URL})", "timeout")
+        except Exception as e:  # Catch all other errors
+            return operators.handle_error(
+                f"Error while checking status: {e}", "unknown_error"
+            )
+    if i == request_timeout() - 1:
+        return operators.handle_error(
+            f"Timeout generating image. Try again in a moment, or get help. [Get help with timeouts]({config.HELP_WITH_TIMEOUTS_URL})",
+            "timeout",
+        )
 
     # Get the image
     try:
-        URL=API_GET_URL + "/" + id
+        URL = API_GET_URL + "/" + id
         print(f"Retrieving image from Stable Horde API: {URL}")
         response = requests.get(URL, headers=headers, timeout=20)
         # handle the response
@@ -74,9 +93,14 @@ def generate(params, img_file, filename_prefix, props):
             return handle_error(response)
 
     except requests.exceptions.ReadTimeout:
-        return operators.handle_error(f"Timeout getting image from Stable Horde. Try again in a moment, or get help. [Get help with timeouts]({config.HELP_WITH_TIMEOUTS_URL})", "timeout")
+        return operators.handle_error(
+            f"Timeout getting image from Stable Horde. Try again in a moment, or get help. [Get help with timeouts]({config.HELP_WITH_TIMEOUTS_URL})",
+            "timeout",
+        )
     except Exception as e:
-        return operators.handle_error(f"Error with Stable Horde. Full error message: {e}", "unknown_error")
+        return operators.handle_error(
+            f"Error with Stable Horde. Full error message: {e}", "unknown_error"
+        )
 
 
 def handle_success(response, filename_prefix):
@@ -85,18 +109,27 @@ def handle_success(response, filename_prefix):
     try:
         response_obj = response.json()
         img_url = response_obj["generations"][0]["img"]
-        print(f"Worker: {response_obj['generations'][0]['worker_name']}, " +
-              f"kudos: {response_obj['kudos']}")
+        print(
+            f"Worker: {response_obj['generations'][0]['worker_name']}, "
+            + f"kudos: {response_obj['kudos']}"
+        )
     except:
         print("Stable Horde response content: ")
         print(response.content)
-        return operators.handle_error("Received an unexpected response from the Stable Horde server.", "unexpected_response")
+        return operators.handle_error(
+            "Received an unexpected response from the Stable Horde server.",
+            "unexpected_response",
+        )
 
     # create a temp file
     try:
-        output_file = utils.create_temp_file(filename_prefix + "-", suffix=f".{get_image_format().lower()}")
+        output_file = utils.create_temp_file(
+            filename_prefix + "-", suffix=f".{get_image_format().lower()}"
+        )
     except:
-        return operators.handle_error("Couldn't create a temp file to save image.", "temp_file")
+        return operators.handle_error(
+            "Couldn't create a temp file to save image.", "temp_file"
+        )
 
     # Retrieve img from img_url and write it to the temp file
     img_binary = None
@@ -105,11 +138,14 @@ def handle_success(response, filename_prefix):
         response = requests.get(img_url, timeout=20)
         img_binary = response.content
     except requests.exceptions.ReadTimeout:
-        return operators.handle_error(f"Timeout retrieving file. Try again in a moment, or get help. [Get help with timeouts]({config.HELP_WITH_TIMEOUTS_URL})", "timeout")
+        return operators.handle_error(
+            f"Timeout retrieving file. Try again in a moment, or get help. [Get help with timeouts]({config.HELP_WITH_TIMEOUTS_URL})",
+            "timeout",
+        )
 
     # save the image to the temp file
     try:
-        with open(output_file, 'wb') as file:
+        with open(output_file, "wb") as file:
             file.write(img_binary)
     except:
         return operators.handle_error("Couldn't write to temp file.", "temp_file_write")
@@ -119,21 +155,29 @@ def handle_success(response, filename_prefix):
 
 
 def handle_error(response):
-    return operators.handle_error("The Stable Horde server returned an error: " + str(response.content), "unknown_error")
+    return operators.handle_error(
+        "The Stable Horde server returned an error: " + str(response.content),
+        "unknown_error",
+    )
 
 
 # PRIVATE SUPPORT FUNCTIONS:
 
+
 def create_headers():
     # if no api-key specified, use the default non-authenticated api-key
-    apikey = utils.get_stable_horde_api_key() if not utils.get_stable_horde_api_key().strip() == "" else "0000000000"
+    apikey = (
+        utils.get_stable_horde_api_key()
+        if not utils.get_stable_horde_api_key().strip() == ""
+        else "0000000000"
+    )
 
     # create the headers
     return {
         "User-Agent": f"Blender/{bpy.app.version_string}",
         "Accept": "*/*",
         "Accept-Encoding": "gzip, deflate, br",
-        "apikey": apikey
+        "apikey": apikey,
     }
 
 
@@ -149,36 +193,37 @@ def map_params(params):
             "seed": str(params["seed"]),
             "steps": params["steps"],
             "sampler_name": params["sampler"],
-        }
+        },
     }
 
 
 # PUBLIC SUPPORT FUNCTIONS:
+
 
 def get_samplers():
     # NOTE: Keep the number values (fourth item in the tuples) in sync with DreamStudio's
     # values (in stability_api.py). These act like an internal unique ID for Blender
     # to use when switching between the lists.
     return [
-        ('k_euler', 'Euler', '', 10),
-        ('k_euler_a', 'Euler a', '', 20),
-        ('k_heun', 'Heun', '', 30),
-        ('k_dpm_2', 'DPM2', '', 40),
-        ('k_dpm_2_a', 'DPM2 a', '', 50),
-        ('k_lms', 'LMS', '', 60),
+        ("k_euler", "Euler", "", 10),
+        ("k_euler_a", "Euler a", "", 20),
+        ("k_heun", "Heun", "", 30),
+        ("k_dpm_2", "DPM2", "", 40),
+        ("k_dpm_2_a", "DPM2 a", "", 50),
+        ("k_lms", "LMS", "", 60),
         # TODO: Stable Horde does have karras support, but it's a separate boolean
     ]
 
 
 def default_sampler():
-    return 'k_euler_a'
+    return "k_euler_a"
 
 
 def get_upscaler_models(context):
     # NOTE: Stable Horde does not support upscaling (at least as of the time of this writing),
     # but adding this here to keep the API consistent with other backends.
     return [
-        ('esrgan-v1-x2plus', 'ESRGAN X2+', ''),
+        ("none", "none", ""),
     ]
 
 
@@ -189,7 +234,7 @@ def is_upscaler_model_list_loaded(context=None):
 
 
 def default_upscaler_model():
-    return 'esrgan-v1-x2plus'
+    return "none"
 
 
 def request_timeout():
@@ -197,7 +242,7 @@ def request_timeout():
 
 
 def get_image_format():
-    return 'WEBP'
+    return "WEBP"
 
 
 def supports_negative_prompts():
@@ -212,8 +257,20 @@ def supports_upscaling():
     return False
 
 
+def supports_choosing_upscaler_model():
+    return False
+
+
 def supports_reloading_upscaler_models():
     return False
+
+
+def supports_choosing_upscale_factor():
+    return False
+
+
+def fixed_upscale_factor():
+    return 2.0
 
 
 def supports_inpainting():
