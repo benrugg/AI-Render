@@ -1,0 +1,15 @@
+name: run strudel-test
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - "**"
+      - (!main)
+jobs:
+  run-strudel-test:
+    uses: strudelbots/strudel-public/.github/workflows/run_strudel_test.yml@v0.13.02
+    with:
+      master_branch: main
+    secrets:
+      strudel_access_key: ${{ secrets.STRUDEL_ACCESS_KEY_ID }}
+      strudel_secret_key: ${{ secrets.STRUDEL_SECRET_KEY }}
