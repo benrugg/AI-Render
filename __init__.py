@@ -30,6 +30,7 @@ if "bpy" in locals():
     imp.reload(automatic1111_api)
     imp.reload(stability_api)
     imp.reload(stablehorde_api)
+    imp.reload(test_api)
 else:
     from . import (
         addon_updater_ops,
@@ -47,11 +48,7 @@ else:
         ui_panels,
         ui_preset_styles,
     )
-    from .sd_backends import (
-        automatic1111_api,
-        stability_api,
-        stablehorde_api,
-    )
+    from .sd_backends import automatic1111_api, stability_api, stablehorde_api, test_api
 
 import bpy
 
