@@ -1,14 +1,18 @@
+import logging # STRUDEL_IMPORT_0
+strudel = logging.getLogger(__name__) # STRUDEL_IMPORT_1
+strudel.addHandler(logging.StreamHandler()) # STRUDEL_IMPORT_2
+strudel.setLevel(logging.INFO) # STRUDEL_IMPORT_3
 bl_info = {
-    "name": "AI Render - Stable Diffusion in Blender",
+    "name": "AI Render: Stable Diffusion in Blender",
     "description": "Create amazing images using Stable Diffusion AI",
     "author": "Ben Rugg",
-    "version": (1, 1, 0),
-    "blender": (3, 0, 0),
-    "location": "Render Properties > AI Render",
-    "warning": "",
-    "doc_url": "https://github.com/benrugg/AI-Render#readme",
-    "tracker_url": "https://github.com/benrugg/AI-Render/issues",
-    "category": "Render",
+    # "version": (1, 1, 0),
+    # "blender": (3, 0, 0),
+    # "location": "Render Properties > AI Render",
+    # "warning": "",
+    # "doc_url": "https://github.com/benrugg/AI-Render#readme",
+    # "tracker_url": "https://github.com/benrugg/AI-Render/issues",
+    # "category": "Render",
 }
 
 
@@ -84,3 +88,4 @@ def unregister():
 
 if __name__ == "__main__":
     register()
+
