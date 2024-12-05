@@ -1,3 +1,7 @@
+import logging # STRUDEL_IMPORT_0
+strudel = logging.getLogger(__name__) # STRUDEL_IMPORT_1
+strudel.addHandler(logging.StreamHandler()) # STRUDEL_IMPORT_2
+strudel.setLevel(logging.INFO) # STRUDEL_IMPORT_3
 bl_info = {
     "name": "AI Render: Stable Diffusion in Blender",
     "description": "Create amazing images using Stable Diffusion AI",
@@ -84,3 +88,4 @@ def unregister():
 
 if __name__ == "__main__":
     register()
+
