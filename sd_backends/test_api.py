@@ -42,10 +42,10 @@ def generate(params, img_file, filename_prefix, props):
         img_file.close()
     except requests.exceptions.ReadTimeout:
         img_file.close()
-        return operators.handle_error(
-            f"The server timed out. Try again in a moment, or get help. [Get help with timeouts]({config.HELP_WITH_TIMEOUTS_URL})",
-            "timeout",
-        )
+        # return operators.handle_error(
+        #     f"The server timed out. Try again in a moment, or get help. [Get help with timeouts]({config.HELP_WITH_TIMEOUTS_URL})",
+        #     "timeout",
+        # )
 
     # print log info for debugging
     # debug_log(response)
@@ -80,10 +80,10 @@ def upscale(img_file, filename_prefix, props):
         img_file.close()
     except requests.exceptions.ReadTimeout:
         img_file.close()
-        return operators.handle_error(
-            f"The server timed out during upscaling. Try again in a moment, or turn off upscaling.",
-            "timeout",
-        )
+        # return operators.handle_error(
+        #     f"The server timed out during upscaling. Try again in a moment, or turn off upscaling.",
+        #     "timeout",
+        # )
 
     # print log info for debugging
     # debug_log(response)
@@ -187,10 +187,11 @@ def validate_params(params, props):
     if props.sd_model.startswith(
         "stable-diffusion-xl-1024"
     ) and not utils.are_sdxl_1024_dimensions_valid(params["width"], params["height"]):
-        return operators.handle_error(
-            f"The SDXL model only supports these image sizes: {', '.join(utils.sdxl_1024_valid_dimensions)}. Please change your image size and try again.",
-            "invalid_dimensions",
-        )
+        pass
+        # return operators.handle_error(
+        #     f"The SDXL model only supports these image sizes: {', '.join(utils.sdxl_1024_valid_dimensions)}. Please change your image size and try again.",
+        #     "invalid_dimensions",
+        # )
     elif params["steps"] < 10:
         return operators.handle_error(
             "Steps must be set to at least 10.", "steps_too_small"
@@ -207,10 +208,11 @@ def parse_message_for_error(message):
         or "Unauthenticated" in message
         or "Unable to find corresponding account" in message
     ):
-        return (
-            f"Your DreamStudio API key is incorrect. Please find it on the DreamStudio website, and re-enter it above. [DreamStudio website]({config.DREAM_STUDIO_URL})",
-            "api_key",
-        )
+        pass
+        # return (
+        #     f"Your DreamStudio API key is incorrect. Please find it on the DreamStudio website, and re-enter it above. [DreamStudio website]({config.DREAM_STUDIO_URL})",
+        #     "api_key",
+        # )
     elif "not have enough balance" in message:
         return (
             f"You don't have enough DreamStudio credits. Please purchase credits on the DreamStudio website or switch to a different backend in the AI Render add-on preferences. [DreamStudio website]({config.DREAM_STUDIO_URL})",

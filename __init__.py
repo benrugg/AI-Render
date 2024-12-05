@@ -2,13 +2,13 @@ bl_info = {
     "name": "AI Render - Stable Diffusion in Blender",
     "description": "Create amazing images using Stable Diffusion AI",
     "author": "Ben Rugg",
-    "version": (1, 1, 2),
-    "blender": (3, 0, 0),
-    "location": "Render Properties > AI Render",
-    "warning": "",
-    "doc_url": "https://github.com/benrugg/AI-Render#readme",
-    "tracker_url": "https://github.com/benrugg/AI-Render/issues",
-    "category": "Render",
+    # "version": (1, 1, 0),
+    # "blender": (3, 0, 0),
+    # "location": "Render Properties > AI Render",
+    # "warning": "",
+    # "doc_url": "https://github.com/benrugg/AI-Render#readme",
+    # "tracker_url": "https://github.com/benrugg/AI-Render/issues",
+    # "category": "Render",
 }
 
 
@@ -30,7 +30,6 @@ if "bpy" in locals():
     imp.reload(automatic1111_api)
     imp.reload(stability_api)
     imp.reload(stablehorde_api)
-    imp.reload(test_api)
 else:
     from . import (
         addon_updater_ops,
@@ -48,7 +47,11 @@ else:
         ui_panels,
         ui_preset_styles,
     )
-    from .sd_backends import automatic1111_api, stability_api, stablehorde_api, test_api
+    from .sd_backends import (
+        automatic1111_api,
+        stability_api,
+        stablehorde_api,
+    )
 
 import bpy
 

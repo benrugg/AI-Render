@@ -31,7 +31,6 @@ from .sd_backends import (
     stability_api,
     stablehorde_api,
     shark_api,
-    test_api,
 )
 
 min_dimension_size = 128
@@ -443,24 +442,23 @@ def has_url(text, strict_match_protocol=False):
             for ch in replacechars:
                 text.replace(ch, "")
 
-    # if none found, look for url without markup
-    else:
-        if strict_match_protocol:
-            bare_url_regex = (
-                r"(https{0,1}:\/\/[A-Za-z0-9\-\._~:\/\?#\[\]@!\$&'\(\)\*\+\,;%=]+)"
-            )
-        else:
-            bare_url_regex = r"(?:[a-z]{3,9}:\/\/?[\-;:&=\+\$,\w]+?[a-z0-9\.\-]+|[\/a-z0-9]+\.|[\-;:&=\+\$,\w]+@)[a-z0-9\.\-]+(?:(?:\/[\+~%\/\.\w\-_]*)?\??[\-\+=&;%@\.\w_]*#?[\.\!\/\\\w]*)?"
+    # # if none found, look for url without markup
+    # else:
+    #     if strict_match_protocol:
+    #         bare_url_regex = r"(https{0,1}:\/\/[A-Za-z0-9\-\._~:\/\?#\[\]@!\$&'\(\)\*\+\,;%=]+)"
+    #     else:
+    #         bare_url_regex = r"(?:[a-z]{3,9}:\/\/?[\-;:&=\+\$,\w]+?[a-z0-9\.\-]+|[\/a-z0-9]+\.|[\-;:&=\+\$,\w]+@)[a-z0-9\.\-]+(?:(?:\/[\+~%\/\.\w\-_]*)?\??[\-\+=&;%@\.\w_]*#?[\.\!\/\\\w]*)?"
+    #
+    #     urls = re.findall(bare_url_regex, text, re.IGNORECASE)
+    #
+    #     for i, url in enumerate(urls):
+    #         urls[i] = [url, url]
 
-        urls = re.findall(bare_url_regex, text, re.IGNORECASE)
-
-        for i, url in enumerate(urls):
-            urls[i] = [url, url]
-
-    # return what was found (could be just text)
+    # # return what was found (could be just text)
     return urls, text
 
 
+#
 def label_multiline(
     layout,
     text="",
@@ -565,8 +563,6 @@ def get_active_backend():
         return automatic1111_api
     elif backend == "shark":
         return shark_api
-    elif backend == "test":
-        return test_api
 
 
 def is_installation_valid():
@@ -584,3 +580,6 @@ def show_invalid_installation_message(layout, width):
         alert=True,
         width=width,
     )
+
+
+#
