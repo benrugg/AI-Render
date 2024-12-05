@@ -31,15 +31,41 @@ from .sd_backends import (
     stability_api,
     stablehorde_api,
     shark_api,
+    test_api,
 )
 
 min_dimension_size = 128
 max_dimension_size = 2048
 valid_dimension_step_size = 64
-sdxl_1024_valid_dimensions = ['1024x1024', '1152x896', '896x1152', '1216x832', '832x1216', '1344x768', '768x1344', '1536x640', '640x1536']
+sdxl_1024_valid_dimensions = [
+    "1024x1024",
+    "1152x896",
+    "896x1152",
+    "1216x832",
+    "832x1216",
+    "1344x768",
+    "768x1344",
+    "1536x640",
+    "640x1536",
+]
 
 example_dimensions = [512, 640, 768, 896, 960, 1024, 1280, 1344, 1600, 1920, 2048]
-file_formats = {"JPEG": "jpg", "BMP": "bmp", "IRIS": "rgb", "PNG": "png", "JPEG2000": "jp2", "TARGA": "tga", "TARGA_RAW": "tga", "CINEON": "cin", "DPX": "dpx", "OPEN_EXR_MULTILAYER": "exr", "OPEN_EXR": "exr", "HDR": "hdr", "TIFF": "tif", "WEBP": "webp"}
+file_formats = {
+    "JPEG": "jpg",
+    "BMP": "bmp",
+    "IRIS": "rgb",
+    "PNG": "png",
+    "JPEG2000": "jp2",
+    "TARGA": "tga",
+    "TARGA_RAW": "tga",
+    "CINEON": "cin",
+    "DPX": "dpx",
+    "OPEN_EXR_MULTILAYER": "exr",
+    "OPEN_EXR": "exr",
+    "HDR": "hdr",
+    "TIFF": "tif",
+    "WEBP": "webp",
+}
 
 max_filename_length = 128 if platform.system() == "Windows" else 230
 
@@ -56,17 +82,25 @@ def create_temp_file(prefix, suffix=".png"):
 
 def sanitize_filename(filename, extra_length=0):
     # remove any characters that aren't alphanumeric, space, underscore, dash, period, comma or parentheses
-    filename = re.sub(r'[^\w \-_\.(),]', '_', filename)
+    filename = re.sub(r"[^\w \-_\.(),]", "_", filename)
     # remove any double underscores, dashes, periods
-    filename = re.sub(r'([-_\.]){2,}', r'\1', filename)
+    filename = re.sub(r"([-_\.]){2,}", r"\1", filename)
     # limit to max filename length
-    filename = filename[:(max_filename_length - extra_length)]
+    filename = filename[: (max_filename_length - extra_length)]
     return filename
 
 
 def sanitize_filename_template(template):
     # remove any {vars} that aren't in the list of allowed vars
-    return re.sub(r'{(.*?)}', lambda match: match.group(0) if match.group(1) in config.filename_template_allowed_vars else '', template)
+    return re.sub(
+        r"{(.*?)}",
+        lambda match: (
+            match.group(0)
+            if match.group(1) in config.filename_template_allowed_vars
+            else ""
+        ),
+        template,
+    )
 
 
 def get_image_filename(scene, prompt, negative_prompt, suffix=""):
@@ -94,7 +128,7 @@ def get_image_filename(scene, prompt, negative_prompt, suffix=""):
     return sanitized_filename + suffix
 
 
-def get_image_format(to_lower = True):
+def get_image_format(to_lower=True):
     image_format = get_active_backend().get_image_format()
     return image_format.lower() if to_lower else image_format
 
@@ -102,11 +136,12 @@ def get_image_format(to_lower = True):
 def should_autosave_after_image(props):
     # return true to signify we should autosave the after image, if that setting is on,
     # and the path is valid, and we're not rendering an animation
-    return \
-        props.do_autosave_after_images \
-        and props.autosave_image_path \
-        and not props.is_rendering_animation \
+    return (
+        props.do_autosave_after_images
+        and props.autosave_image_path
+        and not props.is_rendering_animation
         and not props.is_rendering_animation_manually
+    )
 
 
 def get_filepath_in_package(path, filename="", starting_dir=__file__):
@@ -169,7 +204,7 @@ def get_areas_by_type(area_type, scene=None, context=None, workspace_id=None):
     results = []
 
     # get an area from our desired workspace, if we have one
-    if (workspace_id):
+    if workspace_id:
         workspace = bpy.data.workspaces[workspace_id]
         for area in workspace.screens[0].areas:
             if area.type == area_type:
@@ -188,7 +223,7 @@ def get_areas_by_type(area_type, scene=None, context=None, workspace_id=None):
 
 
 def find_area_showing_render_result(scene=None, context=None, workspace_id=None):
-    areas = get_areas_by_type('IMAGE_EDITOR', scene, context, workspace_id)
+    areas = get_areas_by_type("IMAGE_EDITOR", scene, context, workspace_id)
     potential_area = None
 
     # loop through all areas, prioritizing the render result area, but returning
@@ -196,7 +231,7 @@ def find_area_showing_render_result(scene=None, context=None, workspace_id=None)
     for area in areas:
         active_image = area.spaces.active.image
         if active_image is not None:
-            if active_image.type == 'RENDER_RESULT':
+            if active_image.type == "RENDER_RESULT":
                 return area
             else:
                 potential_area = area
@@ -204,13 +239,13 @@ def find_area_showing_render_result(scene=None, context=None, workspace_id=None)
     return potential_area
 
 
-def split_area(context, area, direction='HORIZONTAL', factor=0.5):
+def split_area(context, area, direction="HORIZONTAL", factor=0.5):
     if bpy.app.version >= (3, 2, 0):
         with context.temp_override(area=area):
             bpy.ops.screen.area_split(direction=direction, factor=factor)
     else:
         override = context.copy()
-        override['area'] = area
+        override["area"] = area
         bpy.ops.screen.area_split(override, direction=direction, factor=factor)
 
 
@@ -220,8 +255,8 @@ def view_sd_in_render_view(img, scene=None, context=None):
 
     # if it's not open, try to switch to the render workspace and then get the area
     if not image_editor_area:
-        activate_workspace(workspace_id='Rendering')
-        image_editor_area = find_area_showing_render_result(scene, context, 'Rendering')
+        activate_workspace(workspace_id="Rendering")
+        image_editor_area = find_area_showing_render_result(scene, context, "Rendering")
 
     # if we have an area, set the image
     if image_editor_area:
@@ -250,14 +285,14 @@ def sd_backend(context=None):
 def sd_backend_formatted_name(context=None):
     backend = sd_backend(context)
 
-    if backend == 'dreamstudio':
-        return 'DreamStudio'
-    elif backend == 'stablehorde':
-        return 'Stable Horde'
-    elif backend == 'automatic1111':
-        return 'Automatic1111'
-    elif backend == 'shark':
-        return 'SHARK by nod.ai'
+    if backend == "dreamstudio":
+        return "DreamStudio"
+    elif backend == "stablehorde":
+        return "Stable Horde"
+    elif backend == "automatic1111":
+        return "Automatic1111"
+    elif backend == "shark":
+        return "SHARK by nod.ai"
 
 
 def local_sd_url(context=None):
@@ -300,7 +335,9 @@ def sanitized_upscaled_width(max_upscaled_image_size, scene=None):
     upscaled_height = get_upscaled_height(scene)
 
     if upscaled_width * upscaled_height > max_upscaled_image_size:
-        return round(math.sqrt(max_upscaled_image_size * (upscaled_width / upscaled_height)))
+        return round(
+            math.sqrt(max_upscaled_image_size * (upscaled_width / upscaled_height))
+        )
     else:
         return upscaled_width
 
@@ -313,26 +350,29 @@ def sanitized_upscaled_height(max_upscaled_image_size, scene=None):
     upscaled_height = get_upscaled_height(scene)
 
     if upscaled_width * upscaled_height > max_upscaled_image_size:
-        return round(math.sqrt(max_upscaled_image_size * (upscaled_height / upscaled_width)))
+        return round(
+            math.sqrt(max_upscaled_image_size * (upscaled_height / upscaled_width))
+        )
     else:
         return upscaled_height
 
 
 def are_dimensions_valid(scene):
     if is_using_sdxl_1024_model(scene):
-        return are_sdxl_1024_dimensions_valid(get_output_width(scene), get_output_height(scene))
+        return are_sdxl_1024_dimensions_valid(
+            get_output_width(scene), get_output_height(scene)
+        )
     else:
-        return (
-            get_output_width(scene) in range(
-                min_dimension_size,
-                max_dimension_size + valid_dimension_step_size, # range is exclusive of the last value
-                valid_dimension_step_size
-            ) and
-            get_output_height(scene) in range(
-                min_dimension_size,
-                max_dimension_size + valid_dimension_step_size, # range is exclusive of the last value
-                valid_dimension_step_size
-            )
+        return get_output_width(scene) in range(
+            min_dimension_size,
+            max_dimension_size
+            + valid_dimension_step_size,  # range is exclusive of the last value
+            valid_dimension_step_size,
+        ) and get_output_height(scene) in range(
+            min_dimension_size,
+            max_dimension_size
+            + valid_dimension_step_size,  # range is exclusive of the last value
+            valid_dimension_step_size,
         )
 
 
@@ -342,15 +382,24 @@ def are_sdxl_1024_dimensions_valid(width, height):
 
 
 def are_dimensions_too_large(scene):
-    return get_output_width(scene) * get_output_height(scene) > get_active_backend().max_image_size()
+    return (
+        get_output_width(scene) * get_output_height(scene)
+        > get_active_backend().max_image_size()
+    )
 
 
 def are_dimensions_too_small(scene):
-    return get_output_width(scene) * get_output_height(scene) < get_active_backend().min_image_size()
+    return (
+        get_output_width(scene) * get_output_height(scene)
+        < get_active_backend().min_image_size()
+    )
 
 
 def are_upscaled_dimensions_too_large(scene):
-    return get_upscaled_width(scene) * get_upscaled_height(scene) > get_active_backend().max_upscaled_image_size()
+    return (
+        get_upscaled_width(scene) * get_upscaled_height(scene)
+        > get_active_backend().max_upscaled_image_size()
+    )
 
 
 def generate_example_dimensions_tuple_list():
@@ -359,7 +408,11 @@ def generate_example_dimensions_tuple_list():
 
 
 def generate_sdxl_1024_dimensions_tuple_list():
-    return_tuple = lambda dimension: (dimension, ' x '.join(dimension.split('x')), dimension)
+    return_tuple = lambda dimension: (
+        dimension,
+        " x ".join(dimension.split("x")),
+        dimension,
+    )
     return list(map(return_tuple, sdxl_1024_valid_dimensions))
 
 
@@ -369,7 +422,7 @@ def is_using_sdxl_1024_model(scene):
 
 def has_url(text, strict_match_protocol=False):
     # remove markdown *
-    text = text.replace('*','')
+    text = text.replace("*", "")
 
     # Anything that isn't a square closing bracket
     name_regex = "[^]]+"
@@ -388,12 +441,14 @@ def has_url(text, strict_match_protocol=False):
         for url in urls:
             text = re.sub(markup_regex, "", text)
             for ch in replacechars:
-                text.replace(ch, '')
+                text.replace(ch, "")
 
     # if none found, look for url without markup
     else:
         if strict_match_protocol:
-            bare_url_regex = r"(https{0,1}:\/\/[A-Za-z0-9\-\._~:\/\?#\[\]@!\$&'\(\)\*\+\,;%=]+)"
+            bare_url_regex = (
+                r"(https{0,1}:\/\/[A-Za-z0-9\-\._~:\/\?#\[\]@!\$&'\(\)\*\+\,;%=]+)"
+            )
         else:
             bare_url_regex = r"(?:[a-z]{3,9}:\/\/?[\-;:&=\+\$,\w]+?[a-z0-9\.\-]+|[\/a-z0-9]+\.|[\-;:&=\+\$,\w]+@)[a-z0-9\.\-]+(?:(?:\/[\+~%\/\.\w\-_]*)?\??[\-\+=&;%@\.\w_]*#?[\.\!\/\\\w]*)?"
 
@@ -406,8 +461,17 @@ def has_url(text, strict_match_protocol=False):
     return urls, text
 
 
-def label_multiline(layout, text='', icon='NONE', width=-1, max_lines=12, use_urls=True, alignment="LEFT", alert=False):
-    '''
+def label_multiline(
+    layout,
+    text="",
+    icon="NONE",
+    width=-1,
+    max_lines=12,
+    use_urls=True,
+    alignment="LEFT",
+    alert=False,
+):
+    """
      draw a ui label, but try to split it in multiple lines.
 
     Parameters
@@ -421,9 +485,9 @@ def label_multiline(layout, text='', icon='NONE', width=-1, max_lines=12, use_ur
     Returns
     -------
     rows of the text(to add extra elements)
-    '''
+    """
     rows = []
-    if text.strip() == '':
+    if text.strip() == "":
         return [layout.row()]
 
     text = text.replace("\r\n", "\n")
@@ -445,15 +509,16 @@ def label_multiline(layout, text='', icon='NONE', width=-1, max_lines=12, use_ur
 
         line_index += 1
         while len(line) > char_threshold:
-            #find line split close to the end of line
+            # find line split close to the end of line
             i = line.rfind(" ", 0, char_threshold)
-            #split long words
+            # split long words
             if i < 1:
                 i = char_threshold
             l1 = line[:i]
 
             row = layout.row()
-            if alert: row.alert = True
+            if alert:
+                row.alert = True
             row.alignment = alignment
             row.label(text=l1, icon=icon)
             rows.append(row)
@@ -470,7 +535,8 @@ def label_multiline(layout, text='', icon='NONE', width=-1, max_lines=12, use_ur
             break
 
         row = layout.row()
-        if alert: row.alert = True
+        if alert:
+            row.alert = True
         row.alignment = alignment
         row.label(text=line, icon=icon)
         rows.append(row)
@@ -499,6 +565,8 @@ def get_active_backend():
         return automatic1111_api
     elif backend == "shark":
         return shark_api
+    elif backend == "test":
+        return test_api
 
 
 def is_installation_valid():
@@ -509,4 +577,10 @@ def show_invalid_installation_message(layout, width):
     box = layout.box()
     box.label(text="Installation Error:")
 
-    label_multiline(box, text=f"It looks like this add-on wasn't installed correctly. Please remove it and get a new copy. [Get AI Render]({config.ADDON_DOWNLOAD_URL})", icon="ERROR", alert=True, width=width)
+    label_multiline(
+        box,
+        text=f"It looks like this add-on wasn't installed correctly. Please remove it and get a new copy. [Get AI Render]({config.ADDON_DOWNLOAD_URL})",
+        icon="ERROR",
+        alert=True,
+        width=width,
+    )
