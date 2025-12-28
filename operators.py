@@ -31,13 +31,6 @@ def enable_air(scene):
     clear_error(scene)
 
 
-def mute_legacy_compositor_node_group(scene):
-    if scene.node_tree and scene.node_tree.nodes:
-        legacy_node_group = scene.node_tree.nodes.get('AIR')
-        if legacy_node_group:
-            legacy_node_group.mute = True
-
-
 def set_image_dimensions(context, width, height):
     context.scene.render.resolution_x = width
     context.scene.render.resolution_y = height
@@ -209,9 +202,6 @@ def do_pre_render_setup(scene):
 
     # clear any previous errors
     clear_error(scene)
-
-    # mute the legacy compositor node group, if it exists
-    mute_legacy_compositor_node_group(scene)
 
 
 def do_pre_api_setup(scene):
